@@ -9,6 +9,8 @@ import ThyroidInfo from '@/components/ThyroidInfo';
 import SymptomsTest from '@/components/SymptomsTest';
 import DisorderTypes from '@/components/DisorderTypes';
 import Medications from '@/components/Medications';
+import MedicationManager from '@/components/MedicationManager';
+import SymptomTracker from '@/components/SymptomTracker';
 import AppointmentBooking from '@/components/AppointmentBooking';
 import WhenToConsult from '@/components/WhenToConsult';
 import MythsAndFAQ from '@/components/MythsAndFAQ';
@@ -23,6 +25,12 @@ const Index = () => {
       <SymptomsTest />
       <DisorderTypes />
       <Medications />
+      <div id="mis-medicamentos">
+        <MedicationManager />
+      </div>
+      <div id="sintomas">
+        <SymptomTracker />
+      </div>
       <AppointmentBooking />
       <WhenToConsult />
       <MythsAndFAQ />

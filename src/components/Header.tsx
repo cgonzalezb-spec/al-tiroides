@@ -12,10 +12,28 @@ const Header = () => {
     { name: 'Autotest', href: '#autotest' },
     { name: 'Trastornos', href: '#trastornos' },
     { name: 'Medicamentos', href: '#medicamentos' },
+    { name: 'Mis Meds', href: '#mis-medicamentos' },
+    { name: 'Síntomas', href: '#sintomas' },
     { name: 'Agendar', href: '#agendar' },
     { name: 'Consultar', href: '#consultar' },
     { name: 'FAQ', href: '#mitos-faq' },
   ];
+
+  const scrollToSection = (href: string) => {
+    const element = document.querySelector(href);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+    setIsMenuOpen(false);
+  };
+
+  const scrollToTest = () => {
+    const element = document.querySelector('#autotest');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+    setIsMenuOpen(false);
+  };
 
   return (
     <header className="bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-50">
@@ -35,15 +53,18 @@ const Header = () => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             {navigationItems.map((item) => (
-              <a
+              <button
                 key={item.name}
-                href={item.href}
+                onClick={() => scrollToSection(item.href)}
                 className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium"
               >
                 {item.name}
-              </a>
+              </button>
             ))}
-            <Button className="bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600">
+            <Button 
+              onClick={scrollToTest}
+              className="bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600"
+            >
               Empezar test
             </Button>
           </nav>
@@ -62,16 +83,18 @@ const Header = () => {
           <nav className="md:hidden mt-4 pb-4 border-t border-gray-200">
             <div className="flex flex-col space-y-3 pt-4">
               {navigationItems.map((item) => (
-                <a
+                <button
                   key={item.name}
-                  href={item.href}
-                  className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium py-2"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={() => scrollToSection(item.href)}
+                  className="text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium py-2 text-left"
                 >
                   {item.name}
-                </a>
+                </button>
               ))}
-              <Button className="bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600 mt-4">
+              <Button 
+                onClick={scrollToTest}
+                className="bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600 mt-4"
+              >
                 Empezar test
               </Button>
             </div>
