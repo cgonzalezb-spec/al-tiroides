@@ -1,9 +1,24 @@
+
 import { ArrowRight, PlayCircle, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const HeroSection = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Simular modo administrador (en una app real esto vendría de autenticación)
+  useEffect(() => {
+    const adminMode = localStorage.getItem('adminMode');
+    setIsAdmin(adminMode === 'true');
+    
+    // Cargar video guardado si existe
+    const savedVideoUrl = localStorage.getItem('explanatoryVideoUrl');
+    if (savedVideoUrl) {
+      setVideoUrl(savedVideoUrl);
+    }
+  }, []);
 
   const scrollToTest = () => {
     const element = document.querySelector('#autotest');
@@ -16,14 +31,52 @@ const HeroSection = () => {
     const file = event.target.files?.[0];
     if (file) {
       setVideoFile(file);
-      console.log('Video cargado:', file.name);
-      // Aquí puedes agregar lógica para subir el video
+      const url = URL.createObjectURL(file);
+      setVideoUrl(url);
+      localStorage.setItem('explanatoryVideoUrl', url);
+      console.log('Video cargado para los visitantes:', file.name);
+    }
+  };
+
+  const toggleAdminMode = () => {
+    const newAdminMode = !isAdmin;
+    setIsAdmin(newAdminMode);
+    localStorage.setItem('adminMode', newAdminMode.toString());
+  };
+
+  const handleWatchVideo = () => {
+    if (videoUrl) {
+      // Crear modal o abrir video en pantalla completa
+      const videoModal = document.createElement('div');
+      videoModal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+      videoModal.innerHTML = `
+        <div class="relative max-w-4xl w-full mx-4">
+          <video controls autoplay class="w-full rounded-lg">
+            <source src="${videoUrl}" type="video/mp4">
+            Tu navegador no soporta el elemento video.
+          </video>
+          <button class="absolute top-4 right-4 text-white text-2xl font-bold" onclick="this.parentElement.parentElement.remove()">×</button>
+        </div>
+      `;
+      document.body.appendChild(videoModal);
     }
   };
 
   return (
     <section id="inicio" className="py-20 lg:py-32">
       <div className="container mx-auto px-4">
+        {/* Botón para alternar modo admin (temporal, en desarrollo) */}
+        <div className="mb-4">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={toggleAdminMode}
+            className="text-xs"
+          >
+            {isAdmin ? '👑 Modo Admin' : '👤 Modo Visitante'}
+          </Button>
+        </div>
+
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
             <div className="space-y-4">
@@ -47,33 +100,56 @@ const HeroSection = () => {
               >
                 Hacer autotest <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <div className="relative">
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  className="text-lg px-8 py-4 border-2 hover:bg-blue-50 w-full"
-                  onClick={() => document.getElementById('video-upload')?.click()}
-                >
-                  <PlayCircle className="mr-2 h-5 w-5" />
-                  {videoFile ? `Video: ${videoFile.name}` : 'Subir video explicativo'}
-                </Button>
-                <input
-                  id="video-upload"
-                  type="file"
-                  accept="video/*"
-                  onChange={handleVideoUpload}
-                  className="hidden"
-                />
-              </div>
+              
+              {isAdmin ? (
+                <div className="relative">
+                  <Button 
+                    variant="outline" 
+                    size="lg"
+                    className="text-lg px-8 py-4 border-2 hover:bg-blue-50 w-full"
+                    onClick={() => document.getElementById('video-upload')?.click()}
+                  >
+                    <Upload className="mr-2 h-5 w-5" />
+                    {videoFile ? `Actualizar video` : 'Subir video explicativo'}
+                  </Button>
+                  <input
+                    id="video-upload"
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoUpload}
+                    className="hidden"
+                  />
+                </div>
+              ) : (
+                videoUrl && (
+                  <Button 
+                    variant="outline" 
+                    size="lg"
+                    className="text-lg px-8 py-4 border-2 hover:bg-blue-50 w-full"
+                    onClick={handleWatchVideo}
+                  >
+                    <PlayCircle className="mr-2 h-5 w-5" />
+                    Ver video explicativo
+                  </Button>
+                )
+              )}
             </div>
 
-            {videoFile && (
+            {isAdmin && videoFile && (
               <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                 <p className="text-green-800 text-sm">
-                  ✅ Video cargado exitosamente: {videoFile.name}
+                  ✅ Video subido exitosamente: {videoFile.name}
                 </p>
                 <p className="text-green-600 text-xs mt-1">
-                  El video estará disponible para los visitantes del sitio.
+                  Los visitantes ahora pueden ver este video explicativo.
+                </p>
+              </div>
+            )}
+
+            {!isAdmin && !videoUrl && (
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <p className="text-blue-800 text-sm">
+                  📹 Próximamente disponible video explicativo sobre tiroides
                 </p>
               </div>
             )}
