@@ -8,7 +8,10 @@ import HeroSection from '@/components/HeroSection';
 import ThyroidInfo from '@/components/ThyroidInfo';
 import SymptomsTest from '@/components/SymptomsTest';
 import DisorderTypes from '@/components/DisorderTypes';
+import Medications from '@/components/Medications';
+import AppointmentBooking from '@/components/AppointmentBooking';
 import WhenToConsult from '@/components/WhenToConsult';
+import MythsAndFAQ from '@/components/MythsAndFAQ';
 import Footer from '@/components/Footer';
 
 const Index = () => {
@@ -19,7 +22,10 @@ const Index = () => {
       <ThyroidInfo />
       <SymptomsTest />
       <DisorderTypes />
+      <Medications />
+      <AppointmentBooking />
       <WhenToConsult />
+      <MythsAndFAQ />
       <Footer />
     </div>
   );

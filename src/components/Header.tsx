@@ -11,7 +11,10 @@ const Header = () => {
     { name: '¿Qué es?', href: '#que-es' },
     { name: 'Autotest', href: '#autotest' },
     { name: 'Trastornos', href: '#trastornos' },
-    { name: 'Cuándo consultar', href: '#consultar' },
+    { name: 'Medicamentos', href: '#medicamentos' },
+    { name: 'Agendar', href: '#agendar' },
+    { name: 'Consultar', href: '#consultar' },
+    { name: 'FAQ', href: '#mitos-faq' },
   ];
 
   return (
