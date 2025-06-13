@@ -1,8 +1,26 @@
-
-import { ArrowRight, PlayCircle } from 'lucide-react';
+import { ArrowRight, PlayCircle, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 
 const HeroSection = () => {
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+
+  const scrollToTest = () => {
+    const element = document.querySelector('#autotest');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setVideoFile(file);
+      console.log('Video cargado:', file.name);
+      // Aquí puedes agregar lógica para subir el video
+    }
+  };
+
   return (
     <section id="inicio" className="py-20 lg:py-32">
       <div className="container mx-auto px-4">
@@ -24,19 +42,41 @@ const HeroSection = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button 
                 size="lg"
+                onClick={scrollToTest}
                 className="bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600 text-lg px-8 py-4"
               >
                 Hacer autotest <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="text-lg px-8 py-4 border-2 hover:bg-blue-50"
-              >
-                <PlayCircle className="mr-2 h-5 w-5" />
-                Ver video explicativo
-              </Button>
+              <div className="relative">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="text-lg px-8 py-4 border-2 hover:bg-blue-50 w-full"
+                  onClick={() => document.getElementById('video-upload')?.click()}
+                >
+                  <PlayCircle className="mr-2 h-5 w-5" />
+                  {videoFile ? `Video: ${videoFile.name}` : 'Subir video explicativo'}
+                </Button>
+                <input
+                  id="video-upload"
+                  type="file"
+                  accept="video/*"
+                  onChange={handleVideoUpload}
+                  className="hidden"
+                />
+              </div>
             </div>
+
+            {videoFile && (
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <p className="text-green-800 text-sm">
+                  ✅ Video cargado exitosamente: {videoFile.name}
+                </p>
+                <p className="text-green-600 text-xs mt-1">
+                  El video estará disponible para los visitantes del sitio.
+                </p>
+              </div>
+            )}
 
             <div className="grid grid-cols-3 gap-8 pt-8">
               <div className="text-center">
@@ -78,7 +118,10 @@ const HeroSection = () => {
                   ))}
                 </div>
                 
-                <Button className="w-full bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600">
+                <Button 
+                  onClick={scrollToTest}
+                  className="w-full bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600"
+                >
                   Evaluar mis síntomas
                 </Button>
               </div>
