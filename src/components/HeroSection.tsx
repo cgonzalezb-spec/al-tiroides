@@ -199,7 +199,7 @@ const HeroSection = () => {
                           <CarouselItem key={video.id}>
                             <div className="p-1">
                               <div
-                                className="relative aspect-video rounded-lg overflow-hidden cursor-pointer group shadow-lg"
+                                className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer group shadow-lg"
                                 onClick={() => handleWatchVideo(index)}
                               >
                                 <video
