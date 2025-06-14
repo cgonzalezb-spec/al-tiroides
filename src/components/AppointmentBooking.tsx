@@ -32,7 +32,7 @@ const AppointmentBooking = () => {
   ];
 
   const handleUrgentConsultation = () => {
-    window.open('tel:1407', '_blank');
+    window.open('tel:412722500', '_blank');
   };
 
   const handleFindSpecialists = () => {
@@ -161,7 +161,7 @@ const AppointmentBooking = () => {
                   className="w-full bg-red-600 hover:bg-red-700 text-white" 
                   onClick={handleUrgentConsultation}
                 >
-                  🚨 Consulta urgente (1407)
+                  🚨 Urgencia SAMU (412 722 500)
                 </Button>
               </div>
             </CardContent>
