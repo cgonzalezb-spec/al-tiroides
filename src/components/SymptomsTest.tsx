@@ -10,18 +10,18 @@ const SymptomsTest = () => {
   const [showResults, setShowResults] = useState(false);
 
   const symptoms = [
-    { id: 'fatigue', label: 'Astenia: Fatiga profunda que no se alivia con el descanso', category: 'general' },
-    { id: 'weight_gain', label: 'Aumento de peso inexplicable (>3-5 kg) sin cambios en la dieta', category: 'metabolic' },
-    { id: 'weight_loss', label: 'Pérdida de peso inexplicable (>3-5 kg) con apetito normal o aumentado', category: 'metabolic' },
-    { id: 'cold_intolerance', label: 'Intolerancia al frío: Sensación de frío desproporcionada al ambiente', category: 'temperature' },
-    { id: 'heat_intolerance', label: 'Intolerancia al calor: Sudoración excesiva y malestar en ambientes cálidos', category: 'temperature' },
-    { id: 'hair_loss', label: 'Caída de cabello difusa o cabello seco y quebradizo', category: 'physical' },
-    { id: 'dry_skin', label: 'Piel seca, áspera y descamativa, especialmente en extremidades', category: 'physical' },
-    { id: 'heart_palpitations', label: 'Palpitaciones: Latidos cardíacos rápidos o irregulares en reposo', category: 'cardiac' },
-    { id: 'anxiety', label: 'Nerviosismo, irritabilidad o ansiedad sin causa aparente', category: 'mental' },
-    { id: 'depression', label: 'Ánimo depresivo, apatía o lentitud para pensar (bradipsiquia)', category: 'mental' },
-    { id: 'memory_issues', label: 'Dificultad para concentrarse o fallos de memoria recientes', category: 'mental' },
-    { id: 'irregular_periods', label: 'Alteraciones del ciclo menstrual (períodos más abundantes, escasos o ausentes)', category: 'hormonal' }
+    { id: 'fatigue', label: 'Cansancio o fatiga constante', category: 'general' },
+    { id: 'weight_gain', label: 'Aumento de peso sin causa aparente', category: 'metabolic' },
+    { id: 'weight_loss', label: 'Pérdida de peso sin causa aparente', category: 'metabolic' },
+    { id: 'cold_intolerance', label: 'Intolerancia al frío', category: 'temperature' },
+    { id: 'heat_intolerance', label: 'Intolerancia al calor y sudoración excesiva', category: 'temperature' },
+    { id: 'hair_loss', label: 'Caída de cabello, o pelo seco y quebradizo', category: 'physical' },
+    { id: 'dry_skin', label: 'Piel seca y áspera', category: 'physical' },
+    { id: 'heart_palpitations', label: 'Palpitaciones (latidos rápidos o irregulares)', category: 'cardiac' },
+    { id: 'anxiety', label: 'Nerviosismo, irritabilidad o ansiedad', category: 'mental' },
+    { id: 'depression', label: 'Tristeza, desgano o lentitud para pensar', category: 'mental' },
+    { id: 'memory_issues', label: 'Dificultad para concentrarse o problemas de memoria', category: 'mental' },
+    { id: 'irregular_periods', label: 'Alteraciones en el ciclo menstrual', category: 'hormonal' }
   ];
 
   const handleSymptomChange = (symptomId: string, checked: boolean) => {
