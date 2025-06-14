@@ -17,10 +17,6 @@ const MythsAndFAQ = () => {
       reality: "No existe evidencia que respalde la existencia de hipotiroidismo clínicamente significativo con pruebas de función tiroidea normales. El diagnóstico requiere elevación de TSH y, en el caso de hipotiroidismo manifiesto, disminución de T4 libre."
     },
     {
-      myth: "Wilson's syndrome o síndrome de Wilson es una entidad reconocida.",
-      reality: "La 'síndrome de Wilson' no está reconocida por la comunidad endocrinológica. No existe evidencia científica que respalde su existencia ni la eficacia de la terapia con T3 propuesta para este cuadro. Su diagnóstico es impreciso y puede llevar a tratamientos innecesarios y riesgosos."
-    },
-    {
       myth: "La dieta, suplementos o nutracéuticos pueden curar o controlar las enfermedades tiroideas.",
       reality: "Aunque nutrientes como el yodo y el selenio son esenciales para la función tiroidea, la suplementación indiscriminada no está justificada y puede ser perjudicial, especialmente en poblaciones con suficiente ingesta. La evidencia sobre el beneficio de otros suplementos (como zinc, ashwagandha, o dietas libres de gluten o lácteos) es limitada o nula, salvo en casos de deficiencia o intolerancia demostrada."
     },
