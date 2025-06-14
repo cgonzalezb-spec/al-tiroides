@@ -1,4 +1,3 @@
-
 import { Lightbulb } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
@@ -45,8 +44,8 @@ const ConsejosSection = () => {
   const { data: tip, isLoading, isError } = useQuery({
     queryKey: ['tipOfTheDay'],
     queryFn: fetchTipOfTheDay,
-    staleTime: Infinity, // The tip is for the day, no need to refetch
-    cacheTime: Infinity,
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
+    gcTime: 1000 * 60 * 60 * 24, // 24 hours
   });
 
   return (
