@@ -29,10 +29,10 @@ const Header = () => {
   };
 
   const navInfo = [
-    { name: '¿Qué es?', href: '#que-es' },
     { name: 'Autotest', href: '#autotest' },
-    { name: 'Trastornos', href: '#trastornos' },
     { name: 'Medicamentos', href: '#medicamentos' },
+    { name: 'Consultar', href: '#consultar' },
+    { name: 'FAQ', href: '#mitos-faq' },
   ];
 
   const navUser = [
@@ -43,8 +43,8 @@ const Header = () => {
   
   const navGeneral = [
     { name: 'Inicio', href: '/' },
-    { name: 'Consultar', href: '#consultar' },
-    { name: 'FAQ', href: '#mitos-faq' },
+    { name: '¿Qué es?', href: '#que-es' },
+    { name: 'Trastornos', href: '#trastornos' },
     { name: 'Consejos', href: '#consejos' },
   ];
 
@@ -52,7 +52,11 @@ const Header = () => {
     if (href.startsWith('#')) {
       scrollToSection(href);
     } else {
-      navigate(href);
+      if (href === '/' && window.location.pathname === '/') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        navigate(href);
+      }
     }
     setIsMenuOpen(false);
   }
