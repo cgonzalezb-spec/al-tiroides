@@ -1,3 +1,4 @@
+
 import { Calendar, Clock, MapPin, Phone, ExternalLink, Search } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -87,8 +88,7 @@ const AppointmentBooking = () => {
             Agenda tu consulta médica
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Encuentra especialistas en tu área y agenda directamente. 
-            También puedes sincronizar con tu calendario favorito.
+            Encuentra especialistas en tu área y agenda directamente.
           </p>
         </div>
 

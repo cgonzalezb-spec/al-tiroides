@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { CheckCircle, AlertTriangle, FileText } from 'lucide-react';
+import { CheckCircle, AlertTriangle, FileText, Download, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -80,6 +80,45 @@ const SymptomsTest = () => {
           bgColor: '',
           icon: null
         };
+    }
+  };
+
+  const handleDownloadChecklist = () => {
+    const selectedSymptomsDetails = selectedSymptoms.map(id => {
+      const symptom = symptoms.find(s => s.id === id);
+      return symptom ? `- ${symptom.label}` : '';
+    }).filter(Boolean);
+
+    const checklistContent = `
+Checklist de Síntomas de Tiroides
+==================================
+
+Fecha: ${new Date().toLocaleDateString('es-CL')}
+
+He experimentado los siguientes síntomas recientemente:
+${selectedSymptomsDetails.join('\n')}
+
+Próximos pasos recomendados:
+- Hablar con un médico sobre estos síntomas.
+- Solicitar exámenes de TSH, T3 y T4.
+- Considerar consultar con un endocrinólogo.
+
+Nota: Este documento es una guía y no reemplaza el diagnóstico médico profesional.
+    `;
+
+    const blob = new Blob([checklistContent.trim()], { type: 'text/plain;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', 'checklist-sintomas-tiroides.txt');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const scrollToAgenda = () => {
+    const element = document.getElementById('agendar');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -172,10 +211,12 @@ const SymptomsTest = () => {
                   </ul>
                   
                   <div className="mt-6 flex flex-col sm:flex-row gap-4">
-                    <Button variant="outline" className="flex-1">
+                    <Button variant="outline" className="flex-1" onClick={handleDownloadChecklist}>
+                      <Download className="mr-2 h-4 w-4" />
                       Descargar checklist
                     </Button>
-                    <Button className="flex-1 bg-gradient-to-r from-blue-600 to-green-500">
+                    <Button className="flex-1 bg-gradient-to-r from-blue-600 to-green-500" onClick={scrollToAgenda}>
+                      <UserCheck className="mr-2 h-4 w-4" />
                       Encontrar especialistas
                     </Button>
                   </div>
