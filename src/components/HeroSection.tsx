@@ -1,7 +1,14 @@
-
-import { ArrowRight, PlayCircle, Upload, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, PlayCircle, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "@/components/ui/carousel";
 
 interface Video {
   id: string;
@@ -12,8 +19,9 @@ interface Video {
 
 const HeroSection = () => {
   const [videos, setVideos] = useState<Video[]>([]);
-  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [api, setApi] = useState<CarouselApi>()
+  const [current, setCurrent] = useState(0)
 
   useEffect(() => {
     const adminMode = localStorage.getItem('adminMode');
@@ -27,15 +35,34 @@ const HeroSection = () => {
     }
   }, []);
 
-  // Auto-rotar videos cada 10 segundos
+  // Auto-rotar videos y actualizar indicador
   useEffect(() => {
+    if (!api) return;
+
+    const handleSelect = () => {
+      if (api.selectedScrollSnap() !== -1) {
+        setCurrent(api.selectedScrollSnap());
+      }
+    };
+
+    api.on("select", handleSelect);
+    handleSelect();
+
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
     if (videos.length > 1 && !isAdmin) {
-      const interval = setInterval(() => {
-        setCurrentVideoIndex((prev) => (prev + 1) % videos.length);
+      intervalId = setInterval(() => {
+        if (document.hasFocus()) {
+          api.scrollNext();
+        }
       }, 10000);
-      return () => clearInterval(interval);
     }
-  }, [videos.length, isAdmin]);
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+      api.off("select", handleSelect);
+    };
+  }, [api, videos.length, isAdmin]);
 
   const scrollToTest = () => {
     const element = document.querySelector('#autotest');
@@ -74,9 +101,6 @@ const HeroSection = () => {
       url: v.url,
       name: v.name
     }))));
-    if (currentVideoIndex >= updatedVideos.length && updatedVideos.length > 0) {
-      setCurrentVideoIndex(0);
-    }
   };
 
   const toggleAdminMode = () => {
@@ -85,9 +109,8 @@ const HeroSection = () => {
     localStorage.setItem('adminMode', newAdminMode.toString());
   };
 
-  const handleWatchVideo = (videoIndex?: number) => {
-    const indexToShow = videoIndex !== undefined ? videoIndex : currentVideoIndex;
-    const videoToShow = videos[indexToShow];
+  const handleWatchVideo = (videoIndex: number) => {
+    const videoToShow = videos[videoIndex];
     
     if (videoToShow) {
       const videoModal = document.createElement('div');
@@ -103,14 +126,6 @@ const HeroSection = () => {
       `;
       document.body.appendChild(videoModal);
     }
-  };
-
-  const nextVideo = () => {
-    setCurrentVideoIndex((prev) => (prev + 1) % videos.length);
-  };
-
-  const prevVideo = () => {
-    setCurrentVideoIndex((prev) => (prev - 1 + videos.length) % videos.length);
   };
 
   return (
@@ -173,36 +188,47 @@ const HeroSection = () => {
                 </div>
               ) : (
                 videos.length > 0 && (
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="lg"
-                      className="text-lg px-8 py-4 border-2 hover:bg-blue-50 flex-1"
-                      onClick={() => handleWatchVideo()}
+                  <div className="w-full max-w-sm mx-auto sm:max-w-none sm:mx-0 flex-1">
+                    <Carousel 
+                      setApi={setApi} 
+                      className="w-full" 
+                      opts={{ loop: videos.length > 1 }}
                     >
-                      <PlayCircle className="mr-2 h-5 w-5" />
-                      Ver video explicativo
-                    </Button>
-                    {videos.length > 1 && (
-                      <div className="flex gap-1">
-                        <Button 
-                          variant="outline" 
-                          size="lg"
-                          onClick={prevVideo}
-                          className="px-3"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="lg"
-                          onClick={nextVideo}
-                          className="px-3"
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
+                      <CarouselContent>
+                        {videos.map((video, index) => (
+                          <CarouselItem key={video.id}>
+                            <div className="p-1">
+                              <div
+                                className="relative aspect-video rounded-lg overflow-hidden cursor-pointer group shadow-lg"
+                                onClick={() => handleWatchVideo(index)}
+                              >
+                                <video
+                                  src={video.url}
+                                  className="w-full h-full object-cover bg-black"
+                                  playsInline
+                                  muted
+                                  preload="metadata"
+                                >
+                                  Tu navegador no soporta videos.
+                                </video>
+                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                                  <PlayCircle className="h-12 w-12 text-white/90 drop-shadow-lg transform transition-transform group-hover:scale-110" />
+                                </div>
+                                <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md">
+                                  {video.name}
+                                </div>
+                              </div>
+                            </div>
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      {videos.length > 1 && (
+                        <>
+                          <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10" />
+                          <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10" />
+                        </>
+                      )}
+                    </Carousel>
                   </div>
                 )
               )}
@@ -244,10 +270,11 @@ const HeroSection = () => {
                 {videos.map((_, index) => (
                   <button
                     key={index}
-                    onClick={() => setCurrentVideoIndex(index)}
-                    className={`w-2 h-2 rounded-full transition-colors ${
-                      index === currentVideoIndex ? 'bg-blue-500' : 'bg-gray-300'
+                    onClick={() => api?.scrollTo(index)}
+                    className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                      current === index ? 'w-4 bg-blue-600' : 'bg-gray-300'
                     }`}
+                    aria-label={`Ir al video ${index + 1}`}
                   />
                 ))}
               </div>
