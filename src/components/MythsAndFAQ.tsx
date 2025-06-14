@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { HelpCircle, ChevronDown, ChevronUp, AlertTriangle, CheckCircle, Book, Users } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,28 +10,23 @@ const MythsAndFAQ = () => {
   const myths = [
     {
       myth: "El hipotiroidismo es la causa principal de fatiga, aumento de peso y síntomas inespecíficos.",
-      reality: "Si bien el hipotiroidismo puede causar fatiga, aumento de peso y otros síntomas, estos son inespecíficos y muy prevalentes en la población general. La mayoría de los pacientes con estos síntomas no tienen disfunción tiroidea, y el diagnóstico debe basarse en pruebas bioquímicas, no solo en la clínica.",
-      references: "[1-3]"
+      reality: "Si bien el hipotiroidismo puede causar fatiga, aumento de peso y otros síntomas, estos son inespecíficos y muy prevalentes en la población general. La mayoría de los pacientes con estos síntomas no tienen disfunción tiroidea, y el diagnóstico debe basarse en pruebas bioquímicas, no solo en la clínica."
     },
     {
       myth: "El hipotiroidismo puede estar presente con pruebas tiroideas normales.",
-      reality: "No existe evidencia que respalde la existencia de hipotiroidismo clínicamente significativo con pruebas de función tiroidea normales. El diagnóstico requiere elevación de TSH y, en el caso de hipotiroidismo manifiesto, disminución de T4 libre.",
-      references: "[2-3]"
+      reality: "No existe evidencia que respalde la existencia de hipotiroidismo clínicamente significativo con pruebas de función tiroidea normales. El diagnóstico requiere elevación de TSH y, en el caso de hipotiroidismo manifiesto, disminución de T4 libre."
     },
     {
       myth: "Wilson's syndrome o síndrome de Wilson es una entidad reconocida.",
-      reality: "La 'síndrome de Wilson' no está reconocida por la comunidad endocrinológica. No existe evidencia científica que respalde su existencia ni la eficacia de la terapia con T3 propuesta para este cuadro. Su diagnóstico es impreciso y puede llevar a tratamientos innecesarios y riesgosos.",
-      references: "[4]"
+      reality: "La 'síndrome de Wilson' no está reconocida por la comunidad endocrinológica. No existe evidencia científica que respalde su existencia ni la eficacia de la terapia con T3 propuesta para este cuadro. Su diagnóstico es impreciso y puede llevar a tratamientos innecesarios y riesgosos."
     },
     {
       myth: "La dieta, suplementos o nutracéuticos pueden curar o controlar las enfermedades tiroideas.",
-      reality: "Aunque nutrientes como el yodo y el selenio son esenciales para la función tiroidea, la suplementación indiscriminada no está justificada y puede ser perjudicial, especialmente en poblaciones con suficiente ingesta. La evidencia sobre el beneficio de otros suplementos (como zinc, ashwagandha, o dietas libres de gluten o lácteos) es limitada o nula, salvo en casos de deficiencia o intolerancia demostrada.",
-      references: "[5-6]"
+      reality: "Aunque nutrientes como el yodo y el selenio son esenciales para la función tiroidea, la suplementación indiscriminada no está justificada y puede ser perjudicial, especialmente en poblaciones con suficiente ingesta. La evidencia sobre el beneficio de otros suplementos (como zinc, ashwagandha, o dietas libres de gluten o lácteos) es limitada o nula, salvo en casos de deficiencia o intolerancia demostrada."
     },
     {
       myth: "Evitar vegetales crucíferos o la soya es necesario en todos los pacientes con enfermedad tiroidea.",
-      reality: "No hay evidencia sólida que justifique la restricción de estos alimentos en la mayoría de los pacientes con enfermedad tiroidea. Solo en casos de ingesta excesiva y deficiencia de yodo podrían tener algún impacto.",
-      references: "[6]"
+      reality: "No hay evidencia sólida que justifique la restricción de estos alimentos en la mayoría de los pacientes con enfermedad tiroidea. Solo en casos de ingesta excesiva y deficiencia de yodo podrían tener algún impacto."
     }
   ];
 
@@ -136,7 +130,6 @@ const MythsAndFAQ = () => {
                         <div>
                           <p className="font-semibold text-green-800 mb-2">REALIDAD:</p>
                           <p className="text-green-700 mb-2">{item.reality}</p>
-                          <p className="text-xs text-green-600">{item.references}</p>
                         </div>
                       </div>
                     </div>

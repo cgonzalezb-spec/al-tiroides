@@ -1,4 +1,3 @@
-
 import { Calendar, Clock, MapPin, Phone, ExternalLink, Search } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,6 +52,33 @@ const AppointmentBooking = () => {
     window.open(googleCalendarUrl, '_blank');
   };
 
+  const handleAppleCalendarIntegration = () => {
+    const formatISODateForICS = (date: Date) => date.toISOString().replace(/[-:.]/g, '').slice(0, 15) + 'Z';
+    const startDate = new Date();
+    const endDate = new Date(Date.now() + 3600 * 1000); // 1 hour later
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'BEGIN:VEVENT',
+      `DTSTART:${formatISODateForICS(startDate)}`,
+      `DTEND:${formatISODateForICS(endDate)}`,
+      'SUMMARY:Consulta médica tiroides',
+      'DESCRIPTION:Recordatorio para consulta de evaluación de tiroides.',
+      'LOCATION:Centro médico',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', 'consulta-medica.ics');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <section id="agendar" className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -62,7 +88,7 @@ const AppointmentBooking = () => {
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Encuentra especialistas en tu área y agenda directamente. 
-            También puedes sincronizar con tu Google Calendar.
+            También puedes sincronizar con tu calendario favorito.
           </p>
         </div>
 
@@ -171,12 +197,12 @@ const AppointmentBooking = () => {
           </Card>
         </div>
 
-        {/* Integración con Google Calendar */}
+        {/* Integración con Calendarios */}
         <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200">
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center space-x-2">
               <Calendar className="h-6 w-6 text-blue-600" />
-              <span>Sincroniza con Google Calendar</span>
+              <span>Sincroniza con tu calendario favorito</span>
             </CardTitle>
             <CardDescription>
               Crea un recordatorio automático para tu consulta médica
@@ -188,15 +214,24 @@ const AppointmentBooking = () => {
                 Una vez que tengas tu hora agendada, puedes crear un evento en tu calendario 
                 para no olvidar la cita y prepararte con anticipación.
               </p>
-              <Button 
-                onClick={handleGoogleCalendarIntegration}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Calendar className="mr-2 h-4 w-4" />
-                Crear evento en Google Calendar
-              </Button>
+              <div className="flex flex-col sm:flex-row justify-center gap-4">
+                <Button 
+                  onClick={handleGoogleCalendarIntegration}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Calendar className="mr-2" />
+                  Google Calendar
+                </Button>
+                <Button 
+                  onClick={handleAppleCalendarIntegration}
+                  className="bg-gray-800 hover:bg-gray-900 text-white"
+                >
+                  <Calendar className="mr-2" />
+                  Apple Calendar
+                </Button>
+              </div>
               <p className="text-xs text-gray-500">
-                Se abrirá Google Calendar con un evento pre-configurado que puedes editar
+                Se generará un evento pre-configurado que puedes editar y guardar.
               </p>
             </div>
           </CardContent>
