@@ -1,29 +1,33 @@
-import { Calendar, Clock, MapPin, Phone, ExternalLink } from 'lucide-react';
+
+import { Calendar, Clock, MapPin, Phone, ExternalLink, Search } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
 const AppointmentBooking = () => {
-  const [selectedSpecialty, setSelectedSpecialty] = useState('endocrinologia');
+  const [selectedSpecialty, setSelectedSpecialty] = useState('');
 
   const specialties = [
     {
       id: 'endocrinologia',
       name: 'Endocrinología',
       description: 'Especialistas en trastornos hormonales y tiroides',
-      icon: '🏥'
+      icon: '🏥',
+      query: 'Endocrinólogo'
     },
     {
       id: 'medicina-interna',
       name: 'Medicina Interna',
       description: 'Médicos generales que tratan problemas tiroideos',
-      icon: '👨‍⚕️'
+      icon: '👨‍⚕️',
+      query: 'Internista'
     },
     {
       id: 'cirugia',
       name: 'Cirugía',
       description: 'Para casos que requieren intervención quirúrgica',
-      icon: '⚕️'
+      icon: '⚕️',
+      query: 'Cirujano General'
     }
   ];
 
@@ -33,6 +37,14 @@ const AppointmentBooking = () => {
 
   const handleFindSpecialists = () => {
     window.open('https://www.doctoralia.cl/', '_blank');
+  };
+  
+  const handleFindSelectedSpecialty = () => {
+    const specialty = specialties.find(s => s.id === selectedSpecialty);
+    if (specialty) {
+      const url = `https://www.doctoralia.cl/buscar?q=${encodeURIComponent(specialty.query)}`;
+      window.open(url, '_blank');
+    }
   };
 
   const handleGoogleCalendarIntegration = () => {
@@ -68,7 +80,7 @@ const AppointmentBooking = () => {
                     ? 'ring-2 ring-blue-500 bg-blue-50' 
                     : 'hover:bg-gray-50'
                 }`}
-                onClick={() => setSelectedSpecialty(specialty.id)}
+                onClick={() => setSelectedSpecialty(prev => prev === specialty.id ? '' : specialty.id)}
               >
                 <CardHeader className="text-center">
                   <div className="text-4xl mb-2">{specialty.icon}</div>
@@ -78,6 +90,14 @@ const AppointmentBooking = () => {
               </Card>
             ))}
           </div>
+          {selectedSpecialty && (
+            <div className="text-center mt-8 animate-in fade-in duration-500">
+              <Button onClick={handleFindSelectedSpecialty} className="bg-blue-600 hover:bg-blue-700">
+                <Search className="mr-2 h-4 w-4" />
+                Buscar {specialties.find(s => s.id === selectedSpecialty)?.name} en Doctoralia
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Opciones de agendamiento */}

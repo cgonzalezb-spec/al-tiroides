@@ -1,4 +1,3 @@
-
 import { Clock, AlertTriangle, Stethoscope, FileText, MapPin, Calendar } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,6 +49,13 @@ const WhenToConsult = () => {
     }
   ];
 
+  const scrollToAgenda = () => {
+    const element = document.getElementById('agendar');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section id="consultar" className="py-20 bg-gradient-to-br from-green-50 to-blue-50">
       <div className="container mx-auto px-4">
@@ -86,7 +92,7 @@ const WhenToConsult = () => {
                   </li>
                 ))}
               </ul>
-              <Button className="w-full mt-6 bg-red-600 hover:bg-red-700">
+              <Button className="w-full mt-6 bg-red-600 hover:bg-red-700" onClick={scrollToAgenda}>
                 <Calendar className="mr-2 h-4 w-4" />
                 Agendar consulta urgente
               </Button>
@@ -115,7 +121,7 @@ const WhenToConsult = () => {
                   </li>
                 ))}
               </ul>
-              <Button className="w-full mt-6 bg-blue-600 hover:bg-blue-700">
+              <Button className="w-full mt-6 bg-blue-600 hover:bg-blue-700" onClick={scrollToAgenda}>
                 <Calendar className="mr-2 h-4 w-4" />
                 Buscar especialistas
               </Button>

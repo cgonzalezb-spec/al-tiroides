@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Clock, Bell, Pill, Edit2, AlertTriangle } from 'lucide-react';
+import { Plus, Trash2, Clock, Bell, Pill, Edit2, AlertTriangle, CalendarPlus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -108,6 +108,76 @@ const MedicationManager = () => {
         reminder.date === today
       ).map(reminder => ({ ...reminder, medication: med }))
     );
+  };
+
+  const handleGoogleCalendarSync = (med: Medication) => {
+    const today = new Date();
+    const [hours, minutes] = med.time.split(':');
+    today.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+  
+    const formatGCalTime = (date: Date) => {
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        const h = date.getHours().toString().padStart(2, '0');
+        const m = date.getMinutes().toString().padStart(2, '0');
+        const s = date.getSeconds().toString().padStart(2, '0');
+        return `${year}${month}${day}T${h}${m}${s}`;
+    }
+
+    const startTime = formatGCalTime(today);
+    const endTime = formatGCalTime(new Date(today.getTime() + 5 * 60000));
+    
+    const title = encodeURIComponent(`Tomar ${med.name} (${med.dose})`);
+    const details = encodeURIComponent(`Recordatorio para tomar ${med.name} (${med.dose}). Frecuencia: ${med.frequency}. No olvides tomar tu medicamento.`);
+    const rrule = med.frequency.toLowerCase().includes('una vez al día') ? 'RRULE:FREQ=DAILY' : '';
+    
+    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startTime}/${endTime}&details=${details}&recur=${rrule}&ctz=America/Santiago`;
+    window.open(googleCalendarUrl, '_blank');
+  };
+
+  const handleAppleCalendarSync = (med: Medication) => {
+    const today = new Date();
+    const [hours, minutes] = med.time.split(':');
+    today.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+    const formatICSTime = (date: Date) => {
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      const h = date.getHours().toString().padStart(2, '0');
+      const m = date.getMinutes().toString().padStart(2, '0');
+      const s = date.getSeconds().toString().padStart(2, '0');
+      return `${year}${month}${day}T${h}${m}${s}`;
+    }
+    
+    const formatUTC = (date: Date) => date.toISOString().replace(/[-:.]/g, '').slice(0, 15) + 'Z';
+
+    const startTime = formatICSTime(today);
+    const endTime = formatICSTime(new Date(today.getTime() + 5 * 60000));
+    
+    const rrule = med.frequency.toLowerCase().includes('una vez al día') ? 'RRULE:FREQ=DAILY\n' : '';
+
+    const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Lovable//ThyroidApp//EN
+BEGIN:VEVENT
+UID:${med.id}@thyroidapp.lovable.dev
+DTSTAMP:${formatUTC(new Date())}
+DTSTART;TZID=America/Santiago:${startTime}
+DTEND;TZID=America/Santiago:${endTime}
+${rrule}SUMMARY:Tomar ${med.name} (${med.dose})
+DESCRIPTION:Recordatorio para tomar ${med.name} (${med.dose}). Frecuencia: ${med.frequency}.
+END:VEVENT
+END:VCALENDAR`;
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `recordatorio_${med.name.replace(/\s+/g, '_')}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -228,64 +298,76 @@ const MedicationManager = () => {
             <CardContent>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {medications.map((med) => (
-                  <div key={med.id} className="border rounded-lg p-4 bg-white">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-semibold">{med.name}</h4>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeMedication(med.id)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      <p><strong>Dosis:</strong> {med.dose}</p>
-                      <p><strong>Frecuencia:</strong> {med.frequency}</p>
-                      <div className="flex items-center justify-between">
-                        <p><strong>Hora:</strong> {med.time}</p>
-                        {editingMed === med.id ? (
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="time"
-                              value={editTime}
-                              onChange={(e) => {
-                                setEditTime(e.target.value);
-                                if (isUnusualTime(e.target.value)) {
-                                  alert('⚠️ Advertencia: Esta es una hora poco común para tomar medicamentos.');
-                                }
-                              }}
-                              className="text-xs h-6 w-20"
-                            />
+                  <div key={med.id} className="border rounded-lg p-4 bg-white flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-semibold">{med.name}</h4>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeMedication(med.id)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="space-y-1 text-sm text-gray-600">
+                        <p><strong>Dosis:</strong> {med.dose}</p>
+                        <p><strong>Frecuencia:</strong> {med.frequency}</p>
+                        <div className="flex items-center justify-between">
+                          <p><strong>Hora:</strong> {med.time}</p>
+                          {editingMed === med.id ? (
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type="time"
+                                value={editTime}
+                                onChange={(e) => {
+                                  setEditTime(e.target.value);
+                                  if (isUnusualTime(e.target.value)) {
+                                    alert('⚠️ Advertencia: Esta es una hora poco común para tomar medicamentos.');
+                                  }
+                                }}
+                                className="text-xs h-6 w-20"
+                              />
+                              <Button
+                                size="sm"
+                                onClick={() => updateMedicationTime(med.id, editTime)}
+                                className="h-6 px-2 text-xs"
+                              >
+                                ✓
+                              </Button>
+                            </div>
+                          ) : (
                             <Button
+                              variant="ghost"
                               size="sm"
-                              onClick={() => updateMedicationTime(med.id, editTime)}
-                              className="h-6 px-2 text-xs"
+                              onClick={() => {
+                                setEditingMed(med.id);
+                                setEditTime(med.time);
+                              }}
+                              className="h-6 px-2"
                             >
-                              ✓
+                              <Edit2 className="h-3 w-3" />
                             </Button>
+                          )}
+                        </div>
+                        {isUnusualTime(med.time) && (
+                          <div className="flex items-center gap-1 text-amber-600 text-xs">
+                            <AlertTriangle className="h-3 w-3" />
+                            <span>Hora poco común</span>
                           </div>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setEditingMed(med.id);
-                              setEditTime(med.time);
-                            }}
-                            className="h-6 px-2"
-                          >
-                            <Edit2 className="h-3 w-3" />
-                          </Button>
                         )}
                       </div>
-                      {isUnusualTime(med.time) && (
-                        <div className="flex items-center gap-1 text-amber-600 text-xs">
-                          <AlertTriangle className="h-3 w-3" />
-                          <span>Hora poco común</span>
-                        </div>
-                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-4">
+                      <Button variant="outline" size="sm" onClick={() => handleGoogleCalendarSync(med)} className="flex-1 text-xs">
+                        <CalendarPlus className="mr-1.5 h-3 w-3" />
+                        Google Calendar
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleAppleCalendarSync(med)} className="flex-1 text-xs">
+                        <CalendarPlus className="mr-1.5 h-3 w-3" />
+                        Apple Calendar
+                      </Button>
                     </div>
                   </div>
                 ))}
