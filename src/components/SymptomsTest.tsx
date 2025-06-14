@@ -5,18 +5,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 
 const symptomsList = [
-  { id: 'fatigue', label: 'Cansancio o fatiga constante', category: 'general', score: 1 },
-  { id: 'weight_gain', label: 'Aumento de peso sin causa aparente', category: 'metabolic', score: 2 },
-  { id: 'weight_loss', label: 'Pérdida de peso sin causa aparente', category: 'metabolic', score: 2 },
-  { id: 'cold_intolerance', label: 'Intolerancia al frío', category: 'temperature', score: 3 },
-  { id: 'heat_intolerance', label: 'Intolerancia al calor y sudoración excesiva', category: 'temperature', score: 3 },
-  { id: 'hair_loss', label: 'Caída de cabello, o pelo seco y quebradizo', category: 'physical', score: 1 },
-  { id: 'dry_skin', label: 'Piel seca y áspera', category: 'physical', score: 1 },
-  { id: 'heart_palpitations', label: 'Palpitaciones (latidos rápidos o irregulares)', category: 'cardiac', score: 3 },
-  { id: 'anxiety', label: 'Nerviosismo, irritabilidad o ansiedad', category: 'mental', score: 2 },
-  { id: 'depression', label: 'Tristeza, desgano o lentitud para pensar', category: 'mental', score: 2 },
-  { id: 'memory_issues', label: 'Dificultad para concentrarse o problemas de memoria', category: 'mental', score: 1 },
-  { id: 'irregular_periods', label: 'Alteraciones en el ciclo menstrual', category: 'hormonal', score: 2 }
+  { id: 'fatigue', label: 'Cansancio o fatiga constante' },
+  { id: 'weight_gain', label: 'Aumento de peso sin causa aparente' },
+  { id: 'weight_loss', label: 'Pérdida de peso sin causa aparente' },
+  { id: 'cold_intolerance', label: 'Intolerancia al frío' },
+  { id: 'heat_intolerance', label: 'Intolerancia al calor y sudoración excesiva' },
+  { id: 'hair_loss', label: 'Caída de cabello, o pelo seco y quebradizo' },
+  { id: 'dry_skin', label: 'Piel seca y áspera' },
+  { id: 'heart_palpitations', label: 'Palpitaciones (latidos rápidos o irregulares)' },
+  { id: 'anxiety', label: 'Nerviosismo, irritabilidad o ansiedad' },
+  { id: 'depression', label: 'Tristeza, desgano o lentitud para pensar' },
+  { id: 'memory_issues', label: 'Dificultad para concentrarse o problemas de memoria' },
+  { id: 'irregular_periods', label: 'Alteraciones en el ciclo menstrual' }
 ];
 
 const SymptomsTest = () => {
@@ -37,25 +37,9 @@ const SymptomsTest = () => {
   };
 
   const resultMessage = useMemo(() => {
-    const score = selectedSymptoms.reduce((total, symptomId) => {
-        const symptom = symptomsList.find(s => s.id === symptomId);
-        return total + (symptom ? symptom.score : 0);
-    }, 0);
-
     const count = selectedSymptoms.length;
-    let riskLevel: 'none' | 'low' | 'moderate' | 'high';
 
-    if (score === 0) {
-        riskLevel = 'none';
-    } else if (score <= 4) {
-        riskLevel = 'low';
-    } else if (score <= 9) {
-        riskLevel = 'moderate';
-    } else {
-        riskLevel = 'high';
-    }
-    
-    if (riskLevel === 'none') {
+    if (count === 0) {
       return {
         title: 'Sin riesgo aparente',
         message: 'No has seleccionado síntomas. Haz clic en "Analizar mis síntomas" para una evaluación si tienes alguna preocupación.',
@@ -65,11 +49,20 @@ const SymptomsTest = () => {
       };
     }
 
+    let riskLevel: 'low' | 'moderate' | 'high';
+    if (count <= 2) {
+      riskLevel = 'low';
+    } else if (count <= 4) {
+      riskLevel = 'moderate';
+    } else {
+      riskLevel = 'high';
+    }
+
     switch (riskLevel) {
       case 'low':
         return {
           title: 'Riesgo bajo',
-          message: `Has seleccionado ${count} síntoma(s) de bajo impacto. Es poco probable que se deban a un problema de tiroides, pero vigila si aparecen más.`,
+          message: `Has seleccionado ${count} síntoma(s). Es poco probable que se deban a un problema de tiroides, pero vigila si aparecen más.`,
           color: 'text-green-600',
           bgColor: 'bg-green-50',
           icon: <CheckCircle className="h-8 w-8 text-green-600" />
