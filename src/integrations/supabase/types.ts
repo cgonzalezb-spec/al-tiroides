@@ -105,6 +105,27 @@ export type Database = {
         }
         Relationships: []
       }
+      tips: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          id: number
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          id?: number
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          id?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
