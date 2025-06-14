@@ -9,7 +9,102 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      appointments: {
+        Row: {
+          appointment_date: string
+          created_at: string
+          doctor_name: string | null
+          id: number
+          notes: string | null
+          specialty: string | null
+          user_id: string
+        }
+        Insert: {
+          appointment_date: string
+          created_at?: string
+          doctor_name?: string | null
+          id?: number
+          notes?: string | null
+          specialty?: string | null
+          user_id: string
+        }
+        Update: {
+          appointment_date?: string
+          created_at?: string
+          doctor_name?: string | null
+          id?: number
+          notes?: string | null
+          specialty?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      medications: {
+        Row: {
+          created_at: string
+          dosage: string | null
+          frequency: string | null
+          id: number
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dosage?: string | null
+          frequency?: string | null
+          id?: number
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dosage?: string | null
+          frequency?: string | null
+          id?: number
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          id: string
+        }
+        Insert: {
+          id: string
+        }
+        Update: {
+          id?: string
+        }
+        Relationships: []
+      }
+      symptom_logs: {
+        Row: {
+          id: number
+          logged_at: string
+          notes: string | null
+          severity: number
+          symptom: string
+          user_id: string
+        }
+        Insert: {
+          id?: number
+          logged_at?: string
+          notes?: string | null
+          severity: number
+          symptom: string
+          user_id: string
+        }
+        Update: {
+          id?: number
+          logged_at?: string
+          notes?: string | null
+          severity?: number
+          symptom?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

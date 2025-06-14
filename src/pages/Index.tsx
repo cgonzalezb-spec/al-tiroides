@@ -1,8 +1,5 @@
 
-import { useState } from 'react';
-import { Heart, Brain, Zap, Users, CheckCircle, AlertTriangle, Stethoscope, BookOpen } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import ThyroidInfo from '@/components/ThyroidInfo';
@@ -20,6 +17,8 @@ import Footer from '@/components/Footer';
 import ConsejosSection from '@/components/ConsejosSection';
 
 const Index = () => {
+  const { user } = useAuth();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <Header />
@@ -28,13 +27,17 @@ const Index = () => {
       <SymptomsTest />
       <DisorderTypes />
       <Medications />
-      <div id="mis-medicamentos">
-        <MedicationManager />
-      </div>
-      <div id="sintomas">
-        <SymptomTracker />
-      </div>
-      <AppointmentBooking />
+      {user && (
+        <>
+          <div id="mis-medicamentos">
+            <MedicationManager />
+          </div>
+          <div id="sintomas">
+            <SymptomTracker />
+          </div>
+          <AppointmentBooking />
+        </>
+      )}
       <WhenToConsult />
       <MythsAndFAQ />
       <ConsejosSection />
