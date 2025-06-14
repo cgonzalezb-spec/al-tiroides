@@ -128,7 +128,7 @@ const AppointmentBooking = () => {
 
         {/* Opciones de agendamiento */}
         <div className="grid lg:grid-cols-2 gap-8 mb-12">
-          <Card>
+          <Card id="sistema-publico">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Calendar className="h-6 w-6 text-blue-500" />
