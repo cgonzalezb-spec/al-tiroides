@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Clock, Bell, Pill } from 'lucide-react';
+import { Plus, Trash2, Clock, Bell, Pill, Edit2, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +25,8 @@ const MedicationManager = () => {
   const [medications, setMedications] = useState<Medication[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [newMed, setNewMed] = useState({ name: '', dose: '', frequency: '', time: '' });
+  const [editingMed, setEditingMed] = useState<string | null>(null);
+  const [editTime, setEditTime] = useState('');
 
   // Medicamentos comunes con dosis frecuentes
   const commonMedications = [
@@ -57,13 +58,28 @@ const MedicationManager = () => {
     setNewMed({ name: '', dose: '', frequency: '', time: '' });
   };
 
-  const addQuickMedication = (commonMed: typeof commonMedications[0], selectedDose: string) => {
+  const addQuickMedication = (commonMed: typeof commonMedications[0], selectedDose: string, customTime?: string) => {
     addMedication({
       name: commonMed.name,
       dose: selectedDose,
       frequency: commonMed.frequency,
-      time: commonMed.time
+      time: customTime || commonMed.time
     });
+  };
+
+  const updateMedicationTime = (id: string, newTime: string) => {
+    const updatedMeds = medications.map(med =>
+      med.id === id ? { ...med, time: newTime } : med
+    );
+    setMedications(updatedMeds);
+    localStorage.setItem('thyroid_medications', JSON.stringify(updatedMeds));
+    setEditingMed(null);
+    setEditTime('');
+  };
+
+  const isUnusualTime = (time: string) => {
+    const hour = parseInt(time.split(':')[0]);
+    return hour < 6 || hour > 22;
   };
 
   const removeMedication = (id: string) => {
@@ -124,6 +140,24 @@ const MedicationManager = () => {
                   <div key={index} className="border rounded-lg p-4 bg-white">
                     <h4 className="font-semibold text-gray-900 mb-2">{commonMed.name}</h4>
                     <p className="text-sm text-gray-600 mb-3">{commonMed.frequency}</p>
+                    
+                    {/* Horario personalizable */}
+                    <div className="mb-3">
+                      <label className="block text-xs text-gray-500 mb-1">Horario:</label>
+                      <Input
+                        type="time"
+                        defaultValue={commonMed.time}
+                        className="text-sm"
+                        onChange={(e) => {
+                          const time = e.target.value;
+                          if (isUnusualTime(time)) {
+                            alert('⚠️ Advertencia: Esta es una hora poco común para tomar medicamentos. ¿Estás seguro?');
+                          }
+                          commonMed.time = time;
+                        }}
+                      />
+                    </div>
+
                     <div className="flex flex-wrap gap-2">
                       {commonMed.doses.map((dose, doseIndex) => (
                         <Button
@@ -209,7 +243,49 @@ const MedicationManager = () => {
                     <div className="space-y-1 text-sm text-gray-600">
                       <p><strong>Dosis:</strong> {med.dose}</p>
                       <p><strong>Frecuencia:</strong> {med.frequency}</p>
-                      <p><strong>Hora:</strong> {med.time}</p>
+                      <div className="flex items-center justify-between">
+                        <p><strong>Hora:</strong> {med.time}</p>
+                        {editingMed === med.id ? (
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="time"
+                              value={editTime}
+                              onChange={(e) => {
+                                setEditTime(e.target.value);
+                                if (isUnusualTime(e.target.value)) {
+                                  alert('⚠️ Advertencia: Esta es una hora poco común para tomar medicamentos.');
+                                }
+                              }}
+                              className="text-xs h-6 w-20"
+                            />
+                            <Button
+                              size="sm"
+                              onClick={() => updateMedicationTime(med.id, editTime)}
+                              className="h-6 px-2 text-xs"
+                            >
+                              ✓
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setEditingMed(med.id);
+                              setEditTime(med.time);
+                            }}
+                            className="h-6 px-2"
+                          >
+                            <Edit2 className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                      {isUnusualTime(med.time) && (
+                        <div className="flex items-center gap-1 text-amber-600 text-xs">
+                          <AlertTriangle className="h-3 w-3" />
+                          <span>Hora poco común</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

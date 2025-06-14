@@ -1,9 +1,11 @@
+
 import { Heart, Zap, Brain, Thermometer, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
 const ThyroidInfo = () => {
-  const [expandedCard, setExpandedCard] = useState<number | null>(null);
+  const [expandedCards, setExpandedCards] = useState<number[]>([]);
 
   const functions = [
     {
@@ -33,8 +35,22 @@ const ThyroidInfo = () => {
   ];
 
   const toggleCard = (index: number) => {
-    setExpandedCard(expandedCard === index ? null : index);
+    setExpandedCards(prev => 
+      prev.includes(index) 
+        ? prev.filter(i => i !== index)
+        : [...prev, index]
+    );
   };
+
+  const expandAll = () => {
+    setExpandedCards(functions.map((_, index) => index));
+  };
+
+  const collapseAll = () => {
+    setExpandedCards([]);
+  };
+
+  const allExpanded = expandedCards.length === functions.length;
 
   return (
     <section id="que-es" className="py-20 bg-white">
@@ -50,6 +66,27 @@ const ThyroidInfo = () => {
           </p>
         </div>
 
+        {/* Botón para expandir/colapsar todo */}
+        <div className="text-center mb-8">
+          <Button 
+            variant="outline"
+            onClick={allExpanded ? collapseAll : expandAll}
+            className="mb-4"
+          >
+            {allExpanded ? (
+              <>
+                <ChevronUp className="mr-2 h-4 w-4" />
+                Colapsar todo
+              </>
+            ) : (
+              <>
+                <ChevronDown className="mr-2 h-4 w-4" />
+                Expandir todo
+              </>
+            )}
+          </Button>
+        </div>
+
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {functions.map((func, index) => (
             <Card 
@@ -63,7 +100,7 @@ const ThyroidInfo = () => {
                 </div>
                 <CardTitle className="text-lg">{func.title}</CardTitle>
                 <div className="flex justify-center mt-2">
-                  {expandedCard === index ? (
+                  {expandedCards.includes(index) ? (
                     <ChevronUp className="h-5 w-5 text-gray-500" />
                   ) : (
                     <ChevronDown className="h-5 w-5 text-gray-500" />
@@ -74,7 +111,7 @@ const ThyroidInfo = () => {
                 <CardDescription className="text-sm mb-3">
                   {func.description}
                 </CardDescription>
-                {expandedCard === index && (
+                {expandedCards.includes(index) && (
                   <div className="bg-blue-50 p-4 rounded-lg border-t">
                     <p className="text-sm text-gray-700 text-left">
                       {func.expandedInfo}

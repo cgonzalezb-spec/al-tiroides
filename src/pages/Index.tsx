@@ -14,6 +14,8 @@ import SymptomTracker from '@/components/SymptomTracker';
 import AppointmentBooking from '@/components/AppointmentBooking';
 import WhenToConsult from '@/components/WhenToConsult';
 import MythsAndFAQ from '@/components/MythsAndFAQ';
+import UserQuestions from '@/components/UserQuestions';
+import CommunityForum from '@/components/CommunityForum';
 import Footer from '@/components/Footer';
 
 const Index = () => {
@@ -34,6 +36,8 @@ const Index = () => {
       <AppointmentBooking />
       <WhenToConsult />
       <MythsAndFAQ />
+      <UserQuestions />
+      <CommunityForum />
       <Footer />
     </div>
   );

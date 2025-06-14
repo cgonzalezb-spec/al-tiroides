@@ -1,4 +1,3 @@
-
 import { Calendar, Clock, MapPin, Phone, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,6 +26,14 @@ const AppointmentBooking = () => {
       icon: '⚕️'
     }
   ];
+
+  const handleUrgentConsultation = () => {
+    window.open('tel:1407', '_blank');
+  };
+
+  const handleFindSpecialists = () => {
+    window.open('https://www.doctoralia.cl/', '_blank');
+  };
 
   const handleGoogleCalendarIntegration = () => {
     // En una implementación real, esto se conectaría con la API de Google Calendar
@@ -96,13 +103,21 @@ const AppointmentBooking = () => {
                   <span className="text-sm">Portal web de tu región</span>
                 </div>
               </div>
-              <Button 
-                className="w-full" 
-                variant="outline"
-                onClick={() => window.open('https://www.minsal.cl', '_blank')}
-              >
-                Ir al portal MINSAL
-              </Button>
+              <div className="space-y-2">
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={() => window.open('https://www.minsal.cl', '_blank')}
+                >
+                  Ir al portal MINSAL
+                </Button>
+                <Button 
+                  className="w-full bg-red-600 hover:bg-red-700 text-white" 
+                  onClick={handleUrgentConsultation}
+                >
+                  🚨 Consulta urgente (1407)
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
@@ -128,9 +143,9 @@ const AppointmentBooking = () => {
               </div>
               <Button 
                 className="w-full bg-green-600 hover:bg-green-700"
-                onClick={() => window.open('https://www.google.com/search?q=endocrinólogo+cerca+de+mí', '_blank')}
+                onClick={handleFindSpecialists}
               >
-                Buscar cerca de mí
+                Buscar especialistas (Doctoralia)
               </Button>
             </CardContent>
           </Card>

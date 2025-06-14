@@ -1,35 +1,38 @@
 
-import { HelpCircle, X, CheckCircle, AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
+import { HelpCircle, ChevronDown, ChevronUp, AlertTriangle, CheckCircle, Book, Users } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 const MythsAndFAQ = () => {
+  const [expandedMyth, setExpandedMyth] = useState<number | null>(null);
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+
   const myths = [
     {
-      myth: "El hipotiroidismo es la causa principal de fatiga, aumento de peso y síntomas inespecíficos",
+      myth: "El hipotiroidismo es la causa principal de fatiga, aumento de peso y síntomas inespecíficos.",
       reality: "Si bien el hipotiroidismo puede causar fatiga, aumento de peso y otros síntomas, estos son inespecíficos y muy prevalentes en la población general. La mayoría de los pacientes con estos síntomas no tienen disfunción tiroidea, y el diagnóstico debe basarse en pruebas bioquímicas, no solo en la clínica.",
-      status: "false"
+      references: "[1-3]"
     },
     {
-      myth: "El hipotiroidismo puede estar presente con pruebas tiroideas normales",
+      myth: "El hipotiroidismo puede estar presente con pruebas tiroideas normales.",
       reality: "No existe evidencia que respalde la existencia de hipotiroidismo clínicamente significativo con pruebas de función tiroidea normales. El diagnóstico requiere elevación de TSH y, en el caso de hipotiroidismo manifiesto, disminución de T4 libre.",
-      status: "false"
+      references: "[2-3]"
     },
     {
-      myth: "Wilson's syndrome o síndrome de Wilson es una entidad reconocida",
+      myth: "Wilson's syndrome o síndrome de Wilson es una entidad reconocida.",
       reality: "La 'síndrome de Wilson' no está reconocida por la comunidad endocrinológica. No existe evidencia científica que respalde su existencia ni la eficacia de la terapia con T3 propuesta para este cuadro. Su diagnóstico es impreciso y puede llevar a tratamientos innecesarios y riesgosos.",
-      status: "false"
+      references: "[4]"
     },
     {
-      myth: "La dieta, suplementos o nutracéuticos pueden curar o controlar las enfermedades tiroideas",
-      reality: "Aunque nutrientes como el yodo y el selenio son esenciales para la función tiroidea, la suplementación indiscriminada no está justificada y puede ser perjudicial, especialmente en poblaciones con suficiente ingesta. La evidencia sobre el beneficio de otros suplementos es limitada o nula, salvo en casos de deficiencia o intolerancia demostrada.",
-      status: "false"
+      myth: "La dieta, suplementos o nutracéuticos pueden curar o controlar las enfermedades tiroideas.",
+      reality: "Aunque nutrientes como el yodo y el selenio son esenciales para la función tiroidea, la suplementación indiscriminada no está justificada y puede ser perjudicial, especialmente en poblaciones con suficiente ingesta. La evidencia sobre el beneficio de otros suplementos (como zinc, ashwagandha, o dietas libres de gluten o lácteos) es limitada o nula, salvo en casos de deficiencia o intolerancia demostrada.",
+      references: "[5-6]"
     },
     {
-      myth: "Evitar vegetales crucíferos o la soya es necesario en todos los pacientes con enfermedad tiroidea",
+      myth: "Evitar vegetales crucíferos o la soya es necesario en todos los pacientes con enfermedad tiroidea.",
       reality: "No hay evidencia sólida que justifique la restricción de estos alimentos en la mayoría de los pacientes con enfermedad tiroidea. Solo en casos de ingesta excesiva y deficiencia de yodo podrían tener algún impacto.",
-      status: "false"
+      references: "[6]"
     }
   ];
 
@@ -43,98 +46,102 @@ const MythsAndFAQ = () => {
 
   const faqs = [
     {
-      question: "¿Puedo quedar embarazada si tengo problemas de tiroides?",
-      answer: "Sí, pero es importante tener la tiroides controlada antes y durante el embarazo. Los problemas tiroideos no tratados pueden afectar la fertilidad y el desarrollo del bebé."
+      question: "¿Puedo tomar levotiroxina con otros medicamentos?",
+      answer: "Es importante tomar levotiroxina en ayunas, al menos 30-60 minutos antes del desayuno. Algunos medicamentos como el hierro, calcio, antiácidos pueden interferir con su absorción, por lo que deben tomarse con varias horas de diferencia."
     },
     {
-      question: "¿Qué pasa si olvido tomar mi levotiroxina un día?",
-      answer: "Si olvidas una dosis, tómala tan pronto como te acuerdes, pero si ya es hora de la siguiente dosis, omite la olvidada. No tomes doble dosis."
+      question: "¿Los problemas de tiroides se heredan?",
+      answer: "Sí, existe un componente genético. Si tienes familiares con problemas tiroideos, tienes mayor riesgo de desarrollarlos. Sin embargo, tener predisposición genética no significa que definitivamente desarrollarás la enfermedad."
     },
     {
-      question: "¿Por qué debo tomar la levotiroxina en ayunas?",
-      answer: "Los alimentos, especialmente calcio, hierro y café, pueden interferir con la absorción del medicamento, haciendo que sea menos efectivo."
+      question: "¿Puedo quedar embarazada si tengo hipotiroidismo?",
+      answer: "Sí, muchas mujeres con hipotiroidismo pueden quedar embarazadas y tener embarazos saludables. Es importante mantener los niveles de TSH controlados antes y durante el embarazo, ya que las necesidades de hormona tiroidea aumentan."
     },
     {
-      question: "¿Con qué frecuencia debo hacer exámenes de control?",
-      answer: "Al inicio del tratamiento, cada 6-8 semanas hasta estabilizarse. Luego, generalmente cada 6-12 meses, o según indicación médica."
+      question: "¿El estrés puede afectar la tiroides?",
+      answer: "El estrés severo puede afectar temporalmente la función tiroidea, pero rara vez es la causa principal de los trastornos tiroideos crónicos. Es más común que los problemas tiroideos causen síntomas que se confunden con estrés."
     },
     {
-      question: "¿Puedo hacer ejercicio si tengo hipertiroidismo?",
-      answer: "Depende de la severidad. Con hipertiroidismo no controlado, el ejercicio intenso puede ser peligroso. Consulta con tu médico primero."
-    },
-    {
-      question: "¿El estrés puede afectar mi tiroides?",
-      answer: "El estrés crónico puede empeorar algunos trastornos tiroideos, especialmente la tiroiditis autoinmune. Es importante manejar el estrés."
+      question: "¿Necesito dieta especial si tengo problemas de tiroides?",
+      answer: "En general, no necesitas una dieta especial. Mantén una alimentación balanceada y evita el exceso de yodo (algas marinas, suplementos). Si tomas levotiroxina, evita la soya y fibra en exceso cerca de la hora de medicación."
     }
   ];
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "false":
-        return <X className="h-5 w-5 text-red-500" />;
-      case "true":
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case "partially-true":
-        return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
-      default:
-        return <HelpCircle className="h-5 w-5 text-gray-500" />;
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "false":
-        return <Badge variant="destructive">MITO</Badge>;
-      case "true":
-        return <Badge className="bg-green-500">VERDAD</Badge>;
-      case "partially-true":
-        return <Badge variant="secondary">PARCIALMENTE CIERTO</Badge>;
-      default:
-        return <Badge variant="outline">DESCONOCIDO</Badge>;
-    }
-  };
-
   return (
-    <section id="mitos-faq" className="py-20 bg-gradient-to-br from-yellow-50 to-orange-50">
+    <section id="mitos-faq" className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Mitos y realidades sobre la tiroides
+            Mitos, realidades y dudas comunes
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Las afecciones tiroideas están rodeadas de numerosos mitos y conceptos erróneos, 
-            muchos de los cuales pueden afectar negativamente el diagnóstico y manejo clínico. 
-            A continuación se resumen los principales mitos y realidades, sustentados en la literatura médica relevante.
+            Información basada en evidencia científica para aclarar conceptos erróneos sobre la tiroides
           </p>
         </div>
 
-        {/* Sección de Mitos */}
+        {/* Introducción científica */}
+        <div className="mb-12">
+          <Card className="bg-blue-50 border-blue-200">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Book className="h-6 w-6 text-blue-600" />
+                <span>Información médica basada en evidencia</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-700 leading-relaxed">
+                Las afecciones tiroideas están rodeadas de numerosos mitos y conceptos erróneos, 
+                muchos de los cuales pueden afectar negativamente el diagnóstico y manejo clínico. 
+                A continuación se resumen los principales mitos y realidades, sustentados en la 
+                literatura médica relevante:
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Mitos frecuentes */}
         <div className="mb-16">
-          <h3 className="text-3xl font-bold text-gray-900 text-center mb-8">
-            🔍 Mitos frecuentes
+          <h3 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            Mitos frecuentes
           </h3>
-          <div className="grid lg:grid-cols-1 gap-6">
+          <div className="space-y-4">
             {myths.map((item, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow">
+              <Card 
+                key={index}
+                className="cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => setExpandedMyth(expandedMyth === index ? null : index)}
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        {getStatusIcon(item.status)}
-                        {getStatusBadge(item.status)}
+                    <div className="flex items-start space-x-3">
+                      <AlertTriangle className="h-6 w-6 text-red-500 mt-1 flex-shrink-0" />
+                      <div>
+                        <CardTitle className="text-lg text-red-700">
+                          MITO: {item.myth}
+                        </CardTitle>
                       </div>
-                      <CardTitle className="text-lg text-gray-800">
-                        "{item.myth}"
-                      </CardTitle>
                     </div>
+                    {expandedMyth === index ? (
+                      <ChevronUp className="h-5 w-5 text-gray-500 mt-1" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-gray-500 mt-1" />
+                    )}
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                    <p className="text-sm text-blue-800 font-medium">Realidad:</p>
-                    <p className="text-sm text-blue-700 mt-1">{item.reality}</p>
-                  </div>
-                </CardContent>
+                {expandedMyth === index && (
+                  <CardContent>
+                    <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                      <div className="flex items-start space-x-2">
+                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="font-semibold text-green-800 mb-2">REALIDAD:</p>
+                          <p className="text-green-700 mb-2">{item.reality}</p>
+                          <p className="text-xs text-green-600">{item.references}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                )}
               </Card>
             ))}
           </div>
@@ -142,15 +149,15 @@ const MythsAndFAQ = () => {
 
         {/* Realidades clínicas */}
         <div className="mb-16">
-          <h3 className="text-3xl font-bold text-gray-900 text-center mb-8">
-            ✅ Realidades clínicas
+          <h3 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            Realidades clínicas
           </h3>
           <Card className="bg-green-50 border-green-200">
             <CardContent className="pt-6">
               <ul className="space-y-4">
                 {clinicalRealities.map((reality, index) => (
                   <li key={index} className="flex items-start space-x-3">
-                    <CheckCircle className="h-5 w-5 text-green-600 mt-1 flex-shrink-0" />
+                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                     <p className="text-gray-700">{reality}</p>
                   </li>
                 ))}
@@ -159,62 +166,61 @@ const MythsAndFAQ = () => {
           </Card>
         </div>
 
-        {/* Sección de FAQ */}
+        {/* FAQ */}
         <div>
-          <h3 className="text-3xl font-bold text-gray-900 text-center mb-8">
-            ❓ Preguntas frecuentes
+          <h3 className="text-3xl font-bold text-gray-900 mb-8 text-center flex items-center justify-center space-x-2">
+            <Users className="h-8 w-8 text-blue-600" />
+            <span>Dudas comunes</span>
           </h3>
-          <Card className="max-w-4xl mx-auto">
+          <div className="space-y-4">
+            {faqs.map((faq, index) => (
+              <Card 
+                key={index}
+                className="cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
+              >
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <HelpCircle className="h-6 w-6 text-blue-500" />
+                      <CardTitle className="text-lg">{faq.question}</CardTitle>
+                    </div>
+                    {expandedFaq === index ? (
+                      <ChevronUp className="h-5 w-5 text-gray-500" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-gray-500" />
+                    )}
+                  </div>
+                </CardHeader>
+                {expandedFaq === index && (
+                  <CardContent>
+                    <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
+                  </CardContent>
+                )}
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Disclaimer */}
+        <div className="mt-16">
+          <Card className="bg-yellow-50 border-yellow-200">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <HelpCircle className="h-6 w-6 text-blue-500" />
-                <span>Las dudas más comunes de nuestros usuarios</span>
+              <CardTitle className="flex items-center space-x-2 text-yellow-800">
+                <AlertTriangle className="h-6 w-6" />
+                <span>Importante: Esta información es educativa</span>
               </CardTitle>
-              <CardDescription>
-                Respuestas claras y comprensibles a las preguntas que más nos hacen
-              </CardDescription>
             </CardHeader>
             <CardContent>
-              <Accordion type="single" collapsible className="w-full">
-                {faqs.map((faq, index) => (
-                  <AccordionItem key={index} value={`item-${index}`}>
-                    <AccordionTrigger className="text-left">
-                      {faq.question}
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <p className="text-gray-700">{faq.answer}</p>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+              <p className="text-yellow-700">
+                Somos un grupo de estudiantes de la Universidad Católica de la Santísima Concepción 
+                con la intención de facilitar el acceso a la información sobre la glándula tiroidea. 
+                Esta información no reemplaza la consulta médica profesional. Siempre consulta con 
+                un especialista para el diagnóstico y tratamiento de cualquier condición de salud.
+              </p>
             </CardContent>
           </Card>
         </div>
-
-        {/* Disclaimer actualizado */}
-        <Card className="mt-12 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200">
-          <CardContent className="pt-6">
-            <div className="flex items-start space-x-3">
-              <AlertTriangle className="h-6 w-6 text-amber-600 mt-1 flex-shrink-0" />
-              <div>
-                <h4 className="font-semibold text-amber-800 mb-2">
-                  Importante: Esta información es educativa
-                </h4>
-                <p className="text-sm text-amber-700 mb-3">
-                  Somos un grupo de estudiantes de la Universidad Católica de la Santísima Concepción 
-                  con la intención de facilitar el acceso a la información sobre la glándula tiroidea.
-                </p>
-                <p className="text-sm text-amber-700">
-                  Las respuestas aquí proporcionadas son para fines informativos únicamente y no reemplazan 
-                  la consulta médica profesional. Siempre consulta con tu médico para obtener consejos 
-                  específicos sobre tu condición de salud.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </section>
   );
