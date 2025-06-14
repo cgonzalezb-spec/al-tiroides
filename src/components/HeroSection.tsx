@@ -188,7 +188,7 @@ const HeroSection = () => {
                 </div>
               ) : (
                 videos.length > 0 && (
-                  <div className="w-full max-w-sm mx-auto sm:max-w-none sm:mx-0 flex-1">
+                  <div className="w-full max-w-xs mx-auto sm:max-w-md sm:mx-0 flex-1">
                     <Carousel 
                       setApi={setApi} 
                       className="w-full" 
