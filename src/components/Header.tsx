@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Menu, X, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ const Header = () => {
     { name: 'Agendar', href: '#agendar' },
     { name: 'Consultar', href: '#consultar' },
     { name: 'FAQ', href: '#mitos-faq' },
+    { name: 'Consejos', href: '#consejos' },
   ];
 
   const scrollToSection = (href: string) => {

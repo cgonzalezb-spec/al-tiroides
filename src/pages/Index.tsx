@@ -17,6 +17,7 @@ import MythsAndFAQ from '@/components/MythsAndFAQ';
 import UserQuestions from '@/components/UserQuestions';
 import CommunityForum from '@/components/CommunityForum';
 import Footer from '@/components/Footer';
+import ConsejosSection from '@/components/ConsejosSection';
 
 const Index = () => {
   return (
@@ -36,6 +37,7 @@ const Index = () => {
       <AppointmentBooking />
       <WhenToConsult />
       <MythsAndFAQ />
+      <ConsejosSection />
       <UserQuestions />
       <CommunityForum />
       <Footer />
