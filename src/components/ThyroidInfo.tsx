@@ -1,30 +1,40 @@
-
-import { Heart, Zap, Brain, Thermometer } from 'lucide-react';
+import { Heart, Zap, Brain, Thermometer, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
 
 const ThyroidInfo = () => {
+  const [expandedCard, setExpandedCard] = useState<number | null>(null);
+
   const functions = [
     {
       icon: <Zap className="h-8 w-8 text-yellow-500" />,
       title: "Energía y metabolismo",
-      description: "Controla qué tan rápido tu cuerpo quema calorías y usa energía"
+      description: "Controla qué tan rápido tu cuerpo quema calorías y usa energía",
+      expandedInfo: "La tiroides produce hormonas T3 y T4 que regulan la velocidad de todas las funciones corporales. Cuando funciona bien, tienes energía suficiente para tus actividades diarias. Si está lenta (hipotiroidismo), te sientes cansado y puedes subir de peso. Si está acelerada (hipertiroidismo), puedes sentirte inquieto y bajar de peso rápidamente."
     },
     {
       icon: <Heart className="h-8 w-8 text-red-500" />,
       title: "Ritmo cardíaco",
-      description: "Regula los latidos de tu corazón y la presión arterial"
+      description: "Regula los latidos de tu corazón y la presión arterial",
+      expandedInfo: "Las hormonas tiroideas afectan directamente la fuerza y velocidad de los latidos del corazón. En el hipertiroidismo, el corazón late más rápido y fuerte, pudiendo causar palpitaciones. En el hipotiroidismo, el ritmo cardíaco se vuelve más lento y puede aumentar la presión arterial."
     },
     {
       icon: <Brain className="h-8 w-8 text-purple-500" />,
       title: "Función cerebral",
-      description: "Influye en tu estado de ánimo, memoria y concentración"
+      description: "Influye en tu estado de ánimo, memoria y concentración",
+      expandedInfo: "La tiroides es fundamental para el funcionamiento del cerebro. Los problemas tiroideos pueden causar dificultades de concentración, problemas de memoria, depresión o ansiedad. Muchas veces estos síntomas mejoran significativamente cuando se normaliza la función tiroidea."
     },
     {
       icon: <Thermometer className="h-8 w-8 text-blue-500" />,
       title: "Temperatura corporal",
-      description: "Ayuda a mantener la temperatura ideal de tu cuerpo"
+      description: "Ayuda a mantener la temperatura ideal de tu cuerpo",
+      expandedInfo: "La tiroides regula cómo tu cuerpo produce y conserva calor. En el hipotiroidismo, puedes sentir frío constantemente, especialmente en manos y pies. En el hipertiroidismo, puedes sentir calor excesivo y sudar más de lo normal, incluso en ambientes frescos."
     }
   ];
+
+  const toggleCard = (index: number) => {
+    setExpandedCard(expandedCard === index ? null : index);
+  };
 
   return (
     <section id="que-es" className="py-20 bg-white">
@@ -42,17 +52,35 @@ const ThyroidInfo = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {functions.map((func, index) => (
-            <Card key={index} className="text-center hover:shadow-lg transition-shadow duration-300">
+            <Card 
+              key={index} 
+              className="text-center hover:shadow-lg transition-all duration-300 cursor-pointer"
+              onClick={() => toggleCard(index)}
+            >
               <CardHeader>
                 <div className="mx-auto mb-4">
                   {func.icon}
                 </div>
                 <CardTitle className="text-lg">{func.title}</CardTitle>
+                <div className="flex justify-center mt-2">
+                  {expandedCard === index ? (
+                    <ChevronUp className="h-5 w-5 text-gray-500" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-gray-500" />
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-sm">
+                <CardDescription className="text-sm mb-3">
                   {func.description}
                 </CardDescription>
+                {expandedCard === index && (
+                  <div className="bg-blue-50 p-4 rounded-lg border-t">
+                    <p className="text-sm text-gray-700 text-left">
+                      {func.expandedInfo}
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}

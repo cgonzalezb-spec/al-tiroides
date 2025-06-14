@@ -1,8 +1,15 @@
 
-import { Heart, Mail, Phone, MapPin, Facebook, Instagram, Twitter } from 'lucide-react';
+import { Heart, Mail, Phone, MapPin, Instagram } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.querySelector(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <footer className="bg-gray-900 text-white py-16">
@@ -29,10 +36,38 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Enlaces rápidos</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#que-es" className="text-gray-400 hover:text-white transition-colors">¿Qué es la tiroides?</a></li>
-              <li><a href="#autotest" className="text-gray-400 hover:text-white transition-colors">Autotest de síntomas</a></li>
-              <li><a href="#trastornos" className="text-gray-400 hover:text-white transition-colors">Tipos de trastornos</a></li>
-              <li><a href="#consultar" className="text-gray-400 hover:text-white transition-colors">Cuándo consultar</a></li>
+              <li>
+                <button 
+                  onClick={() => scrollToSection('#que-es')} 
+                  className="text-gray-400 hover:text-white transition-colors text-left"
+                >
+                  ¿Qué es la tiroides?
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => scrollToSection('#autotest')} 
+                  className="text-gray-400 hover:text-white transition-colors text-left"
+                >
+                  Autotest de síntomas
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => scrollToSection('#trastornos')} 
+                  className="text-gray-400 hover:text-white transition-colors text-left"
+                >
+                  Tipos de trastornos
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => scrollToSection('#consultar')} 
+                  className="text-gray-400 hover:text-white transition-colors text-left"
+                >
+                  Cuándo consultar
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -40,10 +75,38 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Recursos</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Descargar checklist</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Encontrar especialistas</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Mitos y realidades</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Comunidad de apoyo</a></li>
+              <li>
+                <button 
+                  onClick={() => window.open('/checklist-tiroides.pdf', '_blank')} 
+                  className="text-gray-400 hover:text-white transition-colors text-left"
+                >
+                  Descargar checklist
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => scrollToSection('#consultar')} 
+                  className="text-gray-400 hover:text-white transition-colors text-left"
+                >
+                  Encontrar especialistas
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => scrollToSection('#mitos-faq')} 
+                  className="text-gray-400 hover:text-white transition-colors text-left"
+                >
+                  Mitos y realidades
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => window.open('https://discord.gg/altiroides', '_blank')} 
+                  className="text-gray-400 hover:text-white transition-colors text-left"
+                >
+                  Comunidad de apoyo
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -53,7 +116,7 @@ const Footer = () => {
             <div className="space-y-3 text-sm">
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-gray-400" />
-                <span className="text-gray-400">info@al-tiroides.cl</span>
+                <span className="text-gray-400">pitchfisioaltiroide@gmail.com</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-gray-400" />
@@ -61,20 +124,19 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <MapPin className="h-4 w-4 text-gray-400" />
-                <span className="text-gray-400">Santiago, Chile</span>
+                <span className="text-gray-400">Concepción, Chile</span>
               </div>
             </div>
 
             {/* Redes sociales */}
             <div className="flex space-x-4 mt-6">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a 
+                href="https://www.instagram.com/al_tiroide/" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
                 <Instagram className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <Twitter className="h-5 w-5" />
               </a>
             </div>
           </div>

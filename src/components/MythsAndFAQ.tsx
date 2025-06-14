@@ -7,35 +7,38 @@ import { Badge } from '@/components/ui/badge';
 const MythsAndFAQ = () => {
   const myths = [
     {
-      myth: "El yodo en la sal causa problemas de tiroides",
-      reality: "El yodo es NECESARIO para el funcionamiento normal de la tiroides. La sal yodada previene deficiencias.",
+      myth: "El hipotiroidismo es la causa principal de fatiga, aumento de peso y síntomas inespecíficos",
+      reality: "Si bien el hipotiroidismo puede causar fatiga, aumento de peso y otros síntomas, estos son inespecíficos y muy prevalentes en la población general. La mayoría de los pacientes con estos síntomas no tienen disfunción tiroidea, y el diagnóstico debe basarse en pruebas bioquímicas, no solo en la clínica.",
       status: "false"
     },
     {
-      myth: "Si tengo hipotiroidismo, nunca podré bajar de peso",
-      reality: "Con tratamiento adecuado y hábitos saludables, es posible mantener un peso normal.",
+      myth: "El hipotiroidismo puede estar presente con pruebas tiroideas normales",
+      reality: "No existe evidencia que respalde la existencia de hipotiroidismo clínicamente significativo con pruebas de función tiroidea normales. El diagnóstico requiere elevación de TSH y, en el caso de hipotiroidismo manifiesto, disminución de T4 libre.",
       status: "false"
     },
     {
-      myth: "Comer repollo o brócoli daña la tiroides",
-      reality: "Solo en cantidades extremas y si ya tienes deficiencia de yodo. En porciones normales son seguros.",
+      myth: "Wilson's syndrome o síndrome de Wilson es una entidad reconocida",
+      reality: "La 'síndrome de Wilson' no está reconocida por la comunidad endocrinológica. No existe evidencia científica que respalde su existencia ni la eficacia de la terapia con T3 propuesta para este cuadro. Su diagnóstico es impreciso y puede llevar a tratamientos innecesarios y riesgosos.",
       status: "false"
     },
     {
-      myth: "La tiroides se puede curar completamente",
-      reality: "Muchos trastornos tiroideos requieren tratamiento de por vida, pero con medicación se puede vivir normalmente.",
-      status: "partially-true"
-    },
-    {
-      myth: "Los nódulos tiroideos siempre son cáncer",
-      reality: "95% de los nódulos tiroideos son benignos. Solo un pequeño porcentaje es maligno.",
+      myth: "La dieta, suplementos o nutracéuticos pueden curar o controlar las enfermedades tiroideas",
+      reality: "Aunque nutrientes como el yodo y el selenio son esenciales para la función tiroidea, la suplementación indiscriminada no está justificada y puede ser perjudicial, especialmente en poblaciones con suficiente ingesta. La evidencia sobre el beneficio de otros suplementos es limitada o nula, salvo en casos de deficiencia o intolerancia demostrada.",
       status: "false"
     },
     {
-      myth: "El hipotiroidismo solo afecta a mujeres mayores",
-      reality: "Aunque es más común en mujeres, puede afectar a hombres y personas de cualquier edad.",
+      myth: "Evitar vegetales crucíferos o la soya es necesario en todos los pacientes con enfermedad tiroidea",
+      reality: "No hay evidencia sólida que justifique la restricción de estos alimentos en la mayoría de los pacientes con enfermedad tiroidea. Solo en casos de ingesta excesiva y deficiencia de yodo podrían tener algún impacto.",
       status: "false"
     }
+  ];
+
+  const clinicalRealities = [
+    "El hipotiroidismo y el hipertiroidismo son enfermedades comunes, con causas bien definidas (autoinmunidad, deficiencia de yodo, fármacos, cirugía, etc.) y diagnóstico basado en pruebas de laboratorio (TSH, T4 libre).",
+    "El tratamiento estándar del hipotiroidismo es la levotiroxina, que es segura, eficaz y económica. El uso de T3 o extractos desecados de tiroides no está recomendado de rutina y carece de suficiente respaldo científico.",
+    "El hipotiroidismo subclínico solo requiere tratamiento en situaciones específicas (TSH persistentemente >10 mU/L, síntomas claros, embarazo, infertilidad, o presencia de anticuerpos antitiroideos).",
+    "La mayoría de los nódulos tiroideos son benignos; la indicación de biopsia o derivación depende de características clínicas y ecográficas.",
+    "El exceso de yodo puede inducir disfunción tiroidea, por lo que la suplementación debe ser individualizada."
   ];
 
   const faqs = [
@@ -62,14 +65,6 @@ const MythsAndFAQ = () => {
     {
       question: "¿El estrés puede afectar mi tiroides?",
       answer: "El estrés crónico puede empeorar algunos trastornos tiroideos, especialmente la tiroiditis autoinmune. Es importante manejar el estrés."
-    },
-    {
-      question: "¿Puedo tomar suplementos de yodo?",
-      answer: "No se recomienda sin supervisión médica. El exceso de yodo puede empeorar algunos problemas tiroideos, especialmente en personas con nódulos."
-    },
-    {
-      question: "¿La tiroides afecta mi estado de ánimo?",
-      answer: "Sí. El hipotiroidismo puede causar depresión y el hipertiroidismo puede causar ansiedad. Estos síntomas mejoran con el tratamiento adecuado."
     }
   ];
 
@@ -104,20 +99,21 @@ const MythsAndFAQ = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Mitos y preguntas frecuentes
+            Mitos y realidades sobre la tiroides
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Aclaramos las dudas más comunes y desmitificamos creencias populares 
-            sobre la tiroides con información basada en evidencia científica.
+            Las afecciones tiroideas están rodeadas de numerosos mitos y conceptos erróneos, 
+            muchos de los cuales pueden afectar negativamente el diagnóstico y manejo clínico. 
+            A continuación se resumen los principales mitos y realidades, sustentados en la literatura médica relevante.
           </p>
         </div>
 
         {/* Sección de Mitos */}
         <div className="mb-16">
           <h3 className="text-3xl font-bold text-gray-900 text-center mb-8">
-            🕵️ Mitos vs Realidad
+            🔍 Mitos frecuentes
           </h3>
-          <div className="grid lg:grid-cols-2 gap-6">
+          <div className="grid lg:grid-cols-1 gap-6">
             {myths.map((item, index) => (
               <Card key={index} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
@@ -142,6 +138,25 @@ const MythsAndFAQ = () => {
               </Card>
             ))}
           </div>
+        </div>
+
+        {/* Realidades clínicas */}
+        <div className="mb-16">
+          <h3 className="text-3xl font-bold text-gray-900 text-center mb-8">
+            ✅ Realidades clínicas
+          </h3>
+          <Card className="bg-green-50 border-green-200">
+            <CardContent className="pt-6">
+              <ul className="space-y-4">
+                {clinicalRealities.map((reality, index) => (
+                  <li key={index} className="flex items-start space-x-3">
+                    <CheckCircle className="h-5 w-5 text-green-600 mt-1 flex-shrink-0" />
+                    <p className="text-gray-700">{reality}</p>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Sección de FAQ */}
@@ -178,7 +193,7 @@ const MythsAndFAQ = () => {
           </Card>
         </div>
 
-        {/* Disclaimer */}
+        {/* Disclaimer actualizado */}
         <Card className="mt-12 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200">
           <CardContent className="pt-6">
             <div className="flex items-start space-x-3">
@@ -187,6 +202,10 @@ const MythsAndFAQ = () => {
                 <h4 className="font-semibold text-amber-800 mb-2">
                   Importante: Esta información es educativa
                 </h4>
+                <p className="text-sm text-amber-700 mb-3">
+                  Somos un grupo de estudiantes de la Universidad Católica de la Santísima Concepción 
+                  con la intención de facilitar el acceso a la información sobre la glándula tiroidea.
+                </p>
                 <p className="text-sm text-amber-700">
                   Las respuestas aquí proporcionadas son para fines informativos únicamente y no reemplazan 
                   la consulta médica profesional. Siempre consulta con tu médico para obtener consejos 
