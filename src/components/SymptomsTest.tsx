@@ -1,30 +1,30 @@
-
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { CheckCircle, AlertTriangle, FileText, Download, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 
+const symptomsList = [
+  { id: 'fatigue', label: 'Cansancio o fatiga constante', category: 'general', score: 1 },
+  { id: 'weight_gain', label: 'Aumento de peso sin causa aparente', category: 'metabolic', score: 2 },
+  { id: 'weight_loss', label: 'Pérdida de peso sin causa aparente', category: 'metabolic', score: 2 },
+  { id: 'cold_intolerance', label: 'Intolerancia al frío', category: 'temperature', score: 3 },
+  { id: 'heat_intolerance', label: 'Intolerancia al calor y sudoración excesiva', category: 'temperature', score: 3 },
+  { id: 'hair_loss', label: 'Caída de cabello, o pelo seco y quebradizo', category: 'physical', score: 1 },
+  { id: 'dry_skin', label: 'Piel seca y áspera', category: 'physical', score: 1 },
+  { id: 'heart_palpitations', label: 'Palpitaciones (latidos rápidos o irregulares)', category: 'cardiac', score: 3 },
+  { id: 'anxiety', label: 'Nerviosismo, irritabilidad o ansiedad', category: 'mental', score: 2 },
+  { id: 'depression', label: 'Tristeza, desgano o lentitud para pensar', category: 'mental', score: 2 },
+  { id: 'memory_issues', label: 'Dificultad para concentrarse o problemas de memoria', category: 'mental', score: 1 },
+  { id: 'irregular_periods', label: 'Alteraciones en el ciclo menstrual', category: 'hormonal', score: 2 }
+];
+
 const SymptomsTest = () => {
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [showResults, setShowResults] = useState(false);
 
-  const symptoms = [
-    { id: 'fatigue', label: 'Cansancio o fatiga constante', category: 'general' },
-    { id: 'weight_gain', label: 'Aumento de peso sin causa aparente', category: 'metabolic' },
-    { id: 'weight_loss', label: 'Pérdida de peso sin causa aparente', category: 'metabolic' },
-    { id: 'cold_intolerance', label: 'Intolerancia al frío', category: 'temperature' },
-    { id: 'heat_intolerance', label: 'Intolerancia al calor y sudoración excesiva', category: 'temperature' },
-    { id: 'hair_loss', label: 'Caída de cabello, o pelo seco y quebradizo', category: 'physical' },
-    { id: 'dry_skin', label: 'Piel seca y áspera', category: 'physical' },
-    { id: 'heart_palpitations', label: 'Palpitaciones (latidos rápidos o irregulares)', category: 'cardiac' },
-    { id: 'anxiety', label: 'Nerviosismo, irritabilidad o ansiedad', category: 'mental' },
-    { id: 'depression', label: 'Tristeza, desgano o lentitud para pensar', category: 'mental' },
-    { id: 'memory_issues', label: 'Dificultad para concentrarse o problemas de memoria', category: 'mental' },
-    { id: 'irregular_periods', label: 'Alteraciones en el ciclo menstrual', category: 'hormonal' }
-  ];
-
   const handleSymptomChange = (symptomId: string, checked: boolean) => {
+    setShowResults(false);
     if (checked) {
       setSelectedSymptoms([...selectedSymptoms, symptomId]);
     } else {
@@ -36,22 +36,40 @@ const SymptomsTest = () => {
     setShowResults(true);
   };
 
-  const getRiskLevel = () => {
-    const count = selectedSymptoms.length;
-    if (count === 0) return 'low';
-    if (count <= 3) return 'moderate';
-    return 'high';
-  };
+  const resultMessage = useMemo(() => {
+    const score = selectedSymptoms.reduce((total, symptomId) => {
+        const symptom = symptomsList.find(s => s.id === symptomId);
+        return total + (symptom ? symptom.score : 0);
+    }, 0);
 
-  const getResultMessage = () => {
-    const riskLevel = getRiskLevel();
     const count = selectedSymptoms.length;
+    let riskLevel: 'none' | 'low' | 'moderate' | 'high';
+
+    if (score === 0) {
+        riskLevel = 'none';
+    } else if (score <= 4) {
+        riskLevel = 'low';
+    } else if (score <= 9) {
+        riskLevel = 'moderate';
+    } else {
+        riskLevel = 'high';
+    }
+    
+    if (riskLevel === 'none') {
+      return {
+        title: 'Sin riesgo aparente',
+        message: 'No has seleccionado síntomas. Haz clic en "Analizar mis síntomas" para una evaluación si tienes alguna preocupación.',
+        color: 'text-gray-600',
+        bgColor: 'bg-gray-50',
+        icon: <CheckCircle className="h-8 w-8 text-gray-500" />
+      };
+    }
 
     switch (riskLevel) {
       case 'low':
         return {
           title: 'Riesgo bajo',
-          message: 'No presentas síntomas significativos relacionados con problemas de tiroides. Mantén un estilo de vida saludable.',
+          message: `Has seleccionado ${count} síntoma(s) de bajo impacto. Es poco probable que se deban a un problema de tiroides, pero vigila si aparecen más.`,
           color: 'text-green-600',
           bgColor: 'bg-green-50',
           icon: <CheckCircle className="h-8 w-8 text-green-600" />
@@ -59,7 +77,7 @@ const SymptomsTest = () => {
       case 'moderate':
         return {
           title: 'Riesgo moderado',
-          message: `Presentas ${count} síntomas que podrían estar relacionados con problemas de tiroides. Te recomendamos hablar con tu médico.`,
+          message: `Presentas ${count} síntoma(s) que, en conjunto, sugieren una posible alteración tiroidea. Te recomendamos hablar con tu médico.`,
           color: 'text-yellow-600',
           bgColor: 'bg-yellow-50',
           icon: <AlertTriangle className="h-8 w-8 text-yellow-600" />
@@ -67,25 +85,19 @@ const SymptomsTest = () => {
       case 'high':
         return {
           title: 'Riesgo alto',
-          message: `Presentas ${count} síntomas que podrían indicar un problema de tiroides. Te recomendamos consultar con un especialista pronto.`,
+          message: `La combinación de ${count} síntomas que presentas es altamente sugestiva de un problema de tiroides. Te recomendamos consultar con un especialista pronto.`,
           color: 'text-red-600',
           bgColor: 'bg-red-50',
           icon: <AlertTriangle className="h-8 w-8 text-red-600" />
         };
       default:
-        return {
-          title: '',
-          message: '',
-          color: '',
-          bgColor: '',
-          icon: null
-        };
+        return { title: '', message: '', color: '', bgColor: '', icon: null };
     }
-  };
+  }, [selectedSymptoms]);
 
   const handleDownloadChecklist = () => {
     const selectedSymptomsDetails = selectedSymptoms.map(id => {
-      const symptom = symptoms.find(s => s.id === id);
+      const symptom = symptomsList.find(s => s.id === id);
       return symptom ? `- ${symptom.label}` : '';
     }).filter(Boolean);
 
@@ -148,7 +160,7 @@ Nota: Este documento es una guía y no reemplaza el diagnóstico médico profesi
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 gap-4">
-                {symptoms.map((symptom) => (
+                {symptomsList.map((symptom) => (
                   <div key={symptom.id} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50">
                     <Checkbox
                       id={symptom.id}
@@ -169,7 +181,6 @@ Nota: Este documento es una guía y no reemplaza el diagnóstico médico profesi
                 <Button 
                   onClick={analyzeResults}
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-8 py-3"
-                  disabled={selectedSymptoms.length === 0}
                 >
                   Analizar mis síntomas
                 </Button>
@@ -178,16 +189,16 @@ Nota: Este documento es una guía y no reemplaza el diagnóstico médico profesi
           </Card>
 
           {showResults && (
-            <Card className={`${getResultMessage().bgColor} border-2`}>
+            <Card className={`${resultMessage.bgColor} border-2`}>
               <CardHeader>
                 <div className="flex items-center space-x-4">
-                  {getResultMessage().icon}
+                  {resultMessage.icon}
                   <div>
-                    <CardTitle className={`text-2xl ${getResultMessage().color}`}>
-                      {getResultMessage().title}
+                    <CardTitle className={`text-2xl ${resultMessage.color}`}>
+                      {resultMessage.title}
                     </CardTitle>
                     <CardDescription className="text-lg mt-2">
-                      {getResultMessage().message}
+                      {resultMessage.message}
                     </CardDescription>
                   </div>
                 </div>
