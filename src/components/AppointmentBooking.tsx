@@ -179,12 +179,12 @@ const AppointmentBooking = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <p className="text-sm text-gray-600">Algunas opciones populares:</p>
+                <p className="text-sm text-gray-600">Algunas opciones en Concepción:</p>
                 <ul className="text-sm space-y-1">
-                  <li>• Clínica Las Condes</li>
-                  <li>• Clínica Alemana</li>
-                  <li>• Red UC Christus</li>
-                  <li>• Clínica Santa María</li>
+                  <li>• Clínica Andes Salud Concepción</li>
+                  <li>• Sanatorio Alemán</li>
+                  <li>• Clínica Biobío</li>
+                  <li>• Hospital Clínico del Sur</li>
                 </ul>
               </div>
               <Button 
