@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from "@/components/ui/use-toast";
+import HealthProfessionalSignup from '@/components/HealthProfessionalSignup';
 
 const AuthPage = () => {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [mode, setMode] = useState<'login' | 'visitor-signup' | 'professional-signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,46 +20,64 @@ const AuthPage = () => {
     setLoading(true);
 
     try {
-        if (isSignUp) {
-            const { error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    emailRedirectTo: `${window.location.origin}/`,
-                },
-            });
-            if (error) throw error;
-            toast({
-              title: "Registro exitoso",
-              description: "Por favor, revisa tu correo para verificar tu cuenta.",
-            });
-            setIsSignUp(false);
-        } else {
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) throw error;
-            toast({
-              title: "Inicio de sesión exitoso",
-              description: "¡Bienvenido de nuevo!",
-            });
-        }
-    } catch (error: any) {
-        toast({
-          variant: "destructive",
-          title: "Error de autenticación",
-          description: error.error_description || error.message,
+      if (mode === 'visitor-signup') {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              user_type: 'visitor'
+            }
+          },
         });
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Registro exitoso",
+          description: "Por favor, revisa tu correo para verificar tu cuenta.",
+        });
+        setMode('login');
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        toast({
+          title: "Inicio de sesión exitoso",
+          description: "¡Bienvenido de nuevo!",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error de autenticación",
+        description: error.error_description || error.message,
+      });
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
+
+  if (mode === 'professional-signup') {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <HealthProfessionalSignup onBack={() => setMode('login')} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <Card className="w-full max-w-md mx-4">
         <CardHeader>
-          <CardTitle>{isSignUp ? 'Crear una cuenta' : 'Iniciar sesión'}</CardTitle>
+          <CardTitle>
+            {mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta visitante'}
+          </CardTitle>
           <CardDescription>
-            {isSignUp ? 'Ingresa tus datos para registrarte.' : 'Bienvenido de nuevo.'}
+            {mode === 'login' 
+              ? 'Bienvenido de nuevo.' 
+              : 'Registrate como visitante para acceder a funciones básicas.'
+            }
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -85,15 +104,45 @@ const AuthPage = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600" disabled={loading}>
-              {loading ? 'Cargando...' : isSignUp ? 'Registrarse' : 'Iniciar sesión'}
+            <Button 
+              type="submit" 
+              className="w-full bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600" 
+              disabled={loading}
+            >
+              {loading ? 'Cargando...' : mode === 'login' ? 'Iniciar sesión' : 'Registrarse'}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm">
-            {isSignUp ? '¿Ya tienes una cuenta?' : '¿No tienes una cuenta?'}
-            <Button variant="link" onClick={() => setIsSignUp(!isSignUp)}>
-              {isSignUp ? 'Inicia sesión' : 'Regístrate'}
-            </Button>
+          
+          <div className="mt-6 space-y-3">
+            {mode === 'login' ? (
+              <>
+                <div className="text-center text-sm text-gray-600">
+                  ¿No tienes una cuenta?
+                </div>
+                <div className="space-y-2">
+                  <Button 
+                    variant="outline" 
+                    className="w-full" 
+                    onClick={() => setMode('visitor-signup')}
+                  >
+                    Registrarse como visitante
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full border-green-500 text-green-600 hover:bg-green-50" 
+                    onClick={() => setMode('professional-signup')}
+                  >
+                    Soy profesional de salud
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="text-center">
+                <Button variant="link" onClick={() => setMode('login')}>
+                  ¿Ya tienes cuenta? Inicia sesión
+                </Button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

@@ -4,6 +4,7 @@ import { Menu, X, Heart, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import RoleIndicator from './RoleIndicator';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -114,6 +115,8 @@ const Header = () => {
               </DropdownMenu>
             )}
             
+            {user && <RoleIndicator />}
+            
             {user ? (
                 <Button onClick={signOut} className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 ml-2">
                     Cerrar sesión
@@ -138,6 +141,11 @@ const Header = () => {
         {isMenuOpen && (
           <nav className="md:hidden mt-4 pb-4 border-t border-gray-200">
             <div className="flex flex-col space-y-1 pt-4">
+              {user && (
+                <div className="px-3 py-2 mb-2">
+                  <RoleIndicator />
+                </div>
+              )}
               {[...navGeneral, ...navInfo, ...(user ? navUser : [])].map((item) => (
                 <button
                   key={item.name}
