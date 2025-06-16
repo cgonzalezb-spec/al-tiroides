@@ -16,27 +16,32 @@ interface HealthProfessionalSignupProps {
 const HealthProfessionalSignup = ({ onBack }: HealthProfessionalSignupProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [specialty, setSpecialty] = useState('');
-  const [licenseNumber, setLicenseNumber] = useState('');
+  const [area, setArea] = useState('');
   const [institution, setInstitution] = useState('');
   const [experience, setExperience] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const specialties = [
+  const areas = [
     'Endocrinología',
     'Medicina Interna',
     'Medicina Familiar',
     'Cirugía General',
     'Nutrición',
     'Enfermería',
+    'Estudiante de Medicina',
+    'Estudiante de Enfermería',
+    'Estudiante de Nutrición',
+    'Estudiante de Kinesiología',
+    'Estudiante de Tecnología Médica',
+    'Estudiante de Fonoaudiología',
     'Otro'
   ];
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!specialty || !licenseNumber || !institution) {
+    if (!area || !institution) {
       toast({
         variant: "destructive",
         title: "Campos requeridos",
@@ -54,8 +59,7 @@ const HealthProfessionalSignup = ({ onBack }: HealthProfessionalSignupProps) => 
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
-            specialty,
-            license_number: licenseNumber,
+            area,
             institution,
             experience,
             user_type: 'health_professional'
@@ -64,15 +68,6 @@ const HealthProfessionalSignup = ({ onBack }: HealthProfessionalSignupProps) => 
       });
 
       if (error) throw error;
-
-      // Si el usuario fue creado, actualizar su rol usando SQL directo
-      if (data.user) {
-        const { error: roleError } = await supabase.rpc('handle_new_user_role' as any);
-        
-        if (roleError) {
-          console.error('Error setting role:', roleError);
-        }
-      }
 
       toast({
         title: "Registro exitoso",
@@ -99,11 +94,11 @@ const HealthProfessionalSignup = ({ onBack }: HealthProfessionalSignupProps) => 
       <CardContent>
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
-            <Label htmlFor="email">Correo electrónico institucional</Label>
+            <Label htmlFor="email">Correo electrónico</Label>
             <Input
               id="email"
               type="email"
-              placeholder="nombre@hospital.cl"
+              placeholder="tu@correo.com"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -123,15 +118,15 @@ const HealthProfessionalSignup = ({ onBack }: HealthProfessionalSignupProps) => 
           </div>
 
           <div>
-            <Label htmlFor="specialty">Especialidad</Label>
-            <Select value={specialty} onValueChange={setSpecialty}>
+            <Label htmlFor="area">Área de salud</Label>
+            <Select value={area} onValueChange={setArea}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecciona tu especialidad" />
+                <SelectValue placeholder="Selecciona tu área" />
               </SelectTrigger>
               <SelectContent>
-                {specialties.map((spec) => (
-                  <SelectItem key={spec} value={spec}>
-                    {spec}
+                {areas.map((areaOption) => (
+                  <SelectItem key={areaOption} value={areaOption}>
+                    {areaOption}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -139,21 +134,10 @@ const HealthProfessionalSignup = ({ onBack }: HealthProfessionalSignupProps) => 
           </div>
 
           <div>
-            <Label htmlFor="license">Número de colegiatura</Label>
-            <Input
-              id="license"
-              placeholder="Ej: 12345"
-              required
-              value={licenseNumber}
-              onChange={(e) => setLicenseNumber(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="institution">Institución</Label>
+            <Label htmlFor="institution">Institución / Universidad</Label>
             <Input
               id="institution"
-              placeholder="Hospital o clínica donde trabaja"
+              placeholder="Hospital, clínica o universidad"
               required
               value={institution}
               onChange={(e) => setInstitution(e.target.value)}
@@ -161,10 +145,10 @@ const HealthProfessionalSignup = ({ onBack }: HealthProfessionalSignupProps) => 
           </div>
 
           <div>
-            <Label htmlFor="experience">Experiencia (opcional)</Label>
+            <Label htmlFor="experience">Experiencia adicional (opcional)</Label>
             <Textarea
               id="experience"
-              placeholder="Describe brevemente tu experiencia..."
+              placeholder="Describe brevemente tu experiencia o estudios..."
               value={experience}
               onChange={(e) => setExperience(e.target.value)}
             />

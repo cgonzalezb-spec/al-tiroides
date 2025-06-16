@@ -29,34 +29,23 @@ export const RoleProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      // Usar SQL directo para obtener el rol mientras se actualizan los tipos
-      const { data, error } = await supabase
-        .from('user_roles' as any)
-        .select('role')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (error) {
-        console.error('Error getting user role:', error);
-        // Si es tu email de admin, asignar admin automáticamente
-        if (user.email === 'cristobal804g@gmail.com') {
-          setUserRole('admin');
-        } else {
-          setUserRole('visitor'); // fallback to visitor
-        }
-      } else {
-        setUserRole(data?.role || 'visitor');
-      }
-    } catch (error) {
-      console.error('Error fetching role:', error);
-      // Si es tu email de admin, asignar admin automáticamente
+      // Si es tu email de admin, asignar admin directamente
       if (user.email === 'cristobal804g@gmail.com') {
         setUserRole('admin');
+        setLoading(false);
+        return;
+      }
+
+      // Para otros usuarios, intentar obtener del metadata primero
+      const userMetadata = user.user_metadata;
+      if (userMetadata?.user_type === 'health_professional') {
+        setUserRole('health_professional');
       } else {
         setUserRole('visitor');
       }
+    } catch (error) {
+      console.error('Error fetching role:', error);
+      setUserRole('visitor');
     } finally {
       setLoading(false);
     }
