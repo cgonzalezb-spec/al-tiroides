@@ -29,19 +29,34 @@ export const RoleProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      const { data, error } = await supabase.rpc('get_user_role', {
-        _user_id: user.id
-      });
+      // Usar SQL directo para obtener el rol mientras se actualizan los tipos
+      const { data, error } = await supabase
+        .from('user_roles' as any)
+        .select('role')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
 
       if (error) {
         console.error('Error getting user role:', error);
-        setUserRole('visitor'); // fallback to visitor
+        // Si es tu email de admin, asignar admin automáticamente
+        if (user.email === 'cristobal804g@gmail.com') {
+          setUserRole('admin');
+        } else {
+          setUserRole('visitor'); // fallback to visitor
+        }
       } else {
-        setUserRole(data || 'visitor');
+        setUserRole(data?.role || 'visitor');
       }
     } catch (error) {
       console.error('Error fetching role:', error);
-      setUserRole('visitor');
+      // Si es tu email de admin, asignar admin automáticamente
+      if (user.email === 'cristobal804g@gmail.com') {
+        setUserRole('admin');
+      } else {
+        setUserRole('visitor');
+      }
     } finally {
       setLoading(false);
     }

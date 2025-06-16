@@ -65,15 +65,10 @@ const HealthProfessionalSignup = ({ onBack }: HealthProfessionalSignupProps) => 
 
       if (error) throw error;
 
-      // Si el usuario fue creado, actualizar su rol
+      // Si el usuario fue creado, actualizar su rol usando SQL directo
       if (data.user) {
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .upsert({ 
-            user_id: data.user.id, 
-            role: 'health_professional' 
-          });
-
+        const { error: roleError } = await supabase.rpc('handle_new_user_role' as any);
+        
         if (roleError) {
           console.error('Error setting role:', roleError);
         }
