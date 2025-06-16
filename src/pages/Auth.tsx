@@ -71,12 +71,12 @@ const AuthPage = () => {
       <Card className="w-full max-w-md mx-4">
         <CardHeader>
           <CardTitle>
-            {mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta visitante'}
+            {mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta de usuario general'}
           </CardTitle>
           <CardDescription>
             {mode === 'login' 
               ? 'Bienvenido de nuevo.' 
-              : 'Registrate como visitante para acceder a funciones básicas.'
+              : 'Regístrate como usuario general para acceder a funciones básicas.'
             }
           </CardDescription>
         </CardHeader>
@@ -125,7 +125,7 @@ const AuthPage = () => {
                     className="w-full" 
                     onClick={() => setMode('visitor-signup')}
                   >
-                    Registrarse como visitante
+                    Registrarse como usuario general
                   </Button>
                   <Button 
                     variant="outline" 

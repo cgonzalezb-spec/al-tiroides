@@ -24,7 +24,7 @@ const RoleIndicator = () => {
         };
       case 'visitor':
         return {
-          label: 'Visitante',
+          label: 'Usuario General',
           icon: User,
           className: 'bg-blue-100 text-blue-800 border-blue-200'
         };
