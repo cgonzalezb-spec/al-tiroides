@@ -1,3 +1,4 @@
+
 import { Lightbulb } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
@@ -6,17 +7,28 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 // Function to fetch the tip of the day
 const fetchTipOfTheDay = async () => {
+  console.log('Fetching tip of the day...');
+  
   // 1. Get total number of tips
   const { count, error: countError } = await supabase
     .from('tips')
     .select('*', { count: 'exact', head: true });
 
-  if (countError) throw new Error(countError.message);
-  if (!count || count === 0) return null;
+  console.log('Tips count:', count, 'Count error:', countError);
+
+  if (countError) {
+    console.error('Error getting tips count:', countError);
+    throw new Error(countError.message);
+  }
+  if (!count || count === 0) {
+    console.log('No tips found in database');
+    return null;
+  }
 
   // 2. Calculate the index for the tip of the day to make it change daily
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
   const tipIndex = dayOfYear % count;
+  console.log('Day of year:', dayOfYear, 'Tip index:', tipIndex);
 
   // 3. Fetch the specific tip
   const { data: tip, error: tipError } = await supabase
@@ -24,6 +36,8 @@ const fetchTipOfTheDay = async () => {
     .select('content, category')
     .range(tipIndex, tipIndex)
     .single();
+
+  console.log('Fetched tip:', tip, 'Tip error:', tipError);
 
   if (tipError) {
     console.error("Error fetching tip:", tipError);
@@ -33,7 +47,13 @@ const fetchTipOfTheDay = async () => {
       .select('content, category')
       .limit(1)
       .single();
-    if(fallbackError) throw new Error(tipError.message);
+    
+    console.log('Fallback tip:', fallbackTip, 'Fallback error:', fallbackError);
+    
+    if(fallbackError) {
+      console.error('Fallback also failed:', fallbackError);
+      throw new Error(tipError.message);
+    }
     return fallbackTip;
   }
 
@@ -41,12 +61,15 @@ const fetchTipOfTheDay = async () => {
 };
 
 const ConsejosSection = () => {
-  const { data: tip, isLoading, isError } = useQuery({
+  const { data: tip, isLoading, isError, error } = useQuery({
     queryKey: ['tipOfTheDay'],
     queryFn: fetchTipOfTheDay,
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
     gcTime: 1000 * 60 * 60 * 24, // 24 hours
+    retry: 3,
   });
+
+  console.log('ConsejosSection render - tip:', tip, 'isLoading:', isLoading, 'isError:', isError, 'error:', error);
 
   return (
     <section id="consejos" className="py-20 bg-gray-50">
