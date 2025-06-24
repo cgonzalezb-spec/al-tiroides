@@ -5,75 +5,159 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRole } from '@/contexts/RoleContext';
 
 interface Question {
   id: string;
   name: string;
   email: string;
   question: string;
-  date: string;
+  created_at: string;
   response?: string;
-  responseDate?: string;
+  response_date?: string;
+  responded_by?: string;
 }
 
 const UserQuestions = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [newQuestion, setNewQuestion] = useState({ name: '', email: '', question: '' });
-  const [isAdmin, setIsAdmin] = useState(false);
   const [respondingTo, setRespondingTo] = useState<string | null>(null);
   const [responseText, setResponseText] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const { isAdmin, isHealthProfessional } = useRole();
+  
+  // Usuarios que pueden responder preguntas
+  const canRespond = isAdmin || isHealthProfessional;
 
   useEffect(() => {
-    const adminMode = localStorage.getItem('adminMode');
-    setIsAdmin(adminMode === 'true');
-    
-    const savedQuestions = localStorage.getItem('userQuestions');
-    if (savedQuestions) {
-      setQuestions(JSON.parse(savedQuestions));
-    }
+    fetchQuestions();
   }, []);
 
-  const submitQuestion = () => {
+  const fetchQuestions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_questions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedQuestions: Question[] = data.map(q => ({
+        id: q.id,
+        name: q.name,
+        email: q.email,
+        question: q.question,
+        created_at: new Date(q.created_at).toLocaleDateString('es-CL'),
+        response: q.response || undefined,
+        response_date: q.response_date ? new Date(q.response_date).toLocaleDateString('es-CL') : undefined,
+        responded_by: q.responded_by || undefined
+      }));
+
+      setQuestions(formattedQuestions);
+    } catch (error) {
+      console.error('Error fetching questions:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar las preguntas",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitQuestion = async () => {
     if (!newQuestion.name || !newQuestion.email || !newQuestion.question) {
-      alert('Por favor completa todos los campos');
+      toast({
+        title: "Campos requeridos",
+        description: "Por favor completa todos los campos",
+        variant: "destructive"
+      });
       return;
     }
 
-    const question: Question = {
-      id: Date.now().toString(),
-      name: newQuestion.name,
-      email: newQuestion.email,
-      question: newQuestion.question,
-      date: new Date().toLocaleDateString('es-CL')
-    };
+    setSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('user_questions')
+        .insert({
+          name: newQuestion.name,
+          email: newQuestion.email,
+          question: newQuestion.question
+        });
 
-    const updatedQuestions = [question, ...questions];
-    setQuestions(updatedQuestions);
-    localStorage.setItem('userQuestions', JSON.stringify(updatedQuestions));
-    
-    setNewQuestion({ name: '', email: '', question: '' });
-    alert('¡Pregunta enviada! Te responderemos pronto.');
+      if (error) throw error;
+
+      toast({
+        title: "¡Pregunta enviada!",
+        description: "Te responderemos pronto."
+      });
+
+      setNewQuestion({ name: '', email: '', question: '' });
+      await fetchQuestions(); // Refrescar la lista
+    } catch (error) {
+      console.error('Error submitting question:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo enviar la pregunta",
+        variant: "destructive"
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const submitResponse = (questionId: string) => {
+  const submitResponse = async (questionId: string) => {
     if (!responseText.trim()) return;
 
-    const updatedQuestions = questions.map(q =>
-      q.id === questionId 
-        ? { 
-            ...q, 
-            response: responseText,
-            responseDate: new Date().toLocaleDateString('es-CL')
-          }
-        : q
-    );
+    try {
+      const { error } = await supabase
+        .from('user_questions')
+        .update({ 
+          response: responseText,
+          response_date: new Date().toISOString(),
+          responded_by: user?.id || null
+        })
+        .eq('id', questionId);
 
-    setQuestions(updatedQuestions);
-    localStorage.setItem('userQuestions', JSON.stringify(updatedQuestions));
-    
-    setRespondingTo(null);
-    setResponseText('');
+      if (error) throw error;
+
+      toast({
+        title: "Respuesta enviada",
+        description: "La respuesta ha sido publicada."
+      });
+
+      setRespondingTo(null);
+      setResponseText('');
+      await fetchQuestions(); // Refrescar la lista
+    } catch (error) {
+      console.error('Error submitting response:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo enviar la respuesta",
+        variant: "destructive"
+      });
+    }
   };
+
+  if (loading) {
+    return (
+      <section id="preguntas" className="py-20 bg-gradient-to-br from-purple-50 to-pink-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <p className="text-lg text-gray-600">Cargando preguntas...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="preguntas" className="py-20 bg-gradient-to-br from-purple-50 to-pink-50">
@@ -106,17 +190,19 @@ const UserQuestions = () => {
                   placeholder="Tu nombre"
                   value={newQuestion.name}
                   onChange={(e) => setNewQuestion({...newQuestion, name: e.target.value})}
+                  disabled={submitting}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  Email {isAdmin && <span className="text-xs text-gray-500">(solo visible para admin)</span>}
+                  Email {canRespond && <span className="text-xs text-gray-500">(solo visible para profesionales)</span>}
                 </label>
                 <Input
                   type="email"
                   placeholder="tu@email.com"
                   value={newQuestion.email}
                   onChange={(e) => setNewQuestion({...newQuestion, email: e.target.value})}
+                  disabled={submitting}
                 />
               </div>
               <div>
@@ -126,14 +212,16 @@ const UserQuestions = () => {
                   value={newQuestion.question}
                   onChange={(e) => setNewQuestion({...newQuestion, question: e.target.value})}
                   rows={4}
+                  disabled={submitting}
                 />
               </div>
               <Button 
                 onClick={submitQuestion}
                 className="w-full bg-purple-600 hover:bg-purple-700"
+                disabled={submitting}
               >
                 <Send className="mr-2 h-4 w-4" />
-                Enviar pregunta
+                {submitting ? 'Enviando...' : 'Enviar pregunta'}
               </Button>
             </CardContent>
           </Card>
@@ -159,7 +247,7 @@ const UserQuestions = () => {
                         <div className="flex items-center space-x-2">
                           <User className="h-4 w-4 text-gray-500" />
                           <span className="font-semibold text-sm">{q.name}</span>
-                          {isAdmin && (
+                          {canRespond && (
                             <div className="flex items-center space-x-1 text-xs text-gray-500">
                               <Mail className="h-3 w-3" />
                               <span>{q.email}</span>
@@ -168,7 +256,7 @@ const UserQuestions = () => {
                         </div>
                         <div className="flex items-center space-x-1 text-xs text-gray-500">
                           <Calendar className="h-3 w-3" />
-                          <span>{q.date}</span>
+                          <span>{q.created_at}</span>
                         </div>
                       </div>
                       
@@ -178,11 +266,11 @@ const UserQuestions = () => {
                         <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-400">
                           <p className="text-sm text-blue-800 font-medium mb-1">Respuesta:</p>
                           <p className="text-sm text-blue-700">{q.response}</p>
-                          <p className="text-xs text-blue-600 mt-2">Respondido el {q.responseDate}</p>
+                          <p className="text-xs text-blue-600 mt-2">Respondido el {q.response_date}</p>
                         </div>
                       ) : (
                         <>
-                          {isAdmin && (
+                          {canRespond && (
                             <div className="mt-3">
                               {respondingTo === q.id ? (
                                 <div className="space-y-2">
@@ -225,7 +313,7 @@ const UserQuestions = () => {
                               )}
                             </div>
                           )}
-                          {!isAdmin && (
+                          {!canRespond && (
                             <div className="bg-yellow-50 p-2 rounded text-xs text-yellow-700">
                               Pendiente de respuesta
                             </div>
