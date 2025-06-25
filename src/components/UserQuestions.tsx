@@ -38,18 +38,70 @@ const UserQuestions = () => {
 
   useEffect(() => {
     fetchQuestions();
+    
+    // Verificar conexión a Supabase
+    console.log('🔍 Verificando conexión a Supabase...');
+    console.log('Supabase URL:', supabase.supabaseUrl);
+    console.log('Usuario actual:', user?.email || 'No autenticado');
+    console.log('Puede responder:', canRespond);
   }, []);
+
+  const verifyTableExists = async () => {
+    try {
+      console.log('🔍 Verificando si la tabla user_questions existe...');
+      
+      // Intentar hacer una consulta simple para verificar la tabla
+      const { data, error, count } = await supabase
+        .from('user_questions')
+        .select('*', { count: 'exact', head: true });
+      
+      if (error) {
+        console.error('❌ Error verificando tabla:', error);
+        toast({
+          title: "Error de base de datos",
+          description: `La tabla user_questions no existe o hay un problema de conexión: ${error.message}`,
+          variant: "destructive"
+        });
+        return false;
+      }
+      
+      console.log('✅ Tabla user_questions existe. Total de registros:', count);
+      return true;
+    } catch (error) {
+      console.error('❌ Error crítico verificando tabla:', error);
+      return false;
+    }
+  };
 
   const fetchQuestions = async () => {
     try {
+      setLoading(true);
+      console.log('📥 Iniciando carga de preguntas...');
+      
+      // Verificar que la tabla existe antes de intentar cargar
+      const tableExists = await verifyTableExists();
+      if (!tableExists) {
+        console.log('❌ No se puede cargar preguntas: tabla no existe');
+        setLoading(false);
+        return;
+      }
+
+      console.log('📡 Haciendo consulta a user_questions...');
       const { data, error } = await supabase
         .from('user_questions')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      console.log('📊 Respuesta de la consulta:', { data, error });
 
-      const formattedQuestions: Question[] = data.map(q => ({
+      if (error) {
+        console.error('❌ Error cargando preguntas:', error);
+        throw error;
+      }
+
+      console.log(`✅ Preguntas cargadas exitosamente. Total: ${data?.length || 0}`);
+
+      const formattedQuestions: Question[] = (data || []).map(q => ({
         id: q.id,
         name: q.name,
         email: q.email,
@@ -61,11 +113,12 @@ const UserQuestions = () => {
       }));
 
       setQuestions(formattedQuestions);
+      console.log('📋 Preguntas formateadas y guardadas en estado:', formattedQuestions);
     } catch (error) {
-      console.error('Error fetching questions:', error);
+      console.error('❌ Error general fetchQuestions:', error);
       toast({
         title: "Error",
-        description: "No se pudieron cargar las preguntas",
+        description: `No se pudieron cargar las preguntas: ${error.message}`,
         variant: "destructive"
       });
     } finally {
@@ -84,16 +137,33 @@ const UserQuestions = () => {
     }
 
     setSubmitting(true);
+    console.log('📤 Enviando nueva pregunta:', newQuestion);
+    
     try {
-      const { error } = await supabase
+      // Verificar tabla antes de insertar
+      const tableExists = await verifyTableExists();
+      if (!tableExists) {
+        throw new Error('La tabla de preguntas no existe en la base de datos');
+      }
+
+      console.log('💾 Insertando pregunta en base de datos...');
+      const { data, error } = await supabase
         .from('user_questions')
         .insert({
           name: newQuestion.name,
           email: newQuestion.email,
           question: newQuestion.question
-        });
+        })
+        .select();
 
-      if (error) throw error;
+      console.log('📊 Resultado de inserción:', { data, error });
+
+      if (error) {
+        console.error('❌ Error insertando pregunta:', error);
+        throw error;
+      }
+
+      console.log('✅ Pregunta insertada exitosamente:', data);
 
       toast({
         title: "¡Pregunta enviada!",
@@ -101,12 +171,15 @@ const UserQuestions = () => {
       });
 
       setNewQuestion({ name: '', email: '', question: '' });
-      await fetchQuestions(); // Refrescar la lista
+      
+      // Recargar preguntas para mostrar la nueva
+      console.log('🔄 Recargando lista de preguntas...');
+      await fetchQuestions();
     } catch (error) {
-      console.error('Error submitting question:', error);
+      console.error('❌ Error submitQuestion:', error);
       toast({
         title: "Error",
-        description: "No se pudo enviar la pregunta",
+        description: `No se pudo enviar la pregunta: ${error.message}`,
         variant: "destructive"
       });
     } finally {
@@ -116,6 +189,8 @@ const UserQuestions = () => {
 
   const submitResponse = async (questionId: string) => {
     if (!responseText.trim()) return;
+
+    console.log('📤 Enviando respuesta para pregunta:', questionId);
 
     try {
       const { error } = await supabase
@@ -127,7 +202,12 @@ const UserQuestions = () => {
         })
         .eq('id', questionId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Error enviando respuesta:', error);
+        throw error;
+      }
+
+      console.log('✅ Respuesta enviada exitosamente');
 
       toast({
         title: "Respuesta enviada",
@@ -138,12 +218,45 @@ const UserQuestions = () => {
       setResponseText('');
       await fetchQuestions(); // Refrescar la lista
     } catch (error) {
-      console.error('Error submitting response:', error);
+      console.error('❌ Error submitResponse:', error);
       toast({
         title: "Error",
-        description: "No se pudo enviar la respuesta",
+        description: `No se pudo enviar la respuesta: ${error.message}`,
         variant: "destructive"
       });
+    }
+  };
+
+  // Test de conexión manual
+  const testConnection = async () => {
+    console.log('🧪 Ejecutando test de conexión manual...');
+    try {
+      const { data, error } = await supabase
+        .from('user_questions')
+        .insert({
+          name: 'Test Usuario',
+          email: 'test@test.com',
+          question: 'Esta es una pregunta de prueba para verificar la conexión'
+        })
+        .select();
+      
+      if (error) {
+        console.error('❌ Test falló:', error);
+        toast({
+          title: "Test de conexión falló",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        console.log('✅ Test exitoso:', data);
+        toast({
+          title: "Test exitoso",
+          description: "La conexión a la base de datos funciona correctamente"
+        });
+        fetchQuestions();
+      }
+    } catch (error) {
+      console.error('❌ Error en test:', error);
     }
   };
 
@@ -153,6 +266,12 @@ const UserQuestions = () => {
         <div className="container mx-auto px-4">
           <div className="text-center">
             <p className="text-lg text-gray-600">Cargando preguntas...</p>
+            {/* Botón de test solo visible en desarrollo */}
+            {import.meta.env.DEV && (
+              <Button onClick={testConnection} className="mt-4">
+                🧪 Test Conexión DB
+              </Button>
+            )}
           </div>
         </div>
       </section>
@@ -169,6 +288,12 @@ const UserQuestions = () => {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             ¿Tienes dudas sobre la tiroides? Envíanos tu pregunta y te responderemos
           </p>
+          {/* Botón de test solo visible en desarrollo */}
+          {import.meta.env.DEV && (
+            <Button onClick={testConnection} className="mt-4 mr-4">
+              🧪 Test Conexión
+            </Button>
+          )}
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
@@ -231,15 +356,22 @@ const UserQuestions = () => {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Reply className="h-6 w-6 text-blue-500" />
-                <span>Preguntas recientes</span>
+                <span>Preguntas recientes ({questions.length})</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4 max-h-96 overflow-y-auto">
                 {questions.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">
-                    Aún no hay preguntas. ¡Sé el primero en preguntar!
-                  </p>
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 mb-4">
+                      Aún no hay preguntas. ¡Sé el primero en preguntar!
+                    </p>
+                    {import.meta.env.DEV && (
+                      <Button onClick={fetchQuestions} variant="outline" size="sm">
+                        🔄 Refrescar
+                      </Button>
+                    )}
+                  </div>
                 ) : (
                   questions.map((q) => (
                     <div key={q.id} className="border rounded-lg p-4 bg-white">
