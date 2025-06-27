@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { MessageCircle, Send, Mail, User, Calendar, Reply } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,7 +40,7 @@ const UserQuestions = () => {
     
     // Verificar conexión a Supabase
     console.log('🔍 Verificando conexión a Supabase...');
-    console.log('Supabase URL:', supabase.supabaseUrl);
+    console.log('Supabase URL:', 'https://meoopbjvghzxmktmczli.supabase.co');
     console.log('Usuario actual:', user?.email || 'No autenticado');
     console.log('Puede responder:', canRespond);
   }, []);

@@ -1,9 +1,11 @@
-
 import { ArrowRight, PlayCircle, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Carousel,
   CarouselContent,
@@ -15,10 +17,14 @@ import {
 
 interface Video {
   id: string;
-  file: File;
-  url: string;
-  name: string;
+  title?: string;
   description?: string;
+  file_path: string;
+  file_name: string;
+  file_size?: number;
+  created_at: string;
+  uploaded_by?: string;
+  url?: string; // URL pública del video
 }
 
 const HeroSection = () => {
@@ -27,19 +33,20 @@ const HeroSection = () => {
   const [api, setApi] = useState<CarouselApi>()
   const [current, setCurrent] = useState(0)
   const [showDescriptionForm, setShowDescriptionForm] = useState(false);
-  const [pendingVideo, setPendingVideo] = useState<Video | null>(null);
+  const [pendingVideoFile, setPendingVideoFile] = useState<File | null>(null);
   const [videoDescription, setVideoDescription] = useState('');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     const adminMode = localStorage.getItem('adminMode');
     setIsAdmin(adminMode === 'true');
     
-    // Cargar videos guardados si existen
-    const savedVideos = localStorage.getItem('explanatoryVideos');
-    if (savedVideos) {
-      const parsedVideos = JSON.parse(savedVideos);
-      setVideos(parsedVideos);
-    }
+    // Cargar videos de Supabase
+    loadVideosFromSupabase();
   }, []);
 
   // Auto-rotar videos y actualizar indicador
@@ -71,6 +78,54 @@ const HeroSection = () => {
     };
   }, [api, videos.length, isAdmin]);
 
+  const loadVideosFromSupabase = async () => {
+    try {
+      console.log('📥 Cargando videos desde Supabase...');
+      
+      // Obtener metadatos de videos desde la tabla
+      const { data: videoData, error: dbError } = await supabase
+        .from('explanatory_videos')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (dbError) {
+        console.error('❌ Error cargando videos de la base de datos:', dbError);
+        throw dbError;
+      }
+
+      console.log(`✅ Videos encontrados en base de datos: ${videoData?.length || 0}`);
+
+      // Generar URLs públicas para cada video
+      const videosWithUrls: Video[] = [];
+      
+      for (const video of videoData || []) {
+        try {
+          const { data: urlData } = supabase.storage
+            .from('videos-explicativos')
+            .getPublicUrl(video.file_path);
+
+          videosWithUrls.push({
+            ...video,
+            url: urlData.publicUrl
+          });
+        } catch (error) {
+          console.error('❌ Error generando URL para video:', video.file_name, error);
+        }
+      }
+
+      setVideos(videosWithUrls);
+      console.log('📋 Videos cargados con URLs:', videosWithUrls);
+
+    } catch (error) {
+      console.error('❌ Error general cargando videos:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los videos",
+        variant: "destructive"
+      });
+    }
+  };
+
   const scrollToTest = () => {
     const element = document.querySelector('#autotest');
     if (element) {
@@ -81,61 +136,188 @@ const HeroSection = () => {
   const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      const newVideo: Video = {
-        id: Date.now().toString(),
-        file,
-        url,
-        name: file.name
-      };
+      // Validar tipo de archivo
+      if (!file.type.startsWith('video/')) {
+        toast({
+          title: "Archivo no válido",
+          description: "Por favor selecciona un archivo de video",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Validar tamaño (máximo 100MB)
+      const maxSize = 100 * 1024 * 1024; // 100MB
+      if (file.size > maxSize) {
+        toast({
+          title: "Archivo demasiado grande",
+          description: "El video no puede superar los 100MB",
+          variant: "destructive"
+        });
+        return;
+      }
       
-      // Mostrar formulario de descripción
-      setPendingVideo(newVideo);
+      setPendingVideoFile(file);
       setShowDescriptionForm(true);
       setVideoDescription('');
     }
   };
 
-  const handleDescriptionSubmit = () => {
-    if (pendingVideo) {
-      const videoWithDescription = {
-        ...pendingVideo,
-        description: videoDescription.trim() || undefined
-      };
-      
-      const updatedVideos = [...videos, videoWithDescription];
-      setVideos(updatedVideos);
-      localStorage.setItem('explanatoryVideos', JSON.stringify(updatedVideos.map(v => ({
-        id: v.id,
-        url: v.url,
-        name: v.name,
-        description: v.description
-      }))));
-      
-      console.log('Video agregado:', videoWithDescription.name, 'con descripción:', videoWithDescription.description);
+  const uploadToSupabase = async (file: File, description: string) => {
+    if (!user) {
+      toast({
+        title: "Error de autenticación",
+        description: "Debes estar autenticado para subir videos",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      console.log('📤 Iniciando subida de video a Supabase...');
+
+      // Generar nombre único para el archivo
+      const timestamp = Date.now();
+      const fileName = `${timestamp}-${file.name}`;
+      const filePath = `videos/${fileName}`;
+
+      console.log('📁 Subiendo archivo:', filePath);
+
+      // Subir archivo a Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('videos-explicativos')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('❌ Error subiendo archivo:', uploadError);
+        throw uploadError;
+      }
+
+      console.log('✅ Archivo subido exitosamente:', uploadData);
+
+      // Guardar metadatos en la base de datos
+      const { data: dbData, error: dbError } = await supabase
+        .from('explanatory_videos')
+        .insert({
+          title: description.trim() || file.name,
+          description: description.trim() || null,
+          file_path: filePath,
+          file_name: file.name,
+          file_size: file.size,
+          uploaded_by: user.id
+        })
+        .select()
+        .single();
+
+      if (dbError) {
+        console.error('❌ Error guardando metadatos:', dbError);
+        // Si falla guardar metadatos, eliminar archivo subido
+        await supabase.storage
+          .from('videos-explicativos')
+          .remove([filePath]);
+        throw dbError;
+      }
+
+      console.log('✅ Metadatos guardados exitosamente:', dbData);
+
+      toast({
+        title: "¡Video subido exitosamente!",
+        description: "El video está ahora disponible para todos los usuarios"
+      });
+
+      // Recargar lista de videos
+      await loadVideosFromSupabase();
+
+    } catch (error) {
+      console.error('❌ Error en proceso de subida:', error);
+      toast({
+        title: "Error subiendo video",
+        description: `No se pudo subir el video: ${error.message}`,
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  const handleDescriptionSubmit = async () => {
+    if (pendingVideoFile) {
+      await uploadToSupabase(pendingVideoFile, videoDescription);
       
       // Limpiar formulario
       setShowDescriptionForm(false);
-      setPendingVideo(null);
+      setPendingVideoFile(null);
       setVideoDescription('');
     }
   };
 
   const handleDescriptionCancel = () => {
     setShowDescriptionForm(false);
-    setPendingVideo(null);
+    setPendingVideoFile(null);
     setVideoDescription('');
   };
 
-  const removeVideo = (videoId: string) => {
-    const updatedVideos = videos.filter(v => v.id !== videoId);
-    setVideos(updatedVideos);
-    localStorage.setItem('explanatoryVideos', JSON.stringify(updatedVideos.map(v => ({
-      id: v.id,
-      url: v.url,
-      name: v.name,
-      description: v.description
-    }))));
+  const removeVideo = async (videoId: string) => {
+    try {
+      console.log('🗑️ Eliminando video:', videoId);
+
+      // Buscar el video en la lista actual
+      const videoToDelete = videos.find(v => v.id === videoId);
+      if (!videoToDelete) {
+        toast({
+          title: "Error",
+          description: "Video no encontrado",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Eliminar archivo de Storage
+      const { error: storageError } = await supabase.storage
+        .from('videos-explicativos')
+        .remove([videoToDelete.file_path]);
+
+      if (storageError) {
+        console.error('❌ Error eliminando archivo de storage:', storageError);
+        // Continuar aunque falle eliminar el archivo
+      }
+
+      // Eliminar registro de la base de datos
+      const { error: dbError } = await supabase
+        .from('explanatory_videos')
+        .delete()
+        .eq('id', videoId);
+
+      if (dbError) {
+        console.error('❌ Error eliminando de base de datos:', dbError);
+        throw dbError;
+      }
+
+      console.log('✅ Video eliminado exitosamente');
+
+      toast({
+        title: "Video eliminado",
+        description: "El video ha sido eliminado exitosamente"
+      });
+
+      // Recargar lista de videos
+      await loadVideosFromSupabase();
+
+    } catch (error) {
+      console.error('❌ Error eliminando video:', error);
+      toast({
+        title: "Error",
+        description: `No se pudo eliminar el video: ${error.message}`,
+        variant: "destructive"
+      });
+    }
   };
 
   const toggleAdminMode = () => {
@@ -147,7 +329,7 @@ const HeroSection = () => {
   const handleWatchVideo = (videoIndex: number) => {
     const videoToShow = videos[videoIndex];
     
-    if (videoToShow) {
+    if (videoToShow && videoToShow.url) {
       const videoModal = document.createElement('div');
       videoModal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
       videoModal.innerHTML = `
@@ -185,6 +367,14 @@ const HeroSection = () => {
               <h3 className="text-lg font-semibold mb-4">Agregar descripción al video</h3>
               <div className="space-y-4">
                 <div>
+                  <p className="text-sm text-gray-600 mb-2">
+                    Archivo: {pendingVideoFile?.name}
+                  </p>
+                  <p className="text-sm text-gray-600 mb-2">
+                    Tamaño: {pendingVideoFile ? (pendingVideoFile.size / (1024 * 1024)).toFixed(2) + ' MB' : ''}
+                  </p>
+                </div>
+                <div>
                   <label className="block text-sm font-medium mb-2">
                     Descripción (opcional)
                   </label>
@@ -194,20 +384,37 @@ const HeroSection = () => {
                     placeholder="Escribe una breve descripción del video..."
                     className="w-full"
                     rows={3}
+                    disabled={isUploading}
                   />
                 </div>
+                {isUploading && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm text-gray-600">
+                      <span>Subiendo...</span>
+                      <span>{uploadProgress}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                        style={{ width: `${uploadProgress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
                 <div className="flex gap-2 justify-end">
                   <Button
                     variant="outline"
                     onClick={handleDescriptionCancel}
+                    disabled={isUploading}
                   >
                     Cancelar
                   </Button>
                   <Button
                     onClick={handleDescriptionSubmit}
                     className="bg-blue-600 hover:bg-blue-700"
+                    disabled={isUploading}
                   >
-                    Agregar Video
+                    {isUploading ? 'Subiendo...' : 'Subir Video'}
                   </Button>
                 </div>
               </div>
@@ -246,9 +453,10 @@ const HeroSection = () => {
                     size="lg"
                     className="text-lg px-8 py-4 border-2 hover:bg-blue-50 w-full"
                     onClick={() => document.getElementById('video-upload')?.click()}
+                    disabled={isUploading}
                   >
                     <Upload className="mr-2 h-5 w-5" />
-                    Agregar video explicativo
+                    {isUploading ? 'Subiendo...' : 'Agregar video explicativo'}
                   </Button>
                   <input
                     id="video-upload"
@@ -256,6 +464,7 @@ const HeroSection = () => {
                     accept="video/*"
                     onChange={handleVideoUpload}
                     className="hidden"
+                    disabled={isUploading}
                   />
                 </div>
               ) : (
@@ -311,18 +520,24 @@ const HeroSection = () => {
             {/* Administración de videos para admin */}
             {isAdmin && videos.length > 0 && (
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h4 className="font-semibold mb-2">Videos subidos ({videos.length})</h4>
+                <h4 className="font-semibold mb-2">Videos almacenados en Supabase ({videos.length})</h4>
                 <div className="space-y-2">
                   {videos.map((video, index) => (
                     <div key={video.id} className="flex justify-between items-start bg-white p-3 rounded">
                       <div className="flex-1">
-                        <div className="text-sm font-medium text-gray-600 mb-1">Video {index + 1}</div>
+                        <div className="text-sm font-medium text-gray-600 mb-1">
+                          Video {index + 1}: {video.file_name}
+                        </div>
                         {video.description && (
                           <div className="text-sm text-gray-700">{video.description}</div>
                         )}
                         {!video.description && (
                           <div className="text-sm text-gray-400 italic">Sin descripción</div>
                         )}
+                        <div className="text-xs text-gray-500 mt-1">
+                          Subido: {new Date(video.created_at).toLocaleDateString('es-CL')}
+                          {video.file_size && ` • ${(video.file_size / (1024 * 1024)).toFixed(2)} MB`}
+                        </div>
                       </div>
                       <div className="flex gap-2 ml-4">
                         <Button 
