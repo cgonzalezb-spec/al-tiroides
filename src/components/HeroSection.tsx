@@ -1,5 +1,8 @@
+
 import { ArrowRight, PlayCircle, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useState, useEffect } from 'react';
 import {
   Carousel,
@@ -15,6 +18,7 @@ interface Video {
   file: File;
   url: string;
   name: string;
+  description?: string;
 }
 
 const HeroSection = () => {
@@ -22,6 +26,9 @@ const HeroSection = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [api, setApi] = useState<CarouselApi>()
   const [current, setCurrent] = useState(0)
+  const [showDescriptionForm, setShowDescriptionForm] = useState(false);
+  const [pendingVideo, setPendingVideo] = useState<Video | null>(null);
+  const [videoDescription, setVideoDescription] = useState('');
 
   useEffect(() => {
     const adminMode = localStorage.getItem('adminMode');
@@ -82,15 +89,42 @@ const HeroSection = () => {
         name: file.name
       };
       
-      const updatedVideos = [...videos, newVideo];
+      // Mostrar formulario de descripción
+      setPendingVideo(newVideo);
+      setShowDescriptionForm(true);
+      setVideoDescription('');
+    }
+  };
+
+  const handleDescriptionSubmit = () => {
+    if (pendingVideo) {
+      const videoWithDescription = {
+        ...pendingVideo,
+        description: videoDescription.trim() || undefined
+      };
+      
+      const updatedVideos = [...videos, videoWithDescription];
       setVideos(updatedVideos);
       localStorage.setItem('explanatoryVideos', JSON.stringify(updatedVideos.map(v => ({
         id: v.id,
         url: v.url,
-        name: v.name
+        name: v.name,
+        description: v.description
       }))));
-      console.log('Video agregado:', file.name);
+      
+      console.log('Video agregado:', videoWithDescription.name, 'con descripción:', videoWithDescription.description);
+      
+      // Limpiar formulario
+      setShowDescriptionForm(false);
+      setPendingVideo(null);
+      setVideoDescription('');
     }
+  };
+
+  const handleDescriptionCancel = () => {
+    setShowDescriptionForm(false);
+    setPendingVideo(null);
+    setVideoDescription('');
   };
 
   const removeVideo = (videoId: string) => {
@@ -99,7 +133,8 @@ const HeroSection = () => {
     localStorage.setItem('explanatoryVideos', JSON.stringify(updatedVideos.map(v => ({
       id: v.id,
       url: v.url,
-      name: v.name
+      name: v.name,
+      description: v.description
     }))));
   };
 
@@ -142,6 +177,43 @@ const HeroSection = () => {
             {isAdmin ? '👑 Modo Admin' : '👤 Modo Visitante'}
           </Button>
         </div>
+
+        {/* Formulario de descripción de video */}
+        {showDescriptionForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold mb-4">Agregar descripción al video</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Descripción (opcional)
+                  </label>
+                  <Textarea
+                    value={videoDescription}
+                    onChange={(e) => setVideoDescription(e.target.value)}
+                    placeholder="Escribe una breve descripción del video..."
+                    className="w-full"
+                    rows={3}
+                  />
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={handleDescriptionCancel}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleDescriptionSubmit}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    Agregar Video
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
@@ -214,9 +286,11 @@ const HeroSection = () => {
                                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                                   <PlayCircle className="h-12 w-12 text-white/90 drop-shadow-lg transform transition-transform group-hover:scale-110" />
                                 </div>
-                                <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md">
-                                  {video.name}
-                                </div>
+                                {video.description && (
+                                  <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md max-w-[80%]">
+                                    {video.description}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </CarouselItem>
@@ -240,9 +314,17 @@ const HeroSection = () => {
                 <h4 className="font-semibold mb-2">Videos subidos ({videos.length})</h4>
                 <div className="space-y-2">
                   {videos.map((video, index) => (
-                    <div key={video.id} className="flex justify-between items-center bg-white p-2 rounded">
-                      <span className="text-sm">{video.name}</span>
-                      <div className="flex gap-2">
+                    <div key={video.id} className="flex justify-between items-start bg-white p-3 rounded">
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-600 mb-1">Video {index + 1}</div>
+                        {video.description && (
+                          <div className="text-sm text-gray-700">{video.description}</div>
+                        )}
+                        {!video.description && (
+                          <div className="text-sm text-gray-400 italic">Sin descripción</div>
+                        )}
+                      </div>
+                      <div className="flex gap-2 ml-4">
                         <Button 
                           size="sm" 
                           variant="outline"
