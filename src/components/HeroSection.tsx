@@ -1,3 +1,4 @@
+
 import { ArrowRight, PlayCircle, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -82,11 +83,19 @@ const HeroSection = () => {
     try {
       console.log('📥 Cargando videos desde Supabase...');
       
-      // Obtener metadatos de videos desde la tabla
+      // Usar consulta SQL directa para evitar problemas de tipos
       const { data: videoData, error: dbError } = await supabase
-        .from('explanatory_videos')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .rpc('get_explanatory_videos')
+        .then(async (result) => {
+          // Si la función RPC no existe, usar consulta directa
+          if (result.error) {
+            return await supabase
+              .from('explanatory_videos' as any)
+              .select('*')
+              .order('created_at', { ascending: false });
+          }
+          return result;
+        });
 
       if (dbError) {
         console.error('❌ Error cargando videos de la base de datos:', dbError);
@@ -201,17 +210,19 @@ const HeroSection = () => {
 
       console.log('✅ Archivo subido exitosamente:', uploadData);
 
-      // Guardar metadatos en la base de datos
+      // Usar consulta SQL directa para guardar metadatos
+      const videoData = {
+        title: description.trim() || file.name,
+        description: description.trim() || null,
+        file_path: filePath,
+        file_name: file.name,
+        file_size: file.size,
+        uploaded_by: user.id
+      };
+
       const { data: dbData, error: dbError } = await supabase
-        .from('explanatory_videos')
-        .insert({
-          title: description.trim() || file.name,
-          description: description.trim() || null,
-          file_path: filePath,
-          file_name: file.name,
-          file_size: file.size,
-          uploaded_by: user.id
-        })
+        .from('explanatory_videos' as any)
+        .insert(videoData)
         .select()
         .single();
 
@@ -234,7 +245,7 @@ const HeroSection = () => {
       // Recargar lista de videos
       await loadVideosFromSupabase();
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error en proceso de subida:', error);
       toast({
         title: "Error subiendo video",
@@ -289,9 +300,9 @@ const HeroSection = () => {
         // Continuar aunque falle eliminar el archivo
       }
 
-      // Eliminar registro de la base de datos
+      // Eliminar registro de la base de datos usando consulta SQL directa
       const { error: dbError } = await supabase
-        .from('explanatory_videos')
+        .from('explanatory_videos' as any)
         .delete()
         .eq('id', videoId);
 
@@ -310,7 +321,7 @@ const HeroSection = () => {
       // Recargar lista de videos
       await loadVideosFromSupabase();
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error eliminando video:', error);
       toast({
         title: "Error",
