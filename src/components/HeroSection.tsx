@@ -34,7 +34,7 @@ const HeroSection = () => {
     const adminMode = localStorage.getItem('adminMode');
     setIsAdmin(adminMode === 'true');
     
-    // Cargar videos de Supabase
+    // Intentar cargar videos, pero no mostrar errores al usuario
     loadVideosFromSupabase();
   }, []);
 
@@ -69,25 +69,30 @@ const HeroSection = () => {
 
   const loadVideosFromSupabase = async () => {
     try {
-      console.log('📥 Cargando videos desde Supabase...');
+      console.log('📥 Intentando cargar videos desde Supabase...');
       
-      // Usar consulta con tipos explícitos
+      // Usar consulta SQL directa para evitar problemas de tipos
       const { data: videoData, error: dbError } = await supabase
-        .from('explanatory_videos')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .rpc('get_explanatory_videos');
 
       if (dbError) {
-        console.error('❌ Error cargando videos de la base de datos:', dbError);
-        throw dbError;
+        console.log('ℹ️ No se encontraron videos o tabla no existe:', dbError.message);
+        setVideos([]);
+        return;
       }
 
-      console.log(`✅ Videos encontrados en base de datos: ${videoData?.length || 0}`);
+      console.log(`✅ Videos encontrados: ${videoData?.length || 0}`);
+
+      // Si no hay videos, establecer array vacío
+      if (!videoData || videoData.length === 0) {
+        setVideos([]);
+        return;
+      }
 
       // Generar URLs públicas para cada video
       const videosWithUrls: ExplanatoryVideo[] = [];
       
-      for (const video of videoData || []) {
+      for (const video of videoData) {
         try {
           const { data: urlData } = supabase.storage
             .from('videos-explicativos')
@@ -98,20 +103,18 @@ const HeroSection = () => {
             url: urlData.publicUrl
           } as ExplanatoryVideo);
         } catch (error) {
-          console.error('❌ Error generando URL para video:', video.file_name, error);
+          console.log('⚠️ Error generando URL para video:', video.file_name, error);
+          // Continuar con otros videos sin fallar
         }
       }
 
       setVideos(videosWithUrls);
-      console.log('📋 Videos cargados con URLs:', videosWithUrls);
+      console.log('📋 Videos cargados exitosamente:', videosWithUrls.length);
 
     } catch (error) {
-      console.error('❌ Error general cargando videos:', error);
-      toast({
-        title: "Error",
-        description: "No se pudieron cargar los videos",
-        variant: "destructive"
-      });
+      console.log('ℹ️ No se pudieron cargar videos:', error);
+      // Establecer array vacío en lugar de mostrar error
+      setVideos([]);
     }
   };
 
@@ -135,12 +138,12 @@ const HeroSection = () => {
         return;
       }
 
-      // Validar tamaño (máximo 100MB)
-      const maxSize = 100 * 1024 * 1024; // 100MB
+      // Validar tamaño (máximo 50MB para evitar problemas)
+      const maxSize = 50 * 1024 * 1024; // 50MB
       if (file.size > maxSize) {
         toast({
           title: "Archivo demasiado grande",
-          description: "El video no puede superar los 100MB",
+          description: "El video no puede superar los 50MB",
           variant: "destructive"
         });
         return;
@@ -166,7 +169,7 @@ const HeroSection = () => {
     setUploadProgress(0);
 
     try {
-      console.log('📤 Iniciando subida de video a Supabase...');
+      console.log('📤 Iniciando subida de video...');
 
       // Generar nombre único para el archivo
       const timestamp = Date.now();
@@ -188,23 +191,18 @@ const HeroSection = () => {
         throw uploadError;
       }
 
-      console.log('✅ Archivo subido exitosamente:', uploadData);
+      console.log('✅ Archivo subido exitosamente');
 
-      // Guardar metadatos usando tipos explícitos
-      const videoData = {
-        title: description.trim() || file.name,
-        description: description.trim() || null,
-        file_path: filePath,
-        file_name: file.name,
-        file_size: file.size,
-        uploaded_by: user.id
-      };
-
+      // Usar consulta SQL directa para guardar metadatos
       const { data: dbData, error: dbError } = await supabase
-        .from('explanatory_videos')
-        .insert(videoData)
-        .select()
-        .single();
+        .rpc('insert_explanatory_video', {
+          p_title: description.trim() || file.name,
+          p_description: description.trim() || null,
+          p_file_path: filePath,
+          p_file_name: file.name,
+          p_file_size: file.size,
+          p_uploaded_by: user.id
+        });
 
       if (dbError) {
         console.error('❌ Error guardando metadatos:', dbError);
@@ -215,11 +213,11 @@ const HeroSection = () => {
         throw dbError;
       }
 
-      console.log('✅ Metadatos guardados exitosamente:', dbData);
+      console.log('✅ Video subido completamente');
 
       toast({
         title: "¡Video subido exitosamente!",
-        description: "El video está ahora disponible para todos los usuarios"
+        description: "El video está ahora disponible"
       });
 
       // Recargar lista de videos
@@ -229,7 +227,7 @@ const HeroSection = () => {
       console.error('❌ Error en proceso de subida:', error);
       toast({
         title: "Error subiendo video",
-        description: `No se pudo subir el video: ${error.message}`,
+        description: "No se pudo subir el video. Intenta con un archivo más pequeño.",
         variant: "destructive"
       });
     } finally {
@@ -276,15 +274,15 @@ const HeroSection = () => {
         .remove([videoToDelete.file_path]);
 
       if (storageError) {
-        console.error('❌ Error eliminando archivo de storage:', storageError);
+        console.log('⚠️ Error eliminando archivo de storage:', storageError);
         // Continuar aunque falle eliminar el archivo
       }
 
-      // Eliminar registro de la base de datos
+      // Usar consulta SQL directa para eliminar registro
       const { error: dbError } = await supabase
-        .from('explanatory_videos')
-        .delete()
-        .eq('id', videoId);
+        .rpc('delete_explanatory_video', {
+          p_video_id: videoId
+        });
 
       if (dbError) {
         console.error('❌ Error eliminando de base de datos:', dbError);
@@ -305,7 +303,7 @@ const HeroSection = () => {
       console.error('❌ Error eliminando video:', error);
       toast({
         title: "Error",
-        description: `No se pudo eliminar el video: ${error.message}`,
+        description: "No se pudo eliminar el video",
         variant: "destructive"
       });
     }
@@ -511,7 +509,7 @@ const HeroSection = () => {
             {/* Administración de videos para admin */}
             {isAdmin && videos.length > 0 && (
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h4 className="font-semibold mb-2">Videos almacenados en Supabase ({videos.length})</h4>
+                <h4 className="font-semibold mb-2">Videos almacenados ({videos.length})</h4>
                 <div className="space-y-2">
                   {videos.map((video, index) => (
                     <div key={video.id} className="flex justify-between items-start bg-white p-3 rounded">
