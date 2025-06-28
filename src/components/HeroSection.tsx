@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { ExplanatoryVideo } from '@/types/video';
 import {
   Carousel,
   CarouselContent,
@@ -15,20 +16,8 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 
-interface Video {
-  id: string;
-  title?: string;
-  description?: string;
-  file_path: string;
-  file_name: string;
-  file_size?: number;
-  created_at: string;
-  uploaded_by?: string;
-  url?: string; // URL pública del video
-}
-
 const HeroSection = () => {
-  const [videos, setVideos] = useState<Video[]>([]);
+  const [videos, setVideos] = useState<ExplanatoryVideo[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [api, setApi] = useState<CarouselApi>()
   const [current, setCurrent] = useState(0)
@@ -82,9 +71,9 @@ const HeroSection = () => {
     try {
       console.log('📥 Cargando videos desde Supabase...');
       
-      // Usar consulta SQL directa para evitar problemas de tipos
+      // Usar consulta con tipos explícitos
       const { data: videoData, error: dbError } = await supabase
-        .from('explanatory_videos' as any)
+        .from('explanatory_videos')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -96,7 +85,7 @@ const HeroSection = () => {
       console.log(`✅ Videos encontrados en base de datos: ${videoData?.length || 0}`);
 
       // Generar URLs públicas para cada video
-      const videosWithUrls: Video[] = [];
+      const videosWithUrls: ExplanatoryVideo[] = [];
       
       for (const video of videoData || []) {
         try {
@@ -107,7 +96,7 @@ const HeroSection = () => {
           videosWithUrls.push({
             ...video,
             url: urlData.publicUrl
-          });
+          } as ExplanatoryVideo);
         } catch (error) {
           console.error('❌ Error generando URL para video:', video.file_name, error);
         }
@@ -201,7 +190,7 @@ const HeroSection = () => {
 
       console.log('✅ Archivo subido exitosamente:', uploadData);
 
-      // Usar consulta SQL directa para guardar metadatos
+      // Guardar metadatos usando tipos explícitos
       const videoData = {
         title: description.trim() || file.name,
         description: description.trim() || null,
@@ -212,7 +201,7 @@ const HeroSection = () => {
       };
 
       const { data: dbData, error: dbError } = await supabase
-        .from('explanatory_videos' as any)
+        .from('explanatory_videos')
         .insert(videoData)
         .select()
         .single();
@@ -291,9 +280,9 @@ const HeroSection = () => {
         // Continuar aunque falle eliminar el archivo
       }
 
-      // Eliminar registro de la base de datos usando consulta SQL directa
+      // Eliminar registro de la base de datos
       const { error: dbError } = await supabase
-        .from('explanatory_videos' as any)
+        .from('explanatory_videos')
         .delete()
         .eq('id', videoId);
 
