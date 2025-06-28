@@ -1,4 +1,3 @@
-
 import { ArrowRight, PlayCircle, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -85,17 +84,9 @@ const HeroSection = () => {
       
       // Usar consulta SQL directa para evitar problemas de tipos
       const { data: videoData, error: dbError } = await supabase
-        .rpc('get_explanatory_videos')
-        .then(async (result) => {
-          // Si la función RPC no existe, usar consulta directa
-          if (result.error) {
-            return await supabase
-              .from('explanatory_videos' as any)
-              .select('*')
-              .order('created_at', { ascending: false });
-          }
-          return result;
-        });
+        .from('explanatory_videos' as any)
+        .select('*')
+        .order('created_at', { ascending: false });
 
       if (dbError) {
         console.error('❌ Error cargando videos de la base de datos:', dbError);
