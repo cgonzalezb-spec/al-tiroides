@@ -10,6 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 
 const Header = () => {
@@ -114,6 +115,24 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
+
+            {/* Menú Más con Quienes somos */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost">
+                  Más <ChevronDown className="h-4 w-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onSelect={() => handleNavigate('/about')}>
+                  Quiénes somos
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => scrollToSection('#preguntas')}>
+                  Preguntas
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             
             {user && <RoleIndicator />}
             
@@ -155,6 +174,12 @@ const Header = () => {
                   {item.name}
                 </button>
               ))}
+              <button
+                onClick={() => handleNavigate('/about')}
+                className="w-full text-left px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium rounded-md hover:bg-gray-100 border-t pt-4 mt-2"
+              >
+                Quiénes somos
+              </button>
               <div className="pt-4 mt-2 border-t">
                 {user ? (
                   <Button onClick={signOut} className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600">

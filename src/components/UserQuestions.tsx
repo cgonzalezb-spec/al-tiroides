@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { MessageCircle, Send, Mail, User, Calendar, Reply } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -226,51 +227,12 @@ const UserQuestions = () => {
     }
   };
 
-  // Test de conexión manual
-  const testConnection = async () => {
-    console.log('🧪 Ejecutando test de conexión manual...');
-    try {
-      const { data, error } = await supabase
-        .from('user_questions')
-        .insert({
-          name: 'Test Usuario',
-          email: 'test@test.com',
-          question: 'Esta es una pregunta de prueba para verificar la conexión'
-        })
-        .select();
-      
-      if (error) {
-        console.error('❌ Test falló:', error);
-        toast({
-          title: "Test de conexión falló",
-          description: error.message,
-          variant: "destructive"
-        });
-      } else {
-        console.log('✅ Test exitoso:', data);
-        toast({
-          title: "Test exitoso",
-          description: "La conexión a la base de datos funciona correctamente"
-        });
-        fetchQuestions();
-      }
-    } catch (error) {
-      console.error('❌ Error en test:', error);
-    }
-  };
-
   if (loading) {
     return (
       <section id="preguntas" className="py-20 bg-gradient-to-br from-purple-50 to-pink-50">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <p className="text-lg text-gray-600">Cargando preguntas...</p>
-            {/* Botón de test solo visible en desarrollo */}
-            {import.meta.env.DEV && (
-              <Button onClick={testConnection} className="mt-4">
-                🧪 Test Conexión DB
-              </Button>
-            )}
           </div>
         </div>
       </section>
@@ -287,12 +249,6 @@ const UserQuestions = () => {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             ¿Tienes dudas sobre la tiroides? Envíanos tu pregunta y te responderemos
           </p>
-          {/* Botón de test solo visible en desarrollo */}
-          {import.meta.env.DEV && (
-            <Button onClick={testConnection} className="mt-4 mr-4">
-              🧪 Test Conexión
-            </Button>
-          )}
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
@@ -365,11 +321,6 @@ const UserQuestions = () => {
                     <p className="text-gray-500 mb-4">
                       Aún no hay preguntas. ¡Sé el primero en preguntar!
                     </p>
-                    {import.meta.env.DEV && (
-                      <Button onClick={fetchQuestions} variant="outline" size="sm">
-                        🔄 Refrescar
-                      </Button>
-                    )}
                   </div>
                 ) : (
                   questions.map((q) => (
