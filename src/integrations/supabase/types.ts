@@ -164,7 +164,34 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      delete_explanatory_video: {
+        Args: { p_video_id: string }
+        Returns: boolean
+      }
+      get_explanatory_videos: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          title: string
+          description: string
+          file_path: string
+          file_name: string
+          file_size: number
+          created_at: string
+          uploaded_by: string
+        }[]
+      }
+      insert_explanatory_video: {
+        Args: {
+          p_title: string
+          p_description: string
+          p_file_path: string
+          p_file_name: string
+          p_file_size: number
+          p_uploaded_by: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

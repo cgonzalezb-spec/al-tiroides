@@ -71,7 +71,7 @@ const HeroSection = () => {
     try {
       console.log('📥 Intentando cargar videos desde Supabase...');
       
-      // Usar consulta SQL directa para evitar problemas de tipos
+      // Usar función RPC para obtener videos
       const { data: videoData, error: dbError } = await supabase
         .rpc('get_explanatory_videos');
 
@@ -95,13 +95,20 @@ const HeroSection = () => {
       for (const video of videoData) {
         try {
           const { data: urlData } = supabase.storage
-            .from('videos-explicativos')
+            .from('explanatory-videos')
             .getPublicUrl(video.file_path);
 
           videosWithUrls.push({
-            ...video,
+            id: video.id,
+            title: video.title,
+            description: video.description,
+            file_path: video.file_path,
+            file_name: video.file_name,
+            file_size: video.file_size,
+            created_at: video.created_at,
+            uploaded_by: video.uploaded_by,
             url: urlData.publicUrl
-          } as ExplanatoryVideo);
+          });
         } catch (error) {
           console.log('⚠️ Error generando URL para video:', video.file_name, error);
           // Continuar con otros videos sin fallar
@@ -178,9 +185,9 @@ const HeroSection = () => {
 
       console.log('📁 Subiendo archivo:', filePath);
 
-      // Subir archivo a Supabase Storage
+      // Subir archivo a Supabase Storage (usando el nuevo bucket)
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('videos-explicativos')
+        .from('explanatory-videos')
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
@@ -193,7 +200,7 @@ const HeroSection = () => {
 
       console.log('✅ Archivo subido exitosamente');
 
-      // Usar consulta SQL directa para guardar metadatos
+      // Usar función RPC para guardar metadatos
       const { data: dbData, error: dbError } = await supabase
         .rpc('insert_explanatory_video', {
           p_title: description.trim() || file.name,
@@ -208,7 +215,7 @@ const HeroSection = () => {
         console.error('❌ Error guardando metadatos:', dbError);
         // Si falla guardar metadatos, eliminar archivo subido
         await supabase.storage
-          .from('videos-explicativos')
+          .from('explanatory-videos')
           .remove([filePath]);
         throw dbError;
       }
@@ -268,9 +275,9 @@ const HeroSection = () => {
         return;
       }
 
-      // Eliminar archivo de Storage
+      // Eliminar archivo de Storage (usando el nuevo bucket)
       const { error: storageError } = await supabase.storage
-        .from('videos-explicativos')
+        .from('explanatory-videos')
         .remove([videoToDelete.file_path]);
 
       if (storageError) {
@@ -278,7 +285,7 @@ const HeroSection = () => {
         // Continuar aunque falle eliminar el archivo
       }
 
-      // Usar consulta SQL directa para eliminar registro
+      // Usar función RPC para eliminar registro
       const { error: dbError } = await supabase
         .rpc('delete_explanatory_video', {
           p_video_id: videoId
