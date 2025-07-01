@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from "@/components/ui/use-toast";
 import HealthProfessionalSignup from '@/components/HealthProfessionalSignup';
+import { useNavigate } from 'react-router-dom';
 
 const AuthPage = () => {
   const [mode, setMode] = useState<'login' | 'visitor-signup' | 'professional-signup'>('login');
@@ -14,6 +15,7 @@ const AuthPage = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +58,14 @@ const AuthPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGuestAccess = () => {
+    toast({
+      title: "Acceso como invitado",
+      description: "Navegando como invitado. Algunas funciones estarán limitadas.",
+    });
+    navigate('/');
   };
 
   if (mode === 'professional-signup') {
@@ -133,6 +143,16 @@ const AuthPage = () => {
                     onClick={() => setMode('professional-signup')}
                   >
                     Soy profesional de salud
+                  </Button>
+                </div>
+                
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full text-gray-600 hover:text-gray-800" 
+                    onClick={handleGuestAccess}
+                  >
+                    Continuar como invitado
                   </Button>
                 </div>
               </>
