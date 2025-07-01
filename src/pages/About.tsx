@@ -1,19 +1,54 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, Upload, X, Users, Heart, Target, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useRole } from '@/contexts/RoleContext';
 
 const About = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAdmin } = useRole();
   const [images, setImages] = useState<string[]>([]);
   const [description, setDescription] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Cargar contenido desde la base de datos
+  useEffect(() => {
+    loadContent();
+  }, []);
+
+  const loadContent = async () => {
+    try {
+      const { data: contentData, error } = await supabase
+        .from('about_page_content')
+        .select('*')
+        .eq('section_key', 'description')
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading content:', error);
+        return;
+      }
+
+      if (contentData) {
+        setDescription(contentData.content || '');
+        if (contentData.images && Array.isArray(contentData.images)) {
+          setImages(contentData.images);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading content:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -34,13 +69,58 @@ const About = () => {
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const saveChanges = () => {
-    toast({
-      title: "Cambios guardados",
-      description: "La información de la página ha sido actualizada."
-    });
-    setIsEditing(false);
+  const saveChanges = async () => {
+    if (!isAdmin) {
+      toast({
+        variant: "destructive",
+        title: "Sin permisos",
+        description: "Solo los administradores pueden editar esta página."
+      });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('about_page_content')
+        .upsert({
+          section_key: 'description',
+          content: description,
+          images: images,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'section_key'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Cambios guardados",
+        description: "La información de la página ha sido actualizada."
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudieron guardar los cambios."
+      });
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
@@ -57,12 +137,15 @@ const About = () => {
               <span>Volver al inicio</span>
             </Button>
             <h1 className="text-2xl font-bold text-gray-800">Quiénes Somos</h1>
-            <Button 
-              onClick={() => setIsEditing(!isEditing)}
-              variant={isEditing ? "outline" : "default"}
-            >
-              {isEditing ? "Cancelar" : "Editar"}
-            </Button>
+            {isAdmin && (
+              <Button 
+                onClick={() => setIsEditing(!isEditing)}
+                variant={isEditing ? "outline" : "default"}
+                disabled={saving}
+              >
+                {isEditing ? "Cancelar" : "Editar"}
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -126,6 +209,9 @@ const About = () => {
               <CardTitle className="flex items-center space-x-2">
                 <Users className="h-6 w-6 text-purple-600" />
                 <span>Sobre el Proyecto</span>
+                {isAdmin && isEditing && (
+                  <span className="text-sm text-green-600 font-normal">(Modo edición activo)</span>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -138,13 +224,21 @@ const About = () => {
                     rows={8}
                     className="w-full"
                   />
-                  <Button onClick={saveChanges} className="bg-blue-600 hover:bg-blue-700">
-                    Guardar descripción
+                  <Button 
+                    onClick={saveChanges} 
+                    className="bg-blue-600 hover:bg-blue-700"
+                    disabled={saving}
+                  >
+                    {saving ? "Guardando..." : "Guardar descripción"}
                   </Button>
                 </div>
               ) : (
                 <div className="prose max-w-none">
-                  {description || (
+                  {description ? (
+                    <div className="whitespace-pre-wrap text-gray-700">
+                      {description}
+                    </div>
+                  ) : (
                     <div className="text-gray-500 italic">
                       <p>Al-tiroides nace como una iniciativa para democratizar el acceso a información de calidad sobre la salud tiroidea.</p>
                       <p className="mt-4">Nuestro objetivo es crear un espacio donde pacientes, familiares y profesionales de la salud puedan encontrar recursos confiables, herramientas útiles y una comunidad de apoyo.</p>
