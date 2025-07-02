@@ -40,7 +40,7 @@ const About = () => {
       if (contentData) {
         setDescription(contentData.content || '');
         if (contentData.images && Array.isArray(contentData.images)) {
-          setImages(contentData.images);
+          setImages(contentData.images as string[]);
         }
       }
     } catch (error) {
