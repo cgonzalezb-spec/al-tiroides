@@ -179,9 +179,8 @@ const About = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-700 leading-relaxed">
-                  Proporcionar información clara, confiable y accesible sobre la salud tiroidea, 
-                  ayudando a las personas a entender mejor su condición y tomar decisiones 
-                  informadas sobre su salud.
+                  Compartir información clara, confiable y de fácil acceso sobre la salud tiroidea, 
+                  con el objetivo de ayudar a la visibilización de la glándula tiroides.
                 </p>
               </CardContent>
             </Card>
@@ -195,9 +194,9 @@ const About = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-700 leading-relaxed">
-                  Ser la plataforma de referencia en información sobre tiroides, creando una 
-                  comunidad informada donde pacientes y profesionales de la salud puedan 
-                  colaborar para mejorar la calidad de vida.
+                  Ser una página de fácil acceso a la información sobre la glándula tiroides, 
+                  creando redes de apoyo donde pacientes y profesionales de la salud puedan 
+                  colaborar para mejorar la calidad de vida de quienes viven con enfermedades tiroideas.
                 </p>
               </CardContent>
             </Card>
@@ -240,9 +239,9 @@ const About = () => {
                     </div>
                   ) : (
                     <div className="text-gray-500 italic">
-                      <p>Al-tiroides nace como una iniciativa para democratizar el acceso a información de calidad sobre la salud tiroidea.</p>
-                      <p className="mt-4">Nuestro objetivo es crear un espacio donde pacientes, familiares y profesionales de la salud puedan encontrar recursos confiables, herramientas útiles y una comunidad de apoyo.</p>
-                      <p className="mt-4">Creemos que la información es poder, y cuando se trata de salud, tener acceso a datos precisos y comprensibles puede marcar la diferencia en el bienestar de las personas.</p>
+                      <p>Al-tiroides nace como una iniciativa para masificar el acceso a la información sobre la glándula tiroides, todo esto en el marco de la actividad "pitch" de fisiología en la universidad católica de la santísima Concepción.</p>
+                      <p className="mt-4">Nuestro objetivo es crear un espacio donde pacientes, familiares y profesionales de la salud puedan encontrar información clara, confiable y de fácil acceso.</p>
+                      <p className="mt-4">La información es nuestra principal herramienta, y cuando se trata de salud, entregar un acceso facilitado a datos precisos y confiables puede generar un cambio en la vida de quienes conviven a diario con las enfermedades tiroideas.</p>
                     </div>
                   )}
                 </div>
