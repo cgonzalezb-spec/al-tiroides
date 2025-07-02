@@ -8,11 +8,13 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useRole } from '@/contexts/RoleContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const About = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAdmin } = useRole();
+  const { user } = useAuth();
   const [images, setImages] = useState<string[]>([]);
   const [description, setDescription] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -81,19 +83,32 @@ const About = () => {
 
     setSaving(true);
     try {
-      const { error } = await supabase
+      console.log('Saving changes with data:', {
+        section_key: 'description',
+        content: description,
+        images: images,
+        user_id: user?.id
+      });
+
+      const { data, error } = await supabase
         .from('about_page_content')
         .upsert({
           section_key: 'description',
           content: description,
           images: images,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          updated_by: user?.id
         }, {
           onConflict: 'section_key'
-        });
+        })
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
+      console.log('Save successful:', data);
       toast({
         title: "Cambios guardados",
         description: "La información de la página ha sido actualizada."
@@ -104,7 +119,7 @@ const About = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "No se pudieron guardar los cambios."
+        description: `No se pudieron guardar los cambios: ${error.message || 'Error desconocido'}`
       });
     } finally {
       setSaving(false);
