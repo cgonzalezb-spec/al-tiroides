@@ -17,6 +17,8 @@ const About = () => {
   const { user } = useAuth();
   const [images, setImages] = useState<string[]>([]);
   const [description, setDescription] = useState('');
+  const [mission, setMission] = useState('');
+  const [vision, setVision] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -31,19 +33,26 @@ const About = () => {
       const { data: contentData, error } = await supabase
         .from('about_page_content')
         .select('*')
-        .eq('section_key', 'description')
-        .single();
+        .in('section_key', ['description', 'mission', 'vision']);
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error loading content:', error);
         return;
       }
 
-      if (contentData) {
-        setDescription(contentData.content || '');
-        if (contentData.images && Array.isArray(contentData.images)) {
-          setImages(contentData.images as string[]);
-        }
+      if (contentData && Array.isArray(contentData)) {
+        contentData.forEach(item => {
+          if (item.section_key === 'description') {
+            setDescription(item.content || '');
+            if (item.images && Array.isArray(item.images)) {
+              setImages(item.images as string[]);
+            }
+          } else if (item.section_key === 'mission') {
+            setMission(item.content || '');
+          } else if (item.section_key === 'vision') {
+            setVision(item.content || '');
+          }
+        });
       }
     } catch (error) {
       console.error('Error loading content:', error);
@@ -83,32 +92,42 @@ const About = () => {
 
     setSaving(true);
     try {
-      console.log('Saving changes with data:', {
-        section_key: 'description',
-        content: description,
-        images: images,
-        user_id: user?.id
-      });
-
-      const { data, error } = await supabase
-        .from('about_page_content')
-        .upsert({
+      // Guardar los tres textos
+      const updates = [
+        {
           section_key: 'description',
           content: description,
           images: images,
           updated_at: new Date().toISOString(),
           updated_by: user?.id
-        }, {
-          onConflict: 'section_key'
-        })
-        .select();
+        },
+        {
+          section_key: 'mission',
+          content: mission,
+          updated_at: new Date().toISOString(),
+          updated_by: user?.id
+        },
+        {
+          section_key: 'vision',
+          content: vision,
+          updated_at: new Date().toISOString(),
+          updated_by: user?.id
+        }
+      ];
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
+      for (const update of updates) {
+        const { error } = await supabase
+          .from('about_page_content')
+          .upsert(update, {
+            onConflict: 'section_key'
+          });
+
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
+        }
       }
 
-      console.log('Save successful:', data);
       toast({
         title: "Cambios guardados",
         description: "La información de la página ha sido actualizada."
@@ -193,10 +212,19 @@ const About = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 leading-relaxed">
-                  Compartir información clara, confiable y de fácil acceso sobre la salud tiroidea, 
-                  con el objetivo de ayudar a la visibilización de la glándula tiroides.
-                </p>
+                {isEditing ? (
+                  <Textarea
+                    placeholder="Describe la misión del proyecto..."
+                    value={mission}
+                    onChange={(e) => setMission(e.target.value)}
+                    rows={4}
+                    className="w-full"
+                  />
+                ) : (
+                  <div className="text-gray-700 leading-relaxed">
+                    {mission || "Compartir información clara, confiable y de fácil acceso sobre la salud tiroidea, con el objetivo de ayudar a la visibilización de la glándula tiroides."}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -208,11 +236,19 @@ const About = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 leading-relaxed">
-                  Ser una página de fácil acceso a la información sobre la glándula tiroides, 
-                  creando redes de apoyo donde pacientes y profesionales de la salud puedan 
-                  colaborar para mejorar la calidad de vida de quienes viven con enfermedades tiroideas.
-                </p>
+                {isEditing ? (
+                  <Textarea
+                    placeholder="Describe la visión del proyecto..."
+                    value={vision}
+                    onChange={(e) => setVision(e.target.value)}
+                    rows={4}
+                    className="w-full"
+                  />
+                ) : (
+                  <div className="text-gray-700 leading-relaxed">
+                    {vision || "Ser una página de fácil acceso a la información sobre la glándula tiroides, creando redes de apoyo donde pacientes y profesionales de la salud puedan colaborar para mejorar la calidad de vida de quienes viven con enfermedades tiroideas."}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
