@@ -4,6 +4,7 @@ import { ArrowLeft, Upload, X, Users, Heart, Target, Award } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -331,17 +332,27 @@ const About = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {images.map((image, index) => (
                     <div key={index} className="relative group">
-                      <img
-                        src={image}
-                        alt={`Imagen ${index + 1}`}
-                        className="w-full h-48 object-cover rounded-lg shadow-md cursor-pointer transition-transform duration-300 hover:scale-105"
-                        onClick={() => window.open(image, '_blank')}
-                      />
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <img
+                            src={image}
+                            alt={`Imagen ${index + 1}`}
+                            className="w-full h-48 object-cover rounded-lg shadow-md cursor-pointer transition-transform duration-300 hover:scale-110"
+                          />
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-transparent border-none">
+                          <img
+                            src={image}
+                            alt={`Imagen ${index + 1} ampliada`}
+                            className="w-full h-full object-contain rounded-lg"
+                          />
+                        </DialogContent>
+                      </Dialog>
                       {isEditing && (
                         <Button
                           size="sm"
                           variant="destructive"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                           onClick={() => removeImage(index)}
                         >
                           <X className="h-4 w-4" />
