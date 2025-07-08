@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Upload, X, Users, Heart, Target, Award } from 'lucide-react';
+import { ArrowLeft, Upload, X, Users, Heart, Target, Award, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -16,7 +17,7 @@ const About = () => {
   const { toast } = useToast();
   const { isAdmin } = useRole();
   const { user } = useAuth();
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<{image: string, description: string}[]>([]);
   const [description, setDescription] = useState('');
   const [mission, setMission] = useState('');
   const [vision, setVision] = useState('');
@@ -46,7 +47,14 @@ const About = () => {
           if (item.section_key === 'description') {
             setDescription(item.content || '');
             if (item.images && Array.isArray(item.images)) {
-              setImages(item.images as string[]);
+              // Migrar formato antiguo (string[]) al nuevo formato ({image, description}[])
+              const migratedImages = item.images.map((img: any) => {
+                if (typeof img === 'string') {
+                  return { image: img, description: '' };
+                }
+                return img;
+              });
+              setImages(migratedImages);
             }
           } else if (item.section_key === 'mission') {
             setMission(item.content || '');
@@ -70,11 +78,17 @@ const About = () => {
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          setImages(prev => [...prev, event.target!.result as string]);
+          setImages(prev => [...prev, { image: event.target!.result as string, description: '' }]);
         }
       };
       reader.readAsDataURL(file);
     });
+  };
+
+  const updateImageDescription = (index: number, description: string) => {
+    setImages(prev => prev.map((img, i) => 
+      i === index ? { ...img, description } : img
+    ));
   };
 
   const removeImage = (index: number) => {
@@ -330,33 +344,53 @@ const About = () => {
 
               {images.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {images.map((image, index) => (
-                    <div key={index} className="relative group">
+                  {images.map((imgObj, index) => (
+                    <div key={index} className="relative group space-y-2">
                       <Dialog>
                         <DialogTrigger asChild>
                           <img
-                            src={image}
+                            src={imgObj.image}
                             alt={`Imagen ${index + 1}`}
                             className="w-full h-48 object-cover rounded-lg shadow-md cursor-pointer transition-transform duration-300 hover:scale-110"
                           />
                         </DialogTrigger>
-                        <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-transparent border-none">
-                          <img
-                            src={image}
-                            alt={`Imagen ${index + 1} ampliada`}
-                            className="w-full h-full object-contain rounded-lg"
-                          />
+                        <DialogContent className="max-w-4xl max-h-[90vh] p-6 bg-white">
+                          <div className="space-y-4">
+                            <img
+                              src={imgObj.image}
+                              alt={`Imagen ${index + 1} ampliada`}
+                              className="w-full max-h-[60vh] object-contain rounded-lg"
+                            />
+                            {imgObj.description && (
+                              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                                <p className="text-gray-700">{imgObj.description}</p>
+                              </div>
+                            )}
+                          </div>
                         </DialogContent>
                       </Dialog>
+                      
                       {isEditing && (
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                          onClick={() => removeImage(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                        <>
+                          <Input
+                            placeholder="Descripción de la imagen..."
+                            value={imgObj.description}
+                            onChange={(e) => updateImageDescription(index, e.target.value)}
+                            className="text-sm"
+                          />
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                            onClick={() => removeImage(index)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                      
+                      {!isEditing && imgObj.description && (
+                        <p className="text-sm text-gray-600 text-center">{imgObj.description}</p>
                       )}
                     </div>
                   ))}
