@@ -334,7 +334,8 @@ const About = () => {
                       <img
                         src={image}
                         alt={`Imagen ${index + 1}`}
-                        className="w-full h-48 object-cover rounded-lg shadow-md"
+                        className="w-full h-48 object-cover rounded-lg shadow-md cursor-pointer transition-transform duration-300 hover:scale-105"
+                        onClick={() => window.open(image, '_blank')}
                       />
                       {isEditing && (
                         <Button
