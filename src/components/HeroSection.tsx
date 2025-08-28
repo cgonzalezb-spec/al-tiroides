@@ -7,33 +7,27 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ExplanatoryVideo } from '@/types/video';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-  type CarouselApi,
-} from "@/components/ui/carousel";
-
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
 const HeroSection = () => {
   const [videos, setVideos] = useState<ExplanatoryVideo[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [api, setApi] = useState<CarouselApi>()
-  const [current, setCurrent] = useState(0)
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
   const [showDescriptionForm, setShowDescriptionForm] = useState(false);
   const [pendingVideoFile, setPendingVideoFile] = useState<File | null>(null);
   const [videoDescription, setVideoDescription] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
-  
-  const { toast } = useToast();
-  const { user } = useAuth();
-
+  const {
+    toast
+  } = useToast();
+  const {
+    user
+  } = useAuth();
   useEffect(() => {
     const adminMode = localStorage.getItem('adminMode');
     setIsAdmin(adminMode === 'true');
-    
+
     // Intentar cargar videos, pero no mostrar errores al usuario
     loadVideosFromSupabase();
   }, []);
@@ -41,18 +35,14 @@ const HeroSection = () => {
   // Auto-rotar videos y actualizar indicador
   useEffect(() => {
     if (!api) return;
-
     const handleSelect = () => {
       if (api.selectedScrollSnap() !== -1) {
         setCurrent(api.selectedScrollSnap());
       }
     };
-
     api.on("select", handleSelect);
     handleSelect();
-
     let intervalId: ReturnType<typeof setInterval> | null = null;
-
     if (videos.length > 1 && !isAdmin) {
       intervalId = setInterval(() => {
         if (document.hasFocus()) {
@@ -60,27 +50,25 @@ const HeroSection = () => {
         }
       }, 10000);
     }
-
     return () => {
       if (intervalId) clearInterval(intervalId);
       api.off("select", handleSelect);
     };
   }, [api, videos.length, isAdmin]);
-
   const loadVideosFromSupabase = async () => {
     try {
       console.log('📥 Intentando cargar videos desde Supabase...');
-      
-      // Usar función RPC para obtener videos
-      const { data: videoData, error: dbError } = await supabase
-        .rpc('get_explanatory_videos');
 
+      // Usar función RPC para obtener videos
+      const {
+        data: videoData,
+        error: dbError
+      } = await supabase.rpc('get_explanatory_videos');
       if (dbError) {
         console.log('ℹ️ No se encontraron videos o tabla no existe:', dbError.message);
         setVideos([]);
         return;
       }
-
       console.log(`✅ Videos encontrados: ${videoData?.length || 0}`);
 
       // Si no hay videos, establecer array vacío
@@ -91,13 +79,11 @@ const HeroSection = () => {
 
       // Generar URLs públicas para cada video
       const videosWithUrls: ExplanatoryVideo[] = [];
-      
       for (const video of videoData) {
         try {
-          const { data: urlData } = supabase.storage
-            .from('explanatory-videos')
-            .getPublicUrl(video.file_path);
-
+          const {
+            data: urlData
+          } = supabase.storage.from('explanatory-videos').getPublicUrl(video.file_path);
           videosWithUrls.push({
             id: video.id,
             title: video.title,
@@ -114,24 +100,22 @@ const HeroSection = () => {
           // Continuar con otros videos sin fallar
         }
       }
-
       setVideos(videosWithUrls);
       console.log('📋 Videos cargados exitosamente:', videosWithUrls.length);
-
     } catch (error) {
       console.log('ℹ️ No se pudieron cargar videos:', error);
       // Establecer array vacío en lugar de mostrar error
       setVideos([]);
     }
   };
-
   const scrollToTest = () => {
     const element = document.querySelector('#autotest');
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({
+        behavior: 'smooth'
+      });
     }
   };
-
   const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -155,13 +139,11 @@ const HeroSection = () => {
         });
         return;
       }
-      
       setPendingVideoFile(file);
       setShowDescriptionForm(true);
       setVideoDescription('');
     }
   };
-
   const uploadToSupabase = async (file: File, description: string) => {
     if (!user) {
       toast({
@@ -171,10 +153,8 @@ const HeroSection = () => {
       });
       return;
     }
-
     setIsUploading(true);
     setUploadProgress(0);
-
     try {
       console.log('📤 Iniciando subida de video...');
 
@@ -182,46 +162,41 @@ const HeroSection = () => {
       const timestamp = Date.now();
       const fileName = `${timestamp}-${file.name}`;
       const filePath = `videos/${fileName}`;
-
       console.log('📁 Subiendo archivo:', filePath);
 
       // Subir archivo a Supabase Storage (usando el nuevo bucket)
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('explanatory-videos')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
+      const {
+        data: uploadData,
+        error: uploadError
+      } = await supabase.storage.from('explanatory-videos').upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
       if (uploadError) {
         console.error('❌ Error subiendo archivo:', uploadError);
         throw uploadError;
       }
-
       console.log('✅ Archivo subido exitosamente');
 
       // Usar función RPC para guardar metadatos
-      const { data: dbData, error: dbError } = await supabase
-        .rpc('insert_explanatory_video', {
-          p_title: description.trim() || file.name,
-          p_description: description.trim() || null,
-          p_file_path: filePath,
-          p_file_name: file.name,
-          p_file_size: file.size,
-          p_uploaded_by: user.id
-        });
-
+      const {
+        data: dbData,
+        error: dbError
+      } = await supabase.rpc('insert_explanatory_video', {
+        p_title: description.trim() || file.name,
+        p_description: description.trim() || null,
+        p_file_path: filePath,
+        p_file_name: file.name,
+        p_file_size: file.size,
+        p_uploaded_by: user.id
+      });
       if (dbError) {
         console.error('❌ Error guardando metadatos:', dbError);
         // Si falla guardar metadatos, eliminar archivo subido
-        await supabase.storage
-          .from('explanatory-videos')
-          .remove([filePath]);
+        await supabase.storage.from('explanatory-videos').remove([filePath]);
         throw dbError;
       }
-
       console.log('✅ Video subido completamente');
-
       toast({
         title: "¡Video subido exitosamente!",
         description: "El video está ahora disponible"
@@ -229,7 +204,6 @@ const HeroSection = () => {
 
       // Recargar lista de videos
       await loadVideosFromSupabase();
-
     } catch (error: any) {
       console.error('❌ Error en proceso de subida:', error);
       toast({
@@ -242,24 +216,21 @@ const HeroSection = () => {
       setUploadProgress(0);
     }
   };
-
   const handleDescriptionSubmit = async () => {
     if (pendingVideoFile) {
       await uploadToSupabase(pendingVideoFile, videoDescription);
-      
+
       // Limpiar formulario
       setShowDescriptionForm(false);
       setPendingVideoFile(null);
       setVideoDescription('');
     }
   };
-
   const handleDescriptionCancel = () => {
     setShowDescriptionForm(false);
     setPendingVideoFile(null);
     setVideoDescription('');
   };
-
   const removeVideo = async (videoId: string) => {
     try {
       console.log('🗑️ Eliminando video:', videoId);
@@ -276,28 +247,25 @@ const HeroSection = () => {
       }
 
       // Eliminar archivo de Storage (usando el nuevo bucket)
-      const { error: storageError } = await supabase.storage
-        .from('explanatory-videos')
-        .remove([videoToDelete.file_path]);
-
+      const {
+        error: storageError
+      } = await supabase.storage.from('explanatory-videos').remove([videoToDelete.file_path]);
       if (storageError) {
         console.log('⚠️ Error eliminando archivo de storage:', storageError);
         // Continuar aunque falle eliminar el archivo
       }
 
       // Usar función RPC para eliminar registro
-      const { error: dbError } = await supabase
-        .rpc('delete_explanatory_video', {
-          p_video_id: videoId
-        });
-
+      const {
+        error: dbError
+      } = await supabase.rpc('delete_explanatory_video', {
+        p_video_id: videoId
+      });
       if (dbError) {
         console.error('❌ Error eliminando de base de datos:', dbError);
         throw dbError;
       }
-
       console.log('✅ Video eliminado exitosamente');
-
       toast({
         title: "Video eliminado",
         description: "El video ha sido eliminado exitosamente"
@@ -305,7 +273,6 @@ const HeroSection = () => {
 
       // Recargar lista de videos
       await loadVideosFromSupabase();
-
     } catch (error: any) {
       console.error('❌ Error eliminando video:', error);
       toast({
@@ -315,16 +282,13 @@ const HeroSection = () => {
       });
     }
   };
-
   const toggleAdminMode = () => {
     const newAdminMode = !isAdmin;
     setIsAdmin(newAdminMode);
     localStorage.setItem('adminMode', newAdminMode.toString());
   };
-
   const handleWatchVideo = (videoIndex: number) => {
     const videoToShow = videos[videoIndex];
-    
     if (videoToShow && videoToShow.url) {
       const videoModal = document.createElement('div');
       videoModal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
@@ -340,25 +304,17 @@ const HeroSection = () => {
       document.body.appendChild(videoModal);
     }
   };
-
-  return (
-    <section id="inicio" className="py-20 lg:py-32">
+  return <section id="inicio" className="py-20 lg:py-32">
       <div className="container mx-auto px-4">
         {/* Botón para alternar modo admin */}
         <div className="mb-4">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={toggleAdminMode}
-            className="text-xs"
-          >
+          <Button variant="outline" size="sm" onClick={toggleAdminMode} className="text-xs">
             {isAdmin ? '👑 Modo Admin' : '👤 Modo Visitante'}
           </Button>
         </div>
 
         {/* Formulario de descripción de video */}
-        {showDescriptionForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        {showDescriptionForm && <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
               <h3 className="text-lg font-semibold mb-4">Agregar descripción al video</h3>
               <div className="space-y-4">
@@ -374,49 +330,30 @@ const HeroSection = () => {
                   <label className="block text-sm font-medium mb-2">
                     Descripción (opcional)
                   </label>
-                  <Textarea
-                    value={videoDescription}
-                    onChange={(e) => setVideoDescription(e.target.value)}
-                    placeholder="Escribe una breve descripción del video..."
-                    className="w-full"
-                    rows={3}
-                    disabled={isUploading}
-                  />
+                  <Textarea value={videoDescription} onChange={e => setVideoDescription(e.target.value)} placeholder="Escribe una breve descripción del video..." className="w-full" rows={3} disabled={isUploading} />
                 </div>
-                {isUploading && (
-                  <div className="space-y-2">
+                {isUploading && <div className="space-y-2">
                     <div className="flex justify-between text-sm text-gray-600">
                       <span>Subiendo...</span>
                       <span>{uploadProgress}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                        style={{ width: `${uploadProgress}%` }}
-                      ></div>
+                      <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{
+                  width: `${uploadProgress}%`
+                }}></div>
                     </div>
-                  </div>
-                )}
+                  </div>}
                 <div className="flex gap-2 justify-end">
-                  <Button
-                    variant="outline"
-                    onClick={handleDescriptionCancel}
-                    disabled={isUploading}
-                  >
+                  <Button variant="outline" onClick={handleDescriptionCancel} disabled={isUploading}>
                     Cancelar
                   </Button>
-                  <Button
-                    onClick={handleDescriptionSubmit}
-                    className="bg-blue-600 hover:bg-blue-700"
-                    disabled={isUploading}
-                  >
+                  <Button onClick={handleDescriptionSubmit} className="bg-blue-600 hover:bg-blue-700" disabled={isUploading}>
                     {isUploading ? 'Subiendo...' : 'Subir Video'}
                   </Button>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          </div>}
 
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
@@ -434,167 +371,85 @@ const HeroSection = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
-                size="lg"
-                onClick={scrollToTest}
-                className="bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600 text-lg px-8 py-4"
-              >
+              <Button size="lg" onClick={scrollToTest} className="bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600 text-lg px-8 py-4">
                 Hacer autotest <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               
-              {isAdmin ? (
-                <div className="relative">
-                  <Button 
-                    variant="outline" 
-                    size="lg"
-                    className="text-lg px-8 py-4 border-2 hover:bg-blue-50 w-full"
-                    onClick={() => document.getElementById('video-upload')?.click()}
-                    disabled={isUploading}
-                  >
+              {isAdmin ? <div className="relative">
+                  <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-2 hover:bg-blue-50 w-full" onClick={() => document.getElementById('video-upload')?.click()} disabled={isUploading}>
                     <Upload className="mr-2 h-5 w-5" />
                     {isUploading ? 'Subiendo...' : 'Agregar video explicativo'}
                   </Button>
-                  <input
-                    id="video-upload"
-                    type="file"
-                    accept="video/*"
-                    onChange={handleVideoUpload}
-                    className="hidden"
-                    disabled={isUploading}
-                  />
-                </div>
-              ) : (
-                videos.length > 0 && (
-                  <div className="w-full max-w-xs mx-auto sm:max-w-md sm:mx-0 flex-1">
-                    <Carousel 
-                      setApi={setApi} 
-                      className="w-full" 
-                      opts={{ loop: videos.length > 1 }}
-                    >
+                  <input id="video-upload" type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" disabled={isUploading} />
+                </div> : videos.length > 0 && <div className="w-full max-w-xs mx-auto sm:max-w-md sm:mx-0 flex-1">
+                    <Carousel setApi={setApi} className="w-full" opts={{
+                loop: videos.length > 1
+              }}>
                       <CarouselContent>
-                        {videos.map((video, index) => (
-                          <CarouselItem key={video.id}>
+                        {videos.map((video, index) => <CarouselItem key={video.id}>
                             <div className="p-1">
-                              <div
-                                className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer group shadow-lg"
-                                onClick={() => handleWatchVideo(index)}
-                              >
-                                <video
-                                  src={video.url}
-                                  className="w-full h-full object-cover bg-black"
-                                  playsInline
-                                  muted
-                                  preload="metadata"
-                                >
+                              <div className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer group shadow-lg" onClick={() => handleWatchVideo(index)}>
+                                <video src={video.url} className="w-full h-full object-cover bg-black" playsInline muted preload="metadata">
                                   Tu navegador no soporta videos.
                                 </video>
                                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                                   <PlayCircle className="h-12 w-12 text-white/90 drop-shadow-lg transform transition-transform group-hover:scale-110" />
                                 </div>
-                                {video.description && (
-                                  <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md max-w-[80%]">
+                                {video.description && <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md max-w-[80%]">
                                     {video.description}
-                                  </div>
-                                )}
+                                  </div>}
                               </div>
                             </div>
-                          </CarouselItem>
-                        ))}
+                          </CarouselItem>)}
                       </CarouselContent>
-                      {videos.length > 1 && (
-                        <>
+                      {videos.length > 1 && <>
                           <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10" />
                           <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10" />
-                        </>
-                      )}
+                        </>}
                     </Carousel>
-                  </div>
-                )
-              )}
+                  </div>}
             </div>
 
             {/* Administración de videos para admin */}
-            {isAdmin && videos.length > 0 && (
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            {isAdmin && videos.length > 0 && <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <h4 className="font-semibold mb-2">Videos almacenados ({videos.length})</h4>
                 <div className="space-y-2">
-                  {videos.map((video, index) => (
-                    <div key={video.id} className="flex justify-between items-start bg-white p-3 rounded">
+                  {videos.map((video, index) => <div key={video.id} className="flex justify-between items-start bg-white p-3 rounded">
                       <div className="flex-1">
                         <div className="text-sm font-medium text-gray-600 mb-1">
                           Video {index + 1}: {video.file_name}
                         </div>
-                        {video.description && (
-                          <div className="text-sm text-gray-700">{video.description}</div>
-                        )}
-                        {!video.description && (
-                          <div className="text-sm text-gray-400 italic">Sin descripción</div>
-                        )}
+                        {video.description && <div className="text-sm text-gray-700">{video.description}</div>}
+                        {!video.description && <div className="text-sm text-gray-400 italic">Sin descripción</div>}
                         <div className="text-xs text-gray-500 mt-1">
                           Subido: {new Date(video.created_at).toLocaleDateString('es-CL')}
                           {video.file_size && ` • ${(video.file_size / (1024 * 1024)).toFixed(2)} MB`}
                         </div>
                       </div>
                       <div className="flex gap-2 ml-4">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleWatchVideo(index)}
-                        >
+                        <Button size="sm" variant="outline" onClick={() => handleWatchVideo(index)}>
                           Ver
                         </Button>
-                        <Button 
-                          size="sm" 
-                          variant="destructive"
-                          onClick={() => removeVideo(video.id)}
-                        >
+                        <Button size="sm" variant="destructive" onClick={() => removeVideo(video.id)}>
                           Eliminar
                         </Button>
                       </div>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
-              </div>
-            )}
+              </div>}
 
             {/* Indicador de video actual para visitantes */}
-            {!isAdmin && videos.length > 1 && (
-              <div className="flex justify-center gap-2">
-                {videos.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => api?.scrollTo(index)}
-                    className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                      current === index ? 'w-4 bg-blue-600' : 'bg-gray-300'
-                    }`}
-                    aria-label={`Ir al video ${index + 1}`}
-                  />
-                ))}
-              </div>
-            )}
+            {!isAdmin && videos.length > 1 && <div className="flex justify-center gap-2">
+                {videos.map((_, index) => <button key={index} onClick={() => api?.scrollTo(index)} className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${current === index ? 'w-4 bg-blue-600' : 'bg-gray-300'}`} aria-label={`Ir al video ${index + 1}`} />)}
+              </div>}
 
-            {!isAdmin && videos.length === 0 && (
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            {!isAdmin && videos.length === 0 && <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <p className="text-blue-800 text-sm">
                   📹 Próximamente disponible video explicativo sobre tiroides
                 </p>
-              </div>
-            )}
+              </div>}
 
-            <div className="grid grid-cols-3 gap-8 pt-8">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600">5+</div>
-                <div className="text-sm text-gray-600">Trastornos explicados</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-500">100%</div>
-                <div className="text-sm text-gray-600">Información médica</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-purple-500">24/7</div>
-                <div className="text-sm text-gray-600">Disponible siempre</div>
-              </div>
-            </div>
+            
           </div>
 
           <div className="relative">
@@ -608,23 +463,13 @@ const HeroSection = () => {
                 </div>
                 
                 <div className="space-y-4">
-                  {[
-                    'Fatiga constante',
-                    'Cambios de peso',
-                    'Problemas de concentración',
-                    'Sensibilidad al frío/calor'
-                  ].map((symptom, index) => (
-                    <div key={index} className="flex items-center space-x-3">
+                  {['Fatiga constante', 'Cambios de peso', 'Problemas de concentración', 'Sensibilidad al frío/calor'].map((symptom, index) => <div key={index} className="flex items-center space-x-3">
                       <div className="w-4 h-4 bg-gradient-to-r from-blue-500 to-green-400 rounded-full"></div>
                       <span className="text-gray-700">{symptom}</span>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
                 
-                <Button 
-                  onClick={scrollToTest}
-                  className="w-full bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600"
-                >
+                <Button onClick={scrollToTest} className="w-full bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600">
                   Evaluar mis síntomas
                 </Button>
               </div>
@@ -636,8 +481,6 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default HeroSection;
