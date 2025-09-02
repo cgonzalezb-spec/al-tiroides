@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { ImageLightbox } from '@/components/ImageLightbox';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,6 +24,8 @@ const About = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   // Cargar contenido desde la base de datos
   useEffect(() => {
@@ -346,29 +348,15 @@ const About = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {images.map((imgObj, index) => (
                     <div key={index} className="relative group space-y-2">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <img
-                            src={imgObj.image}
-                            alt={`Imagen ${index + 1}`}
-                            className="w-full h-48 object-cover rounded-lg shadow-md cursor-pointer transition-transform duration-300 hover:scale-110"
-                          />
-                        </DialogTrigger>
-                        <DialogContent className="max-w-4xl max-h-[90vh] p-6 bg-white">
-                          <div className="space-y-4">
-                            <img
-                              src={imgObj.image}
-                              alt={`Imagen ${index + 1} ampliada`}
-                              className="w-full max-h-[60vh] object-contain rounded-lg"
-                            />
-                            {imgObj.description && (
-                              <div className="text-center p-4 bg-gray-50 rounded-lg">
-                                <p className="text-gray-700">{imgObj.description}</p>
-                              </div>
-                            )}
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                      <img
+                        src={imgObj.image}
+                        alt={`Imagen ${index + 1}`}
+                        className="w-full h-48 object-cover rounded-lg shadow-md cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                        onClick={() => {
+                          setLightboxIndex(index);
+                          setLightboxOpen(true);
+                        }}
+                      />
                       
                       {isEditing && (
                         <>
@@ -396,6 +384,13 @@ const About = () => {
                   ))}
                 </div>
               )}
+
+              <ImageLightbox
+                images={images}
+                isOpen={lightboxOpen}
+                onClose={() => setLightboxOpen(false)}
+                initialIndex={lightboxIndex}
+              />
 
               {images.length === 0 && !isEditing && (
                 <div className="text-center py-8 text-gray-500">
