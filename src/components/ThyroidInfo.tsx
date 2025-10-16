@@ -91,10 +91,10 @@ const ThyroidInfo = () => {
           {functions.map((func, index) => (
             <Card 
               key={index} 
-              className="text-center hover:shadow-lg transition-all duration-300 cursor-pointer"
+              className="text-center hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col"
               onClick={() => toggleCard(index)}
             >
-              <CardHeader>
+              <CardHeader className="flex-shrink-0">
                 <div className="mx-auto mb-4">
                   {func.icon}
                 </div>
@@ -107,13 +107,13 @@ const ThyroidInfo = () => {
                   )}
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-grow">
                 <CardDescription className="text-sm mb-3">
                   {func.description}
                 </CardDescription>
                 {expandedCards.includes(index) && (
-                  <div className="bg-blue-50 p-4 rounded-lg border-t">
-                    <p className="text-sm text-gray-700 text-left">
+                  <div className="bg-blue-50 p-4 rounded-lg border-t mt-2 animate-in fade-in-50 duration-200">
+                    <p className="text-sm text-gray-700 text-left leading-relaxed">
                       {func.expandedInfo}
                     </p>
                   </div>
