@@ -6,11 +6,11 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRole } from '@/contexts/RoleContext';
 import { ExplanatoryVideo } from '@/types/video';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
 const HeroSection = () => {
   const [videos, setVideos] = useState<ExplanatoryVideo[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [showDescriptionForm, setShowDescriptionForm] = useState(false);
@@ -24,10 +24,8 @@ const HeroSection = () => {
   const {
     user
   } = useAuth();
+  const { isAdmin } = useRole();
   useEffect(() => {
-    const adminMode = localStorage.getItem('adminMode');
-    setIsAdmin(adminMode === 'true');
-
     // Intentar cargar videos, pero no mostrar errores al usuario
     loadVideosFromSupabase();
   }, []);
@@ -282,11 +280,6 @@ const HeroSection = () => {
       });
     }
   };
-  const toggleAdminMode = () => {
-    const newAdminMode = !isAdmin;
-    setIsAdmin(newAdminMode);
-    localStorage.setItem('adminMode', newAdminMode.toString());
-  };
   const handleWatchVideo = (videoIndex: number) => {
     const videoToShow = videos[videoIndex];
     if (videoToShow && videoToShow.url) {
@@ -306,13 +299,6 @@ const HeroSection = () => {
   };
   return <section id="inicio" className="py-20 lg:py-32">
       <div className="container mx-auto px-4">
-        {/* Botón para alternar modo admin */}
-        <div className="mb-4">
-          <Button variant="outline" size="sm" onClick={toggleAdminMode} className="text-xs">
-            {isAdmin ? '👑 Modo Admin' : '👤 Modo Visitante'}
-          </Button>
-        </div>
-
         {/* Formulario de descripción de video */}
         {showDescriptionForm && <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">

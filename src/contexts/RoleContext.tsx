@@ -30,7 +30,7 @@ export const RoleProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       // Si es tu email de admin, asignar admin directamente
-      if (user.email === 'cristobal804g@gmail.com') {
+      if (user.email === 'cgonzalezb@medicina.ucsc.cl') {
         setUserRole('admin');
         setLoading(false);
         return;
