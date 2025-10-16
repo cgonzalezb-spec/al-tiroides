@@ -53,7 +53,7 @@ const ThyroidInfo = () => {
   const allExpanded = expandedCards.length === functions.length;
 
   return (
-    <section id="que-es" className="py-20 bg-white">
+    <section id="que-es" className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -87,14 +87,14 @@ const ThyroidInfo = () => {
           </Button>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16 items-start">
           {functions.map((func, index) => (
             <Card 
               key={index} 
-              className="text-center hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col"
+              className="text-center hover:shadow-lg transition-all duration-200 cursor-pointer"
               onClick={() => toggleCard(index)}
             >
-              <CardHeader className="flex-shrink-0">
+              <CardHeader>
                 <div className="mx-auto mb-4">
                   {func.icon}
                 </div>
@@ -107,12 +107,12 @@ const ThyroidInfo = () => {
                   )}
                 </div>
               </CardHeader>
-              <CardContent className="flex-grow">
+              <CardContent>
                 <CardDescription className="text-sm mb-3">
                   {func.description}
                 </CardDescription>
                 {expandedCards.includes(index) && (
-                  <div className="bg-blue-50 p-4 rounded-lg border-t mt-2 animate-in fade-in-50 duration-200">
+                  <div className="bg-muted/30 p-4 rounded-md border-t mt-2 animate-fade-in max-h-40 overflow-y-auto">
                     <p className="text-sm text-gray-700 text-left leading-relaxed">
                       {func.expandedInfo}
                     </p>
