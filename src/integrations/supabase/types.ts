@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -191,6 +191,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -201,32 +222,39 @@ export type Database = {
         Returns: boolean
       }
       get_explanatory_videos: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
+          created_at: string
+          description: string
+          file_name: string
+          file_path: string
+          file_size: number
           id: string
           title: string
-          description: string
-          file_path: string
-          file_name: string
-          file_size: number
-          created_at: string
           uploaded_by: string
         }[]
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       insert_explanatory_video: {
         Args: {
-          p_title: string
           p_description: string
-          p_file_path: string
           p_file_name: string
+          p_file_path: string
           p_file_size: number
+          p_title: string
           p_uploaded_by: string
         }
         Returns: string
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "health_professional" | "visitor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -353,6 +381,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "health_professional", "visitor"],
+    },
   },
 } as const
