@@ -127,12 +127,12 @@ const HeroSection = () => {
         return;
       }
 
-      // Validar tamaño (máximo 50MB para evitar problemas)
-      const maxSize = 50 * 1024 * 1024; // 50MB
+      // Validar tamaño (máximo 200MB para evitar problemas)
+      const maxSize = 200 * 1024 * 1024; // 200MB
       if (file.size > maxSize) {
         toast({
           title: "Archivo demasiado grande",
-          description: "El video no puede superar los 50MB",
+          description: "El video no puede superar los 200MB",
           variant: "destructive"
         });
         return;
@@ -206,7 +206,7 @@ const HeroSection = () => {
       console.error('❌ Error en proceso de subida:', error);
       toast({
         title: "Error subiendo video",
-        description: "No se pudo subir el video. Intenta con un archivo más pequeño.",
+        description: "No se pudo subir el video. Asegúrate de que el archivo no supere los 200MB.",
         variant: "destructive"
       });
     } finally {
