@@ -1,13 +1,15 @@
-import { Pill, Clock, AlertCircle, Heart, CheckCircle, Info } from 'lucide-react';
+import { Pill, Clock, AlertCircle, Heart, CheckCircle, ChevronDown, ExternalLink, ShoppingCart } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useState } from 'react';
 
 const Medications = () => {
-  const [selectedMed, setSelectedMed] = useState<number | null>(null);
+  const [openDetails, setOpenDetails] = useState<number | null>(null);
+  const [openPrices, setOpenPrices] = useState<number | null>(null);
 
   const medications = [
     {
@@ -19,17 +21,36 @@ const Medications = () => {
       dosage: "Usualmente 25-200 mcg al día, en ayunas",
       sideEffects: ["Palpitaciones si la dosis es muy alta", "Insomnio", "Pérdida de peso"],
       tips: ["Tomar en ayunas", "No mezclar con café o calcio", "Esperar 1 hora antes de desayunar"],
-      mechanism: "La levotiroxina es una forma sintética de la hormona tiroidea T4 (tiroxina). Actúa uniéndose a receptores nucleares de hormonas tiroideas en las células, regulando la transcripción de genes específicos que controlan el metabolismo basal, el crecimiento y el desarrollo celular.",
-      halfLife: "Aproximadamente 7 días en pacientes eutiroideos",
+      pharmacodynamics: "Actúa uniéndose a receptores nucleares de hormonas tiroideas (TRα y TRβ) en las células, formando complejos con el ADN que regulan la transcripción de genes específicos que controlan el metabolismo basal, el crecimiento y el desarrollo celular.",
+      pharmacokinetics: "Absorción: 40-80% en intestino delgado. Distribución: 99.97% unida a proteínas plasmáticas. Metabolismo: desyodación periférica a T3 (activa). Eliminación: vida media de 7 días, excreción renal y fecal.",
+      therapeuticIndication: "Tratamiento de hipotiroidismo primario y secundario, supresión de TSH en cáncer de tiroides, bocio eutiroideo, mixedema y coma mixedematoso.",
+      administrationRoutes: "Vía oral, preferiblemente en ayunas 30-60 minutos antes del desayuno. Tabletas de 25, 50, 75, 100, 125, 150 y 200 mcg.",
       adverseReactions: [
-        "Reacciones cardíacas: taquicardia, arritmias, angina de pecho",
-        "Sistema nervioso: temblor, insomnio, nerviosismo, cefalea",
-        "Gastrointestinal: diarrea, vómitos, cambios en el apetito",
+        "Cardiovascular: taquicardia, palpitaciones, arritmias, angina de pecho",
+        "Sistema nervioso: temblor, insomnio, nerviosismo, cefalea, ansiedad",
+        "Gastrointestinal: diarrea, vómitos, náuseas, cambios en el apetito",
         "Metabólico: pérdida de peso, intolerancia al calor, sudoración excesiva",
-        "Musculoesquelético: debilidad muscular, calambres"
+        "Musculoesquelético: debilidad muscular, calambres, pérdida de densidad ósea (sobredosis crónica)"
       ],
-      administration: "Vía oral. Tabletas de 25, 50, 75, 100, 125, 150 y 200 mcg",
-      pricing: "Precio aproximado: $8.000 - $15.000 CLP por caja de 30 comprimidos. Disponible en farmacias con receta médica. Marcas: Eutirox, Levotiroxina Sódica, T4."
+      drugInteractions: [
+        "Antiácidos y sales de calcio: reducen absorción (separar 4 horas)",
+        "Warfarina: aumenta efecto anticoagulante (ajustar dosis)",
+        "Insulina/antidiabéticos: puede requerir ajuste de dosis",
+        "Amiodarona: interfiere con conversión T4 a T3",
+        "Café: reduce absorción hasta 55% (tomar en ayunas sin café)"
+      ],
+      pathologyInteractions: [
+        "Diabetes mellitus: puede requerir ajuste de insulina/antidiabéticos",
+        "Enfermedad cardiovascular: iniciar con dosis bajas, titular lentamente",
+        "Insuficiencia adrenal: corregir antes de iniciar levotiroxina",
+        "Osteoporosis: monitorear densidad ósea en terapia supresora"
+      ],
+      pharmacies: [
+        { name: "Cruz Verde", price: 8990, presentation: "Eutirox 100mcg x30", url: "https://www.cruzverde.cl" },
+        { name: "Salcobrand", price: 9490, presentation: "Eutirox 100mcg x30", url: "https://www.salcobrand.cl" },
+        { name: "Farmacias Ahumada", price: 8790, presentation: "Levotiroxina 100mcg x30", url: "https://www.farmaciasahumada.cl" },
+        { name: "Farmacias del Dr. Simi", price: 7990, presentation: "Levotiroxina 100mcg x30", url: "https://www.farmaciasdelsimi.cl" }
+      ]
     },
     {
       name: "Metimazol",
@@ -40,17 +61,35 @@ const Medications = () => {
       dosage: "5-40 mg al día, según la severidad",
       sideEffects: ["Náuseas", "Dolor articular", "Rash cutáneo"],
       tips: ["Tomar con comida", "Controles de sangre regulares", "Reportar fiebre o dolor de garganta"],
-      mechanism: "El metimazol es un fármaco antitiroideo que inhibe la enzima tiroperoxidasa (TPO), esencial para la síntesis de hormonas tiroideas. Impide la oxidación del yoduro y su incorporación en los residuos de tirosina de la tiroglobulina, bloqueando así la formación de T3 y T4.",
-      halfLife: "4-6 horas aproximadamente",
+      pharmacodynamics: "Inhibe la enzima tiroperoxidasa (TPO), esencial para la síntesis de hormonas tiroideas. Impide la oxidación del yoduro y su incorporación en los residuos de tirosina de la tiroglobulina, bloqueando así la formación de T3 y T4.",
+      pharmacokinetics: "Absorción: rápida y casi completa (>90%). Distribución: concentración en tiroides. Metabolismo: hepático. Eliminación: vida media de 4-6 horas, excreción renal principal.",
+      therapeuticIndication: "Hipertiroidismo (enfermedad de Graves, bocio tóxico multinodular), preparación prequirúrgica de tiroidectomía, crisis tirotóxica.",
+      administrationRoutes: "Vía oral, puede tomarse con o sin alimentos. Tabletas de 5 mg y 10 mg. Dosis única diaria o dividida.",
       adverseReactions: [
-        "Hematológicas: agranulocitosis (rara pero grave), leucopenia, trombocitopenia",
-        "Dermatológicas: urticaria, prurito, rash, alopecia",
-        "Gastrointestinal: náuseas, vómitos, alteración del gusto",
-        "Hepáticas: hepatotoxicidad, ictericia colestásica",
-        "Articular: artralgias, síndrome lupus-like"
+        "Hematológicas: agranulocitosis (0.2-0.5%, grave), leucopenia, trombocitopenia",
+        "Dermatológicas: urticaria, prurito, rash cutáneo, alopecia",
+        "Gastrointestinal: náuseas, vómitos, alteración del gusto, epigastralgia",
+        "Hepáticas: hepatotoxicidad, ictericia colestásica, elevación de transaminasas",
+        "Articular: artralgias, mialgias, síndrome lupus-like"
       ],
-      administration: "Vía oral. Tabletas de 5 mg y 10 mg",
-      pricing: "Precio aproximado: $10.000 - $18.000 CLP por caja de 30 comprimidos. Disponible en farmacias con receta médica retenida. Marcas: Tapazol, Tirozol."
+      drugInteractions: [
+        "Anticoagulantes (warfarina): puede potenciar efecto anticoagulante",
+        "Beta-bloqueadores: efectos aditivos en control de síntomas",
+        "Digoxina: niveles pueden aumentar al corregir hipertiroidismo",
+        "Teofilina: aclaramiento aumenta en hipertiroidismo"
+      ],
+      pathologyInteractions: [
+        "Embarazo: usar dosis mínima efectiva, riesgo de hipotiroidismo fetal",
+        "Insuficiencia hepática: usar con precaución, riesgo de hepatotoxicidad",
+        "Discrasias sanguíneas: contraindicado en agranulocitosis previa",
+        "Lactancia: pasa a leche materna, usar con precaución"
+      ],
+      pharmacies: [
+        { name: "Cruz Verde", price: 14990, presentation: "Tapazol 5mg x30", url: "https://www.cruzverde.cl" },
+        { name: "Salcobrand", price: 15490, presentation: "Tapazol 5mg x30", url: "https://www.salcobrand.cl" },
+        { name: "Farmacias Ahumada", price: 13990, presentation: "Metimazol 5mg x30", url: "https://www.farmaciasahumada.cl" },
+        { name: "Farmacias del Dr. Simi", price: 12990, presentation: "Metimazol 5mg x30", url: "https://www.farmaciasdelsimi.cl" }
+      ]
     },
     {
       name: "Propranolol",
@@ -61,18 +100,38 @@ const Medications = () => {
       dosage: "10-40 mg cada 6-8 horas",
       sideEffects: ["Fatiga", "Mareos", "Manos frías"],
       tips: ["No suspender bruscamente", "Controlar presión arterial", "Cuidado en diabéticos"],
-      mechanism: "El propranolol es un betabloqueador no selectivo que antagoniza competitivamente los receptores β1 y β2 adrenérgicos. En el contexto del hipertiroidismo, reduce los síntomas adrenérgicos (taquicardia, temblor, ansiedad) y también inhibe la conversión periférica de T4 a T3.",
-      halfLife: "3-6 horas (forma de liberación inmediata)",
+      pharmacodynamics: "Betabloqueador no selectivo que antagoniza competitivamente los receptores β1 y β2 adrenérgicos. Reduce síntomas adrenérgicos del hipertiroidismo (taquicardia, temblor, ansiedad) e inhibe la conversión periférica de T4 a T3.",
+      pharmacokinetics: "Absorción: rápida, efecto de primer paso hepático significativo (biodisponibilidad 25%). Distribución: liposoluble, cruza barrera hematoencefálica. Metabolismo: hepático extenso. Eliminación: vida media 3-6 horas.",
+      therapeuticIndication: "Control sintomático de hipertiroidismo (taquicardia, temblor, ansiedad), hipertensión arterial, angina de pecho, arritmias, profilaxis de migraña.",
+      administrationRoutes: "Vía oral. Tabletas de 10 mg, 40 mg y 80 mg. Liberación inmediata o prolongada. Puede tomarse con o sin alimentos.",
       adverseReactions: [
-        "Cardiovascular: bradicardia, hipotensión, insuficiencia cardíaca",
-        "Respiratorio: broncoespasmo (especialmente en asmáticos)",
-        "Sistema nervioso: fatiga, mareos, depresión, insomnio",
-        "Metabólico: hipoglucemia enmascarada en diabéticos",
-        "Vascular: extremidades frías, fenómeno de Raynaud",
-        "Otros: disfunción sexual, alteraciones del sueño"
+        "Cardiovascular: bradicardia, hipotensión, insuficiencia cardíaca, bloqueo AV",
+        "Respiratorio: broncoespasmo (especialmente en asmáticos/EPOC)",
+        "Sistema nervioso: fatiga, mareos, depresión, insomnio, pesadillas",
+        "Metabólico: hipoglucemia enmascarada en diabéticos, dislipidemia",
+        "Vascular: extremidades frías, fenómeno de Raynaud, claudicación",
+        "Otros: disfunción sexual, alteraciones del sueño, náuseas"
       ],
-      administration: "Vía oral. Tabletas de 10 mg, 40 mg y 80 mg. También disponible en forma de liberación prolongada",
-      pricing: "Precio aproximado: $3.000 - $8.000 CLP por caja de 30 comprimidos de 40mg. Disponible en farmacias con receta médica. Marcas: Propranolol genérico, Inderalici."
+      drugInteractions: [
+        "Antidiabéticos: enmascara síntomas de hipoglucemia",
+        "Calcioantagonistas (verapamilo, diltiazem): riesgo de bradicardia severa",
+        "Antiarrítmicos: efectos aditivos, riesgo de bradicardia",
+        "AINEs: pueden reducir efecto antihipertensivo",
+        "Alcohol: potencia efectos sedantes"
+      ],
+      pathologyInteractions: [
+        "Asma/EPOC: contraindicado, riesgo de broncoespasmo severo",
+        "Insuficiencia cardíaca descompensada: contraindicado",
+        "Diabetes mellitus: enmascara síntomas de hipoglucemia",
+        "Bradicardia/bloqueo AV: contraindicado",
+        "Enfermedad vascular periférica: usar con precaución"
+      ],
+      pharmacies: [
+        { name: "Cruz Verde", price: 5990, presentation: "Propranolol 40mg x30", url: "https://www.cruzverde.cl" },
+        { name: "Salcobrand", price: 6490, presentation: "Propranolol 40mg x30", url: "https://www.salcobrand.cl" },
+        { name: "Farmacias Ahumada", price: 4990, presentation: "Propranolol 40mg x30", url: "https://www.farmaciasahumada.cl" },
+        { name: "Farmacias del Dr. Simi", price: 3990, presentation: "Propranolol 40mg x30", url: "https://www.farmaciasdelsimi.cl" }
+      ]
     }
   ];
 
@@ -134,79 +193,159 @@ const Medications = () => {
                   </TabsContent>
                 </Tabs>
                 
-                <Dialog open={selectedMed === index} onOpenChange={(open) => !open && setSelectedMed(null)}>
-                  <DialogTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      className="w-full mt-4"
-                      onClick={() => setSelectedMed(index)}
-                    >
-                      <Info className="h-4 w-4 mr-2" />
-                      Quiero conocer más detalles
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle className="text-2xl flex items-center gap-2">
-                        {med.icon}
-                        {med.name}
-                      </DialogTitle>
-                      <DialogDescription>
-                        Información farmacológica detallada
-                      </DialogDescription>
-                    </DialogHeader>
-                    
-                    <div className="space-y-6 mt-4">
+                <div className="grid grid-cols-2 gap-2 mt-4">
+                  <Collapsible 
+                    open={openDetails === index} 
+                    onOpenChange={(isOpen) => setOpenDetails(isOpen ? index : null)}
+                  >
+                    <CollapsibleTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                      >
+                        Más detalles
+                        <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${openDetails === index ? 'rotate-180' : ''}`} />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="mt-4 space-y-4">
                       <div>
-                        <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
-                          <Pill className="h-5 w-5 text-primary" />
-                          Mecanismo de acción
-                        </h3>
-                        <p className="text-sm text-muted-foreground">{med.mechanism}</p>
+                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                          <Pill className="h-4 w-4 text-primary" />
+                          Farmacodinamia
+                        </h4>
+                        <p className="text-xs text-muted-foreground">{med.pharmacodynamics}</p>
                       </div>
 
                       <div>
-                        <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
-                          <Clock className="h-5 w-5 text-primary" />
-                          Vida media
-                        </h3>
-                        <p className="text-sm text-muted-foreground">{med.halfLife}</p>
+                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-primary" />
+                          Farmacocinética
+                        </h4>
+                        <p className="text-xs text-muted-foreground">{med.pharmacokinetics}</p>
                       </div>
 
                       <div>
-                        <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
-                          <AlertCircle className="h-5 w-5 text-primary" />
-                          Vía de administración
-                        </h3>
-                        <p className="text-sm text-muted-foreground">{med.administration}</p>
+                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                          <Heart className="h-4 w-4 text-primary" />
+                          Indicación terapéutica
+                        </h4>
+                        <p className="text-xs text-muted-foreground">{med.therapeuticIndication}</p>
                       </div>
 
                       <div>
-                        <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
-                          <AlertCircle className="h-5 w-5 text-destructive" />
+                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4 text-primary" />
+                          Vías de administración
+                        </h4>
+                        <p className="text-xs text-muted-foreground">{med.administrationRoutes}</p>
+                      </div>
+
+                      <div>
+                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4 text-destructive" />
                           Reacciones adversas a medicamentos
-                        </h3>
+                        </h4>
                         <ul className="space-y-1">
                           {med.adverseReactions.map((reaction, i) => (
-                            <li key={i} className="text-sm text-muted-foreground">
+                            <li key={i} className="text-xs text-muted-foreground">
                               • {reaction}
                             </li>
                           ))}
                         </ul>
                       </div>
 
-                      <div className="bg-primary/5 p-4 rounded-lg">
-                        <h3 className="font-semibold text-lg mb-2">
-                          💰 Precios y opciones de compra
-                        </h3>
-                        <p className="text-sm text-muted-foreground">{med.pricing}</p>
-                        <p className="text-xs text-amber-600 mt-2">
-                          ⚠️ Los precios son aproximados y pueden variar según la farmacia y región.
-                        </p>
+                      <div>
+                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4 text-amber-600" />
+                          Interacciones con otros medicamentos y/o alimentos
+                        </h4>
+                        <ul className="space-y-1">
+                          {med.drugInteractions.map((interaction, i) => (
+                            <li key={i} className="text-xs text-muted-foreground">
+                              • {interaction}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+
+                      <div>
+                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4 text-red-600" />
+                          Interacciones con otras patologías
+                        </h4>
+                        <ul className="space-y-1">
+                          {med.pathologyInteractions.map((interaction, i) => (
+                            <li key={i} className="text-xs text-muted-foreground">
+                              • {interaction}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  <Collapsible 
+                    open={openPrices === index} 
+                    onOpenChange={(isOpen) => setOpenPrices(isOpen ? index : null)}
+                  >
+                    <CollapsibleTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                      >
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        ¿Dónde comprar?
+                        <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${openPrices === index ? 'rotate-180' : ''}`} />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="mt-4">
+                      <div className="rounded-lg border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Farmacia</TableHead>
+                              <TableHead>Presentación</TableHead>
+                              <TableHead className="text-right">Precio</TableHead>
+                              <TableHead></TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {med.pharmacies
+                              .sort((a, b) => a.price - b.price)
+                              .map((pharmacy, i) => (
+                                <TableRow key={i}>
+                                  <TableCell className="font-medium text-xs">{pharmacy.name}</TableCell>
+                                  <TableCell className="text-xs">{pharmacy.presentation}</TableCell>
+                                  <TableCell className="text-right text-xs font-semibold">
+                                    ${pharmacy.price.toLocaleString('es-CL')}
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-7"
+                                      asChild
+                                    >
+                                      <a 
+                                        href={pharmacy.url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                      >
+                                        <ExternalLink className="h-3 w-3" />
+                                      </a>
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                      <p className="text-xs text-amber-600 mt-3 text-center">
+                        ⚠️ Los precios son aproximados y pueden variar según disponibilidad y región
+                      </p>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
               </CardContent>
             </Card>
           ))}
