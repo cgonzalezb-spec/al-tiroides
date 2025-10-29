@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface PharmacyLink {
   name: string;
+  brand: string;
   price: number;
   presentation: string;
   url: string;
@@ -47,8 +48,11 @@ const Medications = () => {
           if (!grouped[link.medication_name]) {
             grouped[link.medication_name] = [];
           }
+          // Extract brand from presentation or use pharmacy name as fallback
+          const brand = link.presentation.split(' ')[0];
           grouped[link.medication_name].push({
             name: link.pharmacy_name,
+            brand: brand,
             price: link.price,
             presentation: link.presentation,
             url: link.product_url
@@ -71,22 +75,26 @@ const Medications = () => {
     // Fallback a búsquedas si no hay datos
     const fallbackLinks: Record<string, PharmacyLink[]> = {
       'levotiroxina': [
-        { name: "Cruz Verde", price: 8990, presentation: "Eutirox 100mcg x30", url: "https://www.cruzverde.cl/buscador?q=eutirox" },
-        { name: "Salcobrand", price: 9490, presentation: "Eutirox 100mcg x30", url: "https://www.salcobrand.cl/search/?text=eutirox" },
-        { name: "Farmacias Ahumada", price: 8790, presentation: "Levotiroxina 100mcg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=levotiroxina" },
-        { name: "Farmacias del Dr. Simi", price: 7990, presentation: "Levotiroxina 100mcg x30", url: "https://www.google.com/search?q=site:farmaciasdelsimi.cl+levotiroxina" }
+        { name: "Cruz Verde", brand: "Eutirox", price: 8990, presentation: "Eutirox 100mcg x30", url: "https://www.cruzverde.cl/buscador?q=eutirox" },
+        { name: "Salcobrand", brand: "Eutirox", price: 9490, presentation: "Eutirox 100mcg x30", url: "https://www.salcobrand.cl/search/?text=eutirox" },
+        { name: "Farmacias Ahumada", brand: "Levotiroxina", price: 8790, presentation: "Levotiroxina 100mcg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=levotiroxina" },
+        { name: "Farmacias del Dr. Simi", brand: "Levotiroxina", price: 7990, presentation: "Levotiroxina 100mcg x30", url: "https://www.google.com/search?q=site:farmaciasdelsimi.cl+levotiroxina" },
+        { name: "Cruz Verde", brand: "Euthyrox", price: 10490, presentation: "Euthyrox 100mcg x30", url: "https://www.cruzverde.cl/buscador?q=euthyrox" },
+        { name: "Salcobrand", brand: "Levoid", price: 8290, presentation: "Levoid 100mcg x30", url: "https://www.salcobrand.cl/search/?text=levoid" }
       ],
       'metimazol': [
-        { name: "Cruz Verde", price: 14990, presentation: "Tapazol 5mg x30", url: "https://www.cruzverde.cl/buscador?q=tapazol" },
-        { name: "Salcobrand", price: 15490, presentation: "Tapazol 5mg x30", url: "https://www.salcobrand.cl/search/?text=tapazol" },
-        { name: "Farmacias Ahumada", price: 13990, presentation: "Metimazol 5mg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=metimazol" },
-        { name: "Farmacias del Dr. Simi", price: 12990, presentation: "Metimazol 5mg x30", url: "https://www.google.com/search?q=site:farmaciasdelsimi.cl+metimazol" }
+        { name: "Cruz Verde", brand: "Tapazol", price: 14990, presentation: "Tapazol 5mg x30", url: "https://www.cruzverde.cl/buscador?q=tapazol" },
+        { name: "Salcobrand", brand: "Tapazol", price: 15490, presentation: "Tapazol 5mg x30", url: "https://www.salcobrand.cl/search/?text=tapazol" },
+        { name: "Farmacias Ahumada", brand: "Metimazol", price: 13990, presentation: "Metimazol 5mg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=metimazol" },
+        { name: "Farmacias del Dr. Simi", brand: "Metimazol", price: 12990, presentation: "Metimazol 5mg x30", url: "https://www.google.com/search?q=site:farmaciasdelsimi.cl+metimazol" },
+        { name: "Cruz Verde", brand: "Thiamazol", price: 13490, presentation: "Thiamazol 5mg x30", url: "https://www.cruzverde.cl/buscador?q=thiamazol" }
       ],
       'propranolol': [
-        { name: "Cruz Verde", price: 5990, presentation: "Propranolol 40mg x30", url: "https://www.cruzverde.cl/buscador?q=propranolol" },
-        { name: "Salcobrand", price: 6490, presentation: "Propranolol 40mg x30", url: "https://www.salcobrand.cl/search/?text=propranolol" },
-        { name: "Farmacias Ahumada", price: 4990, presentation: "Propranolol 40mg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=propranolol" },
-        { name: "Farmacias del Dr. Simi", price: 3990, presentation: "Propranolol 40mg x30", url: "https://www.google.com/search?q=site:farmaciasdelsimi.cl+propranolol" }
+        { name: "Cruz Verde", brand: "Propranolol", price: 5990, presentation: "Propranolol 40mg x30", url: "https://www.cruzverde.cl/buscador?q=propranolol" },
+        { name: "Salcobrand", brand: "Propranolol", price: 6490, presentation: "Propranolol 40mg x30", url: "https://www.salcobrand.cl/search/?text=propranolol" },
+        { name: "Farmacias Ahumada", brand: "Propranolol", price: 4990, presentation: "Propranolol 40mg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=propranolol" },
+        { name: "Farmacias del Dr. Simi", brand: "Propranolol", price: 3990, presentation: "Propranolol 40mg x30", url: "https://www.google.com/search?q=site:farmaciasdelsimi.cl+propranolol" },
+        { name: "Cruz Verde", brand: "Inderalici", price: 6990, presentation: "Inderalici 40mg x30", url: "https://www.cruzverde.cl/buscador?q=inderalici" }
       ]
     };
     
@@ -260,19 +268,21 @@ const Medications = () => {
                   </TabsContent>
                 </Tabs>
                 
-                <div className="grid grid-cols-2 gap-2 mt-4">
+                <div className="space-y-3 mt-6 pt-4 border-t">
                   <Collapsible 
                     open={openDetails === index} 
                     onOpenChange={(isOpen) => setOpenDetails(isOpen ? index : null)}
                   >
                     <CollapsibleTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        className="w-full"
+                      <button 
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm font-medium"
                       >
-                        Más detalles
-                        <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${openDetails === index ? 'rotate-180' : ''}`} />
-                      </Button>
+                        <span className="flex items-center gap-2">
+                          <Pill className="h-4 w-4 text-primary" />
+                          Información farmacológica completa
+                        </span>
+                        <ChevronDown className={`h-4 w-4 transition-transform ${openDetails === index ? 'rotate-180' : ''}`} />
+                      </button>
                     </CollapsibleTrigger>
                     <CollapsibleContent className="mt-4 space-y-4">
                       <div>
@@ -356,58 +366,98 @@ const Medications = () => {
                     onOpenChange={(isOpen) => setOpenPrices(isOpen ? index : null)}
                   >
                     <CollapsibleTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        className="w-full"
+                      <button 
+                        className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 transition-all text-sm font-medium border border-primary/20"
                       >
-                        <ShoppingCart className="h-4 w-4 mr-2" />
-                        ¿Dónde comprar?
-                        <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${openPrices === index ? 'rotate-180' : ''}`} />
-                      </Button>
+                        <span className="flex items-center gap-2">
+                          <ShoppingCart className="h-4 w-4 text-primary" />
+                          Comparar precios y marcas
+                        </span>
+                        <ChevronDown className={`h-4 w-4 transition-transform ${openPrices === index ? 'rotate-180' : ''}`} />
+                      </button>
                     </CollapsibleTrigger>
                     <CollapsibleContent className="mt-4">
-                      <div className="rounded-lg border">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Farmacia</TableHead>
-                              <TableHead>Presentación</TableHead>
-                              <TableHead className="text-right">Precio</TableHead>
-                              <TableHead></TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {getPharmacyLinks(med.medicationKey).map((pharmacy, i) => (
-                              <TableRow key={i}>
-                                <TableCell className="font-medium text-xs">{pharmacy.name}</TableCell>
-                                <TableCell className="text-xs">{pharmacy.presentation}</TableCell>
-                                <TableCell className="text-right text-xs font-semibold">
-                                  ${pharmacy.price.toLocaleString('es-CL')}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7"
-                                    asChild
-                                  >
-                                    <a 
-                                      href={pharmacy.url} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer"
-                                    >
-                                      <ExternalLink className="h-3 w-3" />
-                                    </a>
-                                  </Button>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </div>
-                      <p className="text-xs text-amber-600 mt-3 text-center">
-                        ⚠️ Los precios son aproximados y pueden variar según disponibilidad y región
-                      </p>
+                      {(() => {
+                        const links = getPharmacyLinks(med.medicationKey);
+                        const sortedLinks = [...links].sort((a, b) => a.price - b.price);
+                        const minPrice = sortedLinks.length > 0 ? sortedLinks[0].price : 0;
+                        
+                        return (
+                          <>
+                            <div className="rounded-lg border overflow-hidden">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow className="bg-muted/50">
+                                    <TableHead className="font-semibold">Marca</TableHead>
+                                    <TableHead className="font-semibold">Farmacia</TableHead>
+                                    <TableHead className="font-semibold">Presentación</TableHead>
+                                    <TableHead className="text-right font-semibold">Precio</TableHead>
+                                    <TableHead className="text-center font-semibold">Comprar</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {sortedLinks.map((pharmacy, i) => {
+                                    const isBestPrice = pharmacy.price === minPrice;
+                                    return (
+                                      <TableRow 
+                                        key={i}
+                                        className={isBestPrice ? "bg-green-50 dark:bg-green-950/20" : ""}
+                                      >
+                                        <TableCell className="font-semibold text-xs">
+                                          {pharmacy.brand}
+                                        </TableCell>
+                                        <TableCell className="text-xs">{pharmacy.name}</TableCell>
+                                        <TableCell className="text-xs text-muted-foreground">
+                                          {pharmacy.presentation}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                          <div className="flex items-center justify-end gap-2">
+                                            <span className={`text-xs font-bold ${isBestPrice ? 'text-green-600 dark:text-green-400' : ''}`}>
+                                              ${pharmacy.price.toLocaleString('es-CL')}
+                                            </span>
+                                            {isBestPrice && (
+                                              <Badge className="bg-green-600 hover:bg-green-700 text-[10px] px-1.5 py-0">
+                                                Mejor precio
+                                              </Badge>
+                                            )}
+                                          </div>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                          <Button
+                                            variant={isBestPrice ? "default" : "ghost"}
+                                            size="sm"
+                                            className="h-8 px-3"
+                                            asChild
+                                          >
+                                            <a 
+                                              href={pharmacy.url} 
+                                              target="_blank" 
+                                              rel="noopener noreferrer"
+                                              className="flex items-center gap-1"
+                                            >
+                                              <ExternalLink className="h-3 w-3" />
+                                              <span className="text-xs">Ver</span>
+                                            </a>
+                                          </Button>
+                                        </TableCell>
+                                      </TableRow>
+                                    );
+                                  })}
+                                </TableBody>
+                              </Table>
+                            </div>
+                            <div className="mt-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+                              <p className="text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
+                                <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                                <span>
+                                  Los precios son aproximados y pueden variar según disponibilidad, región y promociones vigentes. 
+                                  Te recomendamos verificar el precio final en la farmacia.
+                                </span>
+                              </p>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </CollapsibleContent>
                   </Collapsible>
                 </div>
