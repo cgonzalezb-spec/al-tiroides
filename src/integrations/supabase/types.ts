@@ -98,6 +98,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pharmacy_links: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          medication_name: string
+          pharmacy_name: string
+          presentation: string
+          price: number
+          product_url: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          medication_name: string
+          pharmacy_name: string
+          presentation: string
+          price: number
+          product_url: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          medication_name?: string
+          pharmacy_name?: string
+          presentation?: string
+          price?: number
+          product_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           id: string

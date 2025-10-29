@@ -5,15 +5,98 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+interface PharmacyLink {
+  name: string;
+  price: number;
+  presentation: string;
+  url: string;
+}
 
 const Medications = () => {
   const [openDetails, setOpenDetails] = useState<number | null>(null);
   const [openPrices, setOpenPrices] = useState<number | null>(null);
+  const [pharmacyData, setPharmacyData] = useState<Record<string, PharmacyLink[]>>({});
+  const { toast } = useToast();
+
+  // Cargar enlaces de farmacias desde la base de datos
+  useEffect(() => {
+    const fetchPharmacyLinks = async () => {
+      const { data, error } = await supabase
+        .from('pharmacy_links')
+        .select('*')
+        .eq('is_active', true)
+        .order('price', { ascending: true });
+
+      if (error) {
+        console.error('Error loading pharmacy links:', error);
+        toast({
+          title: "Error al cargar precios",
+          description: "Mostrando enlaces de búsqueda por defecto",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (data) {
+        const grouped: Record<string, PharmacyLink[]> = {};
+        data.forEach((link) => {
+          if (!grouped[link.medication_name]) {
+            grouped[link.medication_name] = [];
+          }
+          grouped[link.medication_name].push({
+            name: link.pharmacy_name,
+            price: link.price,
+            presentation: link.presentation,
+            url: link.product_url
+          });
+        });
+        setPharmacyData(grouped);
+      }
+    };
+
+    fetchPharmacyLinks();
+  }, [toast]);
+
+  // Función para obtener enlaces de farmacias con fallback
+  const getPharmacyLinks = (medicationKey: string): PharmacyLink[] => {
+    // Si hay datos en la BD, usarlos
+    if (pharmacyData[medicationKey] && pharmacyData[medicationKey].length > 0) {
+      return pharmacyData[medicationKey];
+    }
+    
+    // Fallback a búsquedas si no hay datos
+    const fallbackLinks: Record<string, PharmacyLink[]> = {
+      'levotiroxina': [
+        { name: "Cruz Verde", price: 8990, presentation: "Eutirox 100mcg x30", url: "https://www.cruzverde.cl/buscador?q=eutirox" },
+        { name: "Salcobrand", price: 9490, presentation: "Eutirox 100mcg x30", url: "https://www.salcobrand.cl/search/?text=eutirox" },
+        { name: "Farmacias Ahumada", price: 8790, presentation: "Levotiroxina 100mcg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=levotiroxina" },
+        { name: "Farmacias del Dr. Simi", price: 7990, presentation: "Levotiroxina 100mcg x30", url: "https://www.google.com/search?q=site:farmaciasdelsimi.cl+levotiroxina" }
+      ],
+      'metimazol': [
+        { name: "Cruz Verde", price: 14990, presentation: "Tapazol 5mg x30", url: "https://www.cruzverde.cl/buscador?q=tapazol" },
+        { name: "Salcobrand", price: 15490, presentation: "Tapazol 5mg x30", url: "https://www.salcobrand.cl/search/?text=tapazol" },
+        { name: "Farmacias Ahumada", price: 13990, presentation: "Metimazol 5mg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=metimazol" },
+        { name: "Farmacias del Dr. Simi", price: 12990, presentation: "Metimazol 5mg x30", url: "https://www.google.com/search?q=site:farmaciasdelsimi.cl+metimazol" }
+      ],
+      'propranolol': [
+        { name: "Cruz Verde", price: 5990, presentation: "Propranolol 40mg x30", url: "https://www.cruzverde.cl/buscador?q=propranolol" },
+        { name: "Salcobrand", price: 6490, presentation: "Propranolol 40mg x30", url: "https://www.salcobrand.cl/search/?text=propranolol" },
+        { name: "Farmacias Ahumada", price: 4990, presentation: "Propranolol 40mg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=propranolol" },
+        { name: "Farmacias del Dr. Simi", price: 3990, presentation: "Propranolol 40mg x30", url: "https://www.google.com/search?q=site:farmaciasdelsimi.cl+propranolol" }
+      ]
+    };
+    
+    return fallbackLinks[medicationKey] || [];
+  };
 
   const medications = [
     {
       name: "Levotiroxina",
+      medicationKey: "levotiroxina",
       condition: "Hipotiroidismo",
       icon: <Pill className="h-6 w-6 text-blue-500" />,
       description: "Reemplaza la hormona T4 que tu tiroides no produce suficientemente",
@@ -44,16 +127,11 @@ const Medications = () => {
         "Enfermedad cardiovascular: iniciar con dosis bajas, titular lentamente",
         "Insuficiencia adrenal: corregir antes de iniciar levotiroxina",
         "Osteoporosis: monitorear densidad ósea en terapia supresora"
-      ],
-      pharmacies: [
-        { name: "Cruz Verde", price: 8990, presentation: "Eutirox 100mcg x30", url: "https://www.cruzverde.cl/buscador?q=eutirox" },
-        { name: "Salcobrand", price: 9490, presentation: "Eutirox 100mcg x30", url: "https://www.salcobrand.cl/search/?text=eutirox" },
-        { name: "Farmacias Ahumada", price: 8790, presentation: "Levotiroxina 100mcg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=levotiroxina" },
-        { name: "Farmacias del Dr. Simi", price: 7990, presentation: "Levotiroxina 100mcg x30", url: "https://www.farmaciasdelsimi.cl/farmacia/buscar?q=levotiroxina" }
       ]
     },
     {
       name: "Metimazol",
+      medicationKey: "metimazol",
       condition: "Hipertiroidismo",
       icon: <Pill className="h-6 w-6 text-red-500" />,
       description: "Reduce la producción excesiva de hormonas tiroideas",
@@ -83,16 +161,11 @@ const Medications = () => {
         "Insuficiencia hepática: usar con precaución, riesgo de hepatotoxicidad",
         "Discrasias sanguíneas: contraindicado en agranulocitosis previa",
         "Lactancia: pasa a leche materna, usar con precaución"
-      ],
-      pharmacies: [
-        { name: "Cruz Verde", price: 14990, presentation: "Tapazol 5mg x30", url: "https://www.cruzverde.cl/buscador?q=tapazol" },
-        { name: "Salcobrand", price: 15490, presentation: "Tapazol 5mg x30", url: "https://www.salcobrand.cl/search/?text=tapazol" },
-        { name: "Farmacias Ahumada", price: 13990, presentation: "Metimazol 5mg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=metimazol" },
-        { name: "Farmacias del Dr. Simi", price: 12990, presentation: "Metimazol 5mg x30", url: "https://www.farmaciasdelsimi.cl/farmacia/buscar?q=metimazol" }
       ]
     },
     {
       name: "Propranolol",
+      medicationKey: "propranolol",
       condition: "Síntomas de hipertiroidismo",
       icon: <Heart className="h-6 w-6 text-green-500" />,
       description: "Controla síntomas como palpitaciones y temblores",
@@ -125,12 +198,6 @@ const Medications = () => {
         "Diabetes mellitus: enmascara síntomas de hipoglucemia",
         "Bradicardia/bloqueo AV: contraindicado",
         "Enfermedad vascular periférica: usar con precaución"
-      ],
-      pharmacies: [
-        { name: "Cruz Verde", price: 5990, presentation: "Propranolol 40mg x30", url: "https://www.cruzverde.cl/buscador?q=propranolol" },
-        { name: "Salcobrand", price: 6490, presentation: "Propranolol 40mg x30", url: "https://www.salcobrand.cl/search/?text=propranolol" },
-        { name: "Farmacias Ahumada", price: 4990, presentation: "Propranolol 40mg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=propranolol" },
-        { name: "Farmacias del Dr. Simi", price: 3990, presentation: "Propranolol 40mg x30", url: "https://www.farmaciasdelsimi.cl/farmacia/buscar?q=propranolol" }
       ]
     }
   ];
@@ -310,33 +377,31 @@ const Medications = () => {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {med.pharmacies
-                              .sort((a, b) => a.price - b.price)
-                              .map((pharmacy, i) => (
-                                <TableRow key={i}>
-                                  <TableCell className="font-medium text-xs">{pharmacy.name}</TableCell>
-                                  <TableCell className="text-xs">{pharmacy.presentation}</TableCell>
-                                  <TableCell className="text-right text-xs font-semibold">
-                                    ${pharmacy.price.toLocaleString('es-CL')}
-                                  </TableCell>
-                                  <TableCell className="text-right">
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-7"
-                                      asChild
+                            {getPharmacyLinks(med.medicationKey).map((pharmacy, i) => (
+                              <TableRow key={i}>
+                                <TableCell className="font-medium text-xs">{pharmacy.name}</TableCell>
+                                <TableCell className="text-xs">{pharmacy.presentation}</TableCell>
+                                <TableCell className="text-right text-xs font-semibold">
+                                  ${pharmacy.price.toLocaleString('es-CL')}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7"
+                                    asChild
+                                  >
+                                    <a 
+                                      href={pharmacy.url} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
                                     >
-                                      <a 
-                                        href={pharmacy.url} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                      >
-                                        <ExternalLink className="h-3 w-3" />
-                                      </a>
-                                    </Button>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
+                                      <ExternalLink className="h-3 w-3" />
+                                    </a>
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
                           </TableBody>
                         </Table>
                       </div>
