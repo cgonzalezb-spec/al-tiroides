@@ -46,10 +46,10 @@ const Medications = () => {
         "Osteoporosis: monitorear densidad ósea en terapia supresora"
       ],
       pharmacies: [
-        { name: "Cruz Verde", price: 8990, presentation: "Eutirox 100mcg x30", url: "https://www.cruzverde.cl" },
-        { name: "Salcobrand", price: 9490, presentation: "Eutirox 100mcg x30", url: "https://www.salcobrand.cl" },
-        { name: "Farmacias Ahumada", price: 8790, presentation: "Levotiroxina 100mcg x30", url: "https://www.farmaciasahumada.cl" },
-        { name: "Farmacias del Dr. Simi", price: 7990, presentation: "Levotiroxina 100mcg x30", url: "https://www.farmaciasdelsimi.cl" }
+        { name: "Cruz Verde", price: 8990, presentation: "Eutirox 100mcg x30", url: "https://www.cruzverde.cl/buscador?q=eutirox" },
+        { name: "Salcobrand", price: 9490, presentation: "Eutirox 100mcg x30", url: "https://www.salcobrand.cl/search/?text=eutirox" },
+        { name: "Farmacias Ahumada", price: 8790, presentation: "Levotiroxina 100mcg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=levotiroxina" },
+        { name: "Farmacias del Dr. Simi", price: 7990, presentation: "Levotiroxina 100mcg x30", url: "https://www.farmaciasdelsimi.cl/farmacia/buscar?q=levotiroxina" }
       ]
     },
     {
@@ -85,10 +85,10 @@ const Medications = () => {
         "Lactancia: pasa a leche materna, usar con precaución"
       ],
       pharmacies: [
-        { name: "Cruz Verde", price: 14990, presentation: "Tapazol 5mg x30", url: "https://www.cruzverde.cl" },
-        { name: "Salcobrand", price: 15490, presentation: "Tapazol 5mg x30", url: "https://www.salcobrand.cl" },
-        { name: "Farmacias Ahumada", price: 13990, presentation: "Metimazol 5mg x30", url: "https://www.farmaciasahumada.cl" },
-        { name: "Farmacias del Dr. Simi", price: 12990, presentation: "Metimazol 5mg x30", url: "https://www.farmaciasdelsimi.cl" }
+        { name: "Cruz Verde", price: 14990, presentation: "Tapazol 5mg x30", url: "https://www.cruzverde.cl/buscador?q=tapazol" },
+        { name: "Salcobrand", price: 15490, presentation: "Tapazol 5mg x30", url: "https://www.salcobrand.cl/search/?text=tapazol" },
+        { name: "Farmacias Ahumada", price: 13990, presentation: "Metimazol 5mg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=metimazol" },
+        { name: "Farmacias del Dr. Simi", price: 12990, presentation: "Metimazol 5mg x30", url: "https://www.farmaciasdelsimi.cl/farmacia/buscar?q=metimazol" }
       ]
     },
     {
@@ -127,10 +127,10 @@ const Medications = () => {
         "Enfermedad vascular periférica: usar con precaución"
       ],
       pharmacies: [
-        { name: "Cruz Verde", price: 5990, presentation: "Propranolol 40mg x30", url: "https://www.cruzverde.cl" },
-        { name: "Salcobrand", price: 6490, presentation: "Propranolol 40mg x30", url: "https://www.salcobrand.cl" },
-        { name: "Farmacias Ahumada", price: 4990, presentation: "Propranolol 40mg x30", url: "https://www.farmaciasahumada.cl" },
-        { name: "Farmacias del Dr. Simi", price: 3990, presentation: "Propranolol 40mg x30", url: "https://www.farmaciasdelsimi.cl" }
+        { name: "Cruz Verde", price: 5990, presentation: "Propranolol 40mg x30", url: "https://www.cruzverde.cl/buscador?q=propranolol" },
+        { name: "Salcobrand", price: 6490, presentation: "Propranolol 40mg x30", url: "https://www.salcobrand.cl/search/?text=propranolol" },
+        { name: "Farmacias Ahumada", price: 4990, presentation: "Propranolol 40mg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=propranolol" },
+        { name: "Farmacias del Dr. Simi", price: 3990, presentation: "Propranolol 40mg x30", url: "https://www.farmaciasdelsimi.cl/farmacia/buscar?q=propranolol" }
       ]
     }
   ];
