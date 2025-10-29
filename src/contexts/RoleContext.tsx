@@ -29,19 +29,24 @@ export const RoleProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      // Si es tu email de admin, asignar admin directamente
-      if (user.email === 'cgonzalezb@medicina.ucsc.cl') {
-        setUserRole('admin');
-        setLoading(false);
-        return;
-      }
+      // Query the user_roles table to get the user's role
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
 
-      // Para otros usuarios, intentar obtener del metadata primero
-      const userMetadata = user.user_metadata;
-      if (userMetadata?.user_type === 'health_professional') {
-        setUserRole('health_professional');
+      if (roleError) {
+        // If no role found in database, check user_metadata for health_professional
+        const userMetadata = user.user_metadata;
+        if (userMetadata?.user_type === 'health_professional') {
+          setUserRole('health_professional');
+        } else {
+          setUserRole('visitor');
+        }
       } else {
-        setUserRole('visitor');
+        // Use the role from the database
+        setUserRole(roleData.role as UserRole);
       }
     } catch (error) {
       console.error('Error fetching role:', error);
