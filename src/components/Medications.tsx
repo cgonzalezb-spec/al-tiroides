@@ -27,6 +27,9 @@ interface PharmacyLink {
   pricePerUnit?: number;
   medication_name?: string;
   pharmacy_name?: string;
+  commercial_name?: string;
+  laboratory?: string;
+  mg_per_tablet?: string;
 }
 
 interface EditFormData {
@@ -37,6 +40,9 @@ interface EditFormData {
   quantity: string;
   price: string;
   product_url: string;
+  commercial_name: string;
+  laboratory: string;
+  mg_per_tablet: string;
 }
 
 const Medications = () => {
@@ -62,6 +68,9 @@ const Medications = () => {
           quantity: data.quantity ? parseInt(data.quantity) : null,
           price: parseInt(data.price),
           product_url: data.product_url,
+          commercial_name: data.commercial_name || null,
+          laboratory: data.laboratory || null,
+          mg_per_tablet: data.mg_per_tablet || null,
         })
         .eq('id', data.id);
       if (error) throw error;
@@ -118,7 +127,10 @@ const Medications = () => {
           quantity: quantity,
           pricePerUnit: pricePerUnit,
           medication_name: link.medication_name,
-          pharmacy_name: link.pharmacy_name
+          pharmacy_name: link.pharmacy_name,
+          commercial_name: link.commercial_name,
+          laboratory: link.laboratory,
+          mg_per_tablet: link.mg_per_tablet
         });
       });
       setPharmacyData(grouped);
@@ -139,6 +151,9 @@ const Medications = () => {
       quantity: link.quantity?.toString() || '',
       price: link.price.toString(),
       product_url: link.url,
+      commercial_name: link.commercial_name || '',
+      laboratory: link.laboratory || '',
+      mg_per_tablet: link.mg_per_tablet || '',
     });
     setIsEditDialogOpen(true);
   };
@@ -516,14 +531,16 @@ const Medications = () => {
                           <div className="rounded-lg border overflow-hidden">
                             <Table>
                               <TableHeader>
-                                <TableRow className="bg-muted/50">
-                                   <TableHead className="font-semibold">Marca</TableHead>
+                                 <TableRow className="bg-muted/50">
+                                   <TableHead className="font-semibold">Nombre Comercial</TableHead>
+                                   <TableHead className="font-semibold">Laboratorio</TableHead>
+                                   <TableHead className="font-semibold">mg/Comp.</TableHead>
                                    <TableHead className="font-semibold">Farmacia</TableHead>
                                    <TableHead className="font-semibold">Presentación</TableHead>
                                    <TableHead className="text-right font-semibold">Precio</TableHead>
                                    <TableHead className="text-center font-semibold">Ver</TableHead>
                                    {isAdmin && <TableHead className="text-center font-semibold">Editar</TableHead>}
-                                </TableRow>
+                                 </TableRow>
                               </TableHeader>
                               <TableBody>
                                 {sortedLinks.map((pharmacy, i) => {
@@ -531,17 +548,23 @@ const Medications = () => {
                                     ? pharmacy.pricePerUnit === minPricePerUnit 
                                     : false;
                                   return (
-                                    <TableRow 
-                                      key={i}
-                                      className={isBestValue ? "bg-green-50 dark:bg-green-950/20" : ""}
-                                    >
-                                      <TableCell className="font-semibold text-xs">
-                                        {pharmacy.brand}
-                                      </TableCell>
-                                      <TableCell className="text-xs">{pharmacy.name}</TableCell>
-                                      <TableCell className="text-xs text-muted-foreground">
-                                        {pharmacy.presentation}
-                                      </TableCell>
+                                     <TableRow 
+                                       key={i}
+                                       className={isBestValue ? "bg-green-50 dark:bg-green-950/20" : ""}
+                                     >
+                                       <TableCell className="font-semibold text-xs">
+                                         {pharmacy.commercial_name || pharmacy.brand}
+                                       </TableCell>
+                                       <TableCell className="text-xs">
+                                         {pharmacy.laboratory || '-'}
+                                       </TableCell>
+                                       <TableCell className="text-xs font-medium">
+                                         {pharmacy.mg_per_tablet || '-'}
+                                       </TableCell>
+                                       <TableCell className="text-xs">{pharmacy.name}</TableCell>
+                                       <TableCell className="text-xs text-muted-foreground">
+                                         {pharmacy.presentation}
+                                       </TableCell>
                                       <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-2">
                                           <span className={`text-xs font-medium ${isBestValue ? 'text-green-600 dark:text-green-400' : 'text-gray-700'}`}>
@@ -659,51 +682,84 @@ const Medications = () => {
             </DialogDescription>
           </DialogHeader>
           {editingLink && (
-            <form onSubmit={handleSubmitEdit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="medication_name">Medicamento *</Label>
-                <Select
-                  value={editingLink.medication_name}
-                  onValueChange={(value) => setEditingLink({ ...editingLink, medication_name: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona un medicamento" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="levotiroxina">Levotiroxina</SelectItem>
-                    <SelectItem value="metimazol">Metimazol</SelectItem>
-                    <SelectItem value="propranolol">Propranolol</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <form onSubmit={handleSubmitEdit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="medication_name">Medicamento *</Label>
+                  <Select
+                    value={editingLink.medication_name}
+                    onValueChange={(value) => setEditingLink({ ...editingLink, medication_name: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona un medicamento" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="levotiroxina">Levotiroxina</SelectItem>
+                      <SelectItem value="metimazol">Metimazol</SelectItem>
+                      <SelectItem value="propranolol">Propranolol</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="pharmacy_name">Farmacia *</Label>
-                <Select
-                  value={editingLink.pharmacy_name}
-                  onValueChange={(value) => setEditingLink({ ...editingLink, pharmacy_name: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una farmacia" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Farmacias Ahumada">Farmacias Ahumada</SelectItem>
-                    <SelectItem value="Cruz Verde">Cruz Verde</SelectItem>
-                    <SelectItem value="Salcobrand">Salcobrand</SelectItem>
-                    <SelectItem value="Dr. Simi">Dr. Simi</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pharmacy_name">Farmacia *</Label>
+                  <Select
+                    value={editingLink.pharmacy_name}
+                    onValueChange={(value) => setEditingLink({ ...editingLink, pharmacy_name: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona una farmacia" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Farmacias Ahumada">Farmacias Ahumada</SelectItem>
+                      <SelectItem value="Cruz Verde">Cruz Verde</SelectItem>
+                      <SelectItem value="Salcobrand">Salcobrand</SelectItem>
+                      <SelectItem value="Dr. Simi">Dr. Simi</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="presentation">Presentación *</Label>
-                <Input
-                  id="presentation"
-                  placeholder="Ej: Levotiroxina 100mcg x30 comprimidos"
-                  value={editingLink.presentation}
-                  onChange={(e) => setEditingLink({ ...editingLink, presentation: e.target.value })}
-                />
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="commercial_name">Nombre Comercial</Label>
+                    <Input
+                      id="commercial_name"
+                      placeholder="Ej: Eutirox, Levoid"
+                      value={editingLink.commercial_name}
+                      onChange={(e) => setEditingLink({ ...editingLink, commercial_name: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="laboratory">Laboratorio</Label>
+                    <Input
+                      id="laboratory"
+                      placeholder="Ej: Merck, Abbott"
+                      value={editingLink.laboratory}
+                      onChange={(e) => setEditingLink({ ...editingLink, laboratory: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="mg_per_tablet">mg/Comprimido</Label>
+                  <Input
+                    id="mg_per_tablet"
+                    placeholder="Ej: 100mcg, 5mg"
+                    value={editingLink.mg_per_tablet}
+                    onChange={(e) => setEditingLink({ ...editingLink, mg_per_tablet: e.target.value })}
+                  />
+                  <p className="text-xs text-gray-500">Dosis por comprimido</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="presentation">Presentación *</Label>
+                  <Input
+                    id="presentation"
+                    placeholder="Ej: Levotiroxina 100mcg x30 comprimidos"
+                    value={editingLink.presentation}
+                    onChange={(e) => setEditingLink({ ...editingLink, presentation: e.target.value })}
+                  />
+                </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">

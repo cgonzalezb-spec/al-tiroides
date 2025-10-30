@@ -22,6 +22,9 @@ interface PharmacyLink {
   price: number;
   product_url: string;
   is_active: boolean;
+  commercial_name: string | null;
+  laboratory: string | null;
+  mg_per_tablet: string | null;
 }
 
 interface PharmacyLinkFormData {
@@ -32,6 +35,9 @@ interface PharmacyLinkFormData {
   price: string;
   product_url: string;
   is_active: boolean;
+  commercial_name: string;
+  laboratory: string;
+  mg_per_tablet: string;
 }
 
 const PharmacyLinksManagement = () => {
@@ -48,6 +54,9 @@ const PharmacyLinksManagement = () => {
     price: '',
     product_url: '',
     is_active: true,
+    commercial_name: '',
+    laboratory: '',
+    mg_per_tablet: '',
   });
 
   const { data: pharmacyLinks, isLoading } = useQuery({
@@ -75,6 +84,9 @@ const PharmacyLinksManagement = () => {
         price: parseInt(data.price),
         product_url: data.product_url,
         is_active: data.is_active,
+        commercial_name: data.commercial_name || null,
+        laboratory: data.laboratory || null,
+        mg_per_tablet: data.mg_per_tablet || null,
       });
       if (error) throw error;
     },
@@ -102,6 +114,9 @@ const PharmacyLinksManagement = () => {
           price: parseInt(data.price),
           product_url: data.product_url,
           is_active: data.is_active,
+          commercial_name: data.commercial_name || null,
+          laboratory: data.laboratory || null,
+          mg_per_tablet: data.mg_per_tablet || null,
         })
         .eq('id', id);
       if (error) throw error;
@@ -157,6 +172,9 @@ const PharmacyLinksManagement = () => {
       price: '',
       product_url: '',
       is_active: true,
+      commercial_name: '',
+      laboratory: '',
+      mg_per_tablet: '',
     });
     setEditingLink(null);
   };
@@ -171,6 +189,9 @@ const PharmacyLinksManagement = () => {
       price: link.price.toString(),
       product_url: link.product_url,
       is_active: link.is_active,
+      commercial_name: link.commercial_name || '',
+      laboratory: link.laboratory || '',
+      mg_per_tablet: link.mg_per_tablet || '',
     });
     setIsDialogOpen(true);
   };
@@ -263,6 +284,39 @@ const PharmacyLinksManagement = () => {
                       <SelectItem value="Dr. Simi">Dr. Simi</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="commercial_name">Nombre Comercial</Label>
+                    <Input
+                      id="commercial_name"
+                      placeholder="Ej: Eutirox, Levoid"
+                      value={formData.commercial_name}
+                      onChange={(e) => setFormData({ ...formData, commercial_name: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="laboratory">Laboratorio</Label>
+                    <Input
+                      id="laboratory"
+                      placeholder="Ej: Merck, Abbott"
+                      value={formData.laboratory}
+                      onChange={(e) => setFormData({ ...formData, laboratory: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="mg_per_tablet">mg/Comprimido</Label>
+                  <Input
+                    id="mg_per_tablet"
+                    placeholder="Ej: 100mcg, 5mg"
+                    value={formData.mg_per_tablet}
+                    onChange={(e) => setFormData({ ...formData, mg_per_tablet: e.target.value })}
+                  />
+                  <p className="text-xs text-gray-500">Dosis por comprimido (ej: 100mcg, 5mg, 10mg)</p>
                 </div>
 
                 <div className="space-y-2">
@@ -395,14 +449,28 @@ const PharmacyLinksManagement = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-3">
                     <div>
-                      <p className="text-gray-500">Precio</p>
-                      <p className="font-semibold">${link.price.toLocaleString('es-CL')}</p>
+                      <p className="text-gray-500">Nombre Comercial</p>
+                      <p className="font-semibold">{link.commercial_name || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Laboratorio</p>
+                      <p className="font-semibold">{link.laboratory || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">mg/Comprimido</p>
+                      <p className="font-semibold">{link.mg_per_tablet || '-'}</p>
                     </div>
                     <div>
                       <p className="text-gray-500">Cantidad</p>
                       <p className="font-semibold">{link.quantity || 'No especificada'}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-500">Precio</p>
+                      <p className="font-semibold">${link.price.toLocaleString('es-CL')}</p>
                     </div>
                     <div>
                       <p className="text-gray-500">Precio por comp.</p>

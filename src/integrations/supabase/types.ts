@@ -139,10 +139,13 @@ export type Database = {
       }
       pharmacy_links: {
         Row: {
+          commercial_name: string | null
           created_at: string
           id: string
           is_active: boolean
+          laboratory: string | null
           medication_name: string
+          mg_per_tablet: string | null
           pharmacy_name: string
           presentation: string
           price: number
@@ -151,10 +154,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          commercial_name?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
+          laboratory?: string | null
           medication_name: string
+          mg_per_tablet?: string | null
           pharmacy_name: string
           presentation: string
           price: number
@@ -163,10 +169,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          commercial_name?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
+          laboratory?: string | null
           medication_name?: string
+          mg_per_tablet?: string | null
           pharmacy_name?: string
           presentation?: string
           price?: number
