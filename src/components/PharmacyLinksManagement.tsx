@@ -228,7 +228,7 @@ const PharmacyLinksManagement = () => {
   return (
     <section className="py-16 bg-gradient-to-br from-blue-50 to-green-50">
       <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Gestión de Enlaces de Farmacia</h2>
             <p className="text-gray-600">Administra los enlaces directos a productos de farmacias</p>
@@ -238,9 +238,9 @@ const PharmacyLinksManagement = () => {
             if (!open) resetForm();
           }}>
             <DialogTrigger asChild>
-              <Button className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="w-4 h-4 mr-2" />
-                Nuevo Enlace
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 shadow-lg">
+                <Plus className="w-5 h-5 mr-2" />
+                Agregar Medicamento
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

@@ -52,6 +52,7 @@ const Medications = () => {
   const [pharmacyData, setPharmacyData] = useState<Record<string, PharmacyLink[]>>({});
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<EditFormData | null>(null);
+  const [selectedDose, setSelectedDose] = useState<Record<string, string>>({});
   const { toast } = useToast();
   const { isAdmin } = useRole();
   const queryClient = useQueryClient();
@@ -514,20 +515,58 @@ const Medications = () => {
                   </CollapsibleTrigger>
                   <CollapsibleContent className="mt-4">
                     {(() => {
-                      const links = getPharmacyLinks(medications[selectedMed].medicationKey);
+                      const medicationKey = medications[selectedMed].medicationKey;
+                      const links = getPharmacyLinks(medicationKey);
+                      
+                      // Obtener dosis únicas disponibles
+                      const availableDoses = [...new Set(links.map(l => l.mg_per_tablet).filter(Boolean))].sort();
+                      const currentDose = selectedDose[medicationKey] || (availableDoses.length > 0 ? availableDoses[0] : '');
+                      
+                      // Filtrar por dosis seleccionada
+                      const filteredByDose = currentDose 
+                        ? links.filter(l => l.mg_per_tablet === currentDose)
+                        : links;
+                      
                       // Ordenar por precio por comprimido si está disponible, sino por precio total
-                      const sortedLinks = [...links].sort((a, b) => {
+                      const sortedLinks = [...filteredByDose].sort((a, b) => {
                         if (a.pricePerUnit && b.pricePerUnit) {
                           return a.pricePerUnit - b.pricePerUnit;
                         }
                         return a.price - b.price;
                       });
+                      
+                      // Calcular el mejor valor solo dentro de la dosis seleccionada
                       const minPricePerUnit = sortedLinks.length > 0 && sortedLinks[0].pricePerUnit 
                         ? sortedLinks[0].pricePerUnit 
                         : null;
                       
                       return (
                         <>
+                          {availableDoses.length > 0 && (
+                            <div className="mb-4 flex items-center gap-3">
+                              <Label htmlFor="dose-select" className="text-sm font-medium whitespace-nowrap">
+                                Seleccionar dosis:
+                              </Label>
+                              <Select
+                                value={currentDose}
+                                onValueChange={(value) => setSelectedDose(prev => ({
+                                  ...prev,
+                                  [medicationKey]: value
+                                }))}
+                              >
+                                <SelectTrigger id="dose-select" className="w-[200px]">
+                                  <SelectValue placeholder="Selecciona una dosis" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {availableDoses.map((dose) => (
+                                    <SelectItem key={dose} value={dose}>
+                                      {dose}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
                           <div className="rounded-lg border overflow-hidden">
                             <Table>
                               <TableHeader>
