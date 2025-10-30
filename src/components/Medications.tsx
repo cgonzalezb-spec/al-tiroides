@@ -565,18 +565,18 @@ const Medications = () => {
                                        <TableCell className="text-xs text-muted-foreground">
                                          {pharmacy.presentation}
                                        </TableCell>
-                                      <TableCell className="text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                          <span className={`text-xs font-medium ${isBestValue ? 'text-green-600 dark:text-green-400' : 'text-gray-700'}`}>
-                                            ${pharmacy.price.toLocaleString('es-CL')}
-                                          </span>
-                                          {isBestValue && (
-                                            <Badge className="bg-green-600 hover:bg-green-700 text-[10px] px-1.5 py-0">
-                                              Mejor valor
-                                            </Badge>
-                                          )}
-                                        </div>
-                                      </TableCell>
+                                       <TableCell className="text-right">
+                                         <div className="flex flex-col items-end gap-1">
+                                           <span className={`text-xs font-medium ${isBestValue ? 'text-green-600 dark:text-green-400' : 'text-gray-700'}`}>
+                                             ${pharmacy.price.toLocaleString('es-CL')}
+                                           </span>
+                                           {isBestValue && (
+                                             <Badge className="bg-green-600 hover:bg-green-700 text-[10px] px-1.5 py-0 whitespace-nowrap">
+                                               Mejor valor
+                                             </Badge>
+                                           )}
+                                         </div>
+                                       </TableCell>
                                        <TableCell className="text-center">
                                          <Button
                                            variant={isBestValue ? "default" : "ghost"}
