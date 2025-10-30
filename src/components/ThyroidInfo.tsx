@@ -112,7 +112,7 @@ const ThyroidInfo = () => {
                   {func.description}
                 </CardDescription>
                 {expandedCards.includes(index) && (
-                  <div className="bg-muted/30 p-4 rounded-md border-t mt-2 animate-fade-in max-h-40 overflow-y-auto">
+                  <div className="bg-muted/30 p-4 rounded-md border-t mt-2 animate-fade-in">
                     <p className="text-sm text-gray-700 text-left leading-relaxed">
                       {func.expandedInfo}
                     </p>

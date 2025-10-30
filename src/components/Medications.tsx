@@ -223,9 +223,9 @@ const Medications = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid lg:grid-cols-3 gap-8 mb-16 items-stretch">
           {medications.map((med, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow">
+            <Card key={index} className="h-full flex flex-col hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-center space-x-3 mb-2">
                   {med.icon}
@@ -234,8 +234,8 @@ const Medications = () => {
                 <CardTitle className="text-xl">{med.name}</CardTitle>
                 <CardDescription>{med.description}</CardDescription>
               </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="how" className="w-full">
+              <CardContent className="flex-1 flex flex-col">
+                <Tabs defaultValue="how" className="w-full flex-1 flex flex-col">
                   <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="how">¿Cómo?</TabsTrigger>
                     <TabsTrigger value="dose">Dosis</TabsTrigger>
