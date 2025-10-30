@@ -228,8 +228,7 @@ const Medications = () => {
           {medications.map((med, index) => (
             <Card 
               key={index} 
-              className={`h-full flex flex-col hover:shadow-lg transition-all cursor-pointer ${selectedMed === index ? 'ring-2 ring-primary' : ''}`}
-              onClick={() => setSelectedMed(selectedMed === index ? null : index)}
+              className={`h-full flex flex-col hover:shadow-lg transition-shadow ${selectedMed === index ? 'ring-2 ring-primary' : ''}`}
             >
               <CardHeader>
                 <div className="flex items-center space-x-3 mb-2">
@@ -239,10 +238,44 @@ const Medications = () => {
                 <CardTitle className="text-xl">{med.name}</CardTitle>
                 <CardDescription>{med.description}</CardDescription>
               </CardHeader>
-              <CardContent className="flex-1 flex flex-col justify-end">
+              <CardContent className="flex-1 flex flex-col">
+                <Tabs defaultValue="how" className="w-full flex-1 flex flex-col">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="how">¿Cómo?</TabsTrigger>
+                    <TabsTrigger value="dose">Dosis</TabsTrigger>
+                    <TabsTrigger value="tips">Tips</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="how" className="mt-4">
+                    <p className="text-sm text-gray-600">{med.howItWorks}</p>
+                  </TabsContent>
+                  
+                  <TabsContent value="dose" className="mt-4">
+                    <p className="text-sm font-medium text-gray-700 mb-2">{med.dosage}</p>
+                    <div className="space-y-1">
+                      <p className="text-xs text-gray-500 font-medium">Efectos secundarios:</p>
+                      {med.sideEffects.map((effect, i) => (
+                        <p key={i} className="text-xs text-gray-600">• {effect}</p>
+                      ))}
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="tips" className="mt-4">
+                    <div className="space-y-2">
+                      {med.tips.map((tip, i) => (
+                        <div key={i} className="flex items-start space-x-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          <p className="text-sm text-gray-600">{tip}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </TabsContent>
+                </Tabs>
+
                 <Button 
                   variant={selectedMed === index ? "default" : "outline"} 
-                  className="w-full"
+                  className="w-full mt-4"
+                  onClick={() => setSelectedMed(selectedMed === index ? null : index)}
                 >
                   {selectedMed === index ? 'Ocultar detalles' : 'Ver detalles'}
                 </Button>
@@ -255,54 +288,12 @@ const Medications = () => {
         {selectedMed !== null && (
           <Card className="mb-16 animate-fade-in">
             <CardContent className="pt-6">
-              <Tabs defaultValue="how" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto">
-                  <TabsTrigger value="how">¿Cómo funciona?</TabsTrigger>
-                  <TabsTrigger value="dose">Dosis y efectos</TabsTrigger>
-                  <TabsTrigger value="tips">Consejos</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="how" className="mt-6">
-                  <div className="max-w-3xl mx-auto">
-                    <h3 className="text-lg font-semibold mb-4 text-center">{medications[selectedMed].name}</h3>
-                    <p className="text-base text-gray-600 text-center">{medications[selectedMed].howItWorks}</p>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="dose" className="mt-6">
-                  <div className="max-w-3xl mx-auto">
-                    <h3 className="text-lg font-semibold mb-4 text-center">{medications[selectedMed].name}</h3>
-                    <p className="text-base font-medium text-gray-700 mb-4 text-center">{medications[selectedMed].dosage}</p>
-                    <div className="space-y-2 bg-muted/30 p-6 rounded-lg">
-                      <p className="text-sm text-gray-700 font-semibold mb-3">Efectos secundarios comunes:</p>
-                      <div className="grid md:grid-cols-2 gap-3">
-                        {medications[selectedMed].sideEffects.map((effect, i) => (
-                          <div key={i} className="flex items-start space-x-2">
-                            <AlertCircle className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
-                            <p className="text-sm text-gray-600">{effect}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="tips" className="mt-6">
-                  <div className="max-w-3xl mx-auto">
-                    <h3 className="text-lg font-semibold mb-4 text-center">{medications[selectedMed].name}</h3>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {medications[selectedMed].tips.map((tip, i) => (
-                        <div key={i} className="flex items-start space-x-3 bg-muted/30 p-4 rounded-lg">
-                          <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                          <p className="text-sm text-gray-600">{tip}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">{medications[selectedMed].name}</h3>
+                <p className="text-gray-600 mt-2">Información farmacológica detallada</p>
+              </div>
               
-              <div className="space-y-3 mt-8 pt-6 border-t max-w-4xl mx-auto">
+              <div className="space-y-3 max-w-4xl mx-auto">
                 <Collapsible 
                   open={openDetails === selectedMed} 
                   onOpenChange={(isOpen) => setOpenDetails(isOpen ? selectedMed : null)}
