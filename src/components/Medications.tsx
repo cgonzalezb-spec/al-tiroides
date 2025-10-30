@@ -574,6 +574,7 @@ const Medications = () => {
                                    <TableHead className="font-semibold">Nombre Comercial</TableHead>
                                    <TableHead className="font-semibold">Laboratorio</TableHead>
                                    <TableHead className="font-semibold">mg/Comp.</TableHead>
+                                   <TableHead className="font-semibold text-center">Cantidad</TableHead>
                                    <TableHead className="font-semibold">Farmacia</TableHead>
                                    <TableHead className="font-semibold">Presentación</TableHead>
                                    <TableHead className="text-right font-semibold">Precio</TableHead>
@@ -599,6 +600,9 @@ const Medications = () => {
                                        </TableCell>
                                        <TableCell className="text-xs font-medium">
                                          {pharmacy.mg_per_tablet || '-'}
+                                       </TableCell>
+                                       <TableCell className="text-xs text-center font-medium">
+                                         {pharmacy.quantity ? `${pharmacy.quantity} comp.` : '-'}
                                        </TableCell>
                                        <TableCell className="text-xs">{pharmacy.name}</TableCell>
                                        <TableCell className="text-xs text-muted-foreground">
