@@ -296,9 +296,9 @@ END:VCALENDAR`;
               <CardTitle>Mis medicamentos</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
                 {medications.map((med) => (
-                  <div key={med.id} className="border rounded-lg p-4 bg-white flex flex-col justify-between">
+                  <div key={med.id} className="h-full border rounded-lg p-4 bg-white flex flex-col justify-between">
                     <div>
                       <div className="flex justify-between items-start mb-2">
                         <h4 className="font-semibold">{med.name}</h4>

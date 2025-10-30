@@ -87,11 +87,11 @@ const ThyroidInfo = () => {
           </Button>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16 items-start">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16 items-stretch">
           {functions.map((func, index) => (
             <Card 
               key={index} 
-              className="text-center hover:shadow-lg transition-all duration-200 cursor-pointer"
+              className="h-full flex flex-col text-center hover:shadow-lg transition-all duration-200 cursor-pointer"
               onClick={() => toggleCard(index)}
             >
               <CardHeader>
@@ -107,7 +107,7 @@ const ThyroidInfo = () => {
                   )}
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1 flex flex-col">
                 <CardDescription className="text-sm mb-3">
                   {func.description}
                 </CardDescription>

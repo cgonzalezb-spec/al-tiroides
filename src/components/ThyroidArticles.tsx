@@ -83,7 +83,7 @@ const ThyroidArticles = () => {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <Card key={i} className="flex flex-col h-full">
                 <CardHeader>
@@ -100,7 +100,7 @@ const ThyroidArticles = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
               {articles?.map((article) => (
                 <Card key={article.id} className="flex flex-col h-full hover:shadow-lg transition-shadow duration-300">
                   <CardHeader>

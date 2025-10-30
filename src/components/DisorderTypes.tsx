@@ -75,9 +75,9 @@ const DisorderTypes = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
           {disorders.map((disorder, index) => (
-            <Card key={index} className={`hover:shadow-xl transition-all duration-300 border-2 ${getColorClasses(disorder.color).split(' ').slice(2).join(' ')}`}>
+            <Card key={index} className={`h-full flex flex-col hover:shadow-xl transition-all duration-300 border-2 ${getColorClasses(disorder.color).split(' ').slice(2).join(' ')}`}>
               <CardHeader className="text-center pb-4">
                 <div className="mx-auto mb-4 p-3 rounded-full bg-white shadow-lg">
                   {disorder.icon}
@@ -90,8 +90,8 @@ const DisorderTypes = () => {
                   {disorder.prevalence}
                 </Badge>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="bg-white rounded-lg p-4">
+              <CardContent className="flex-1 flex flex-col space-y-4">
+                <div className="bg-white rounded-lg p-4 flex-1 flex flex-col">
                   <p className="text-sm text-gray-600 mb-3 italic">
                     {disorder.explanation}
                   </p>

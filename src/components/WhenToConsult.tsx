@@ -153,10 +153,10 @@ const WhenToConsult = () => {
           <h3 className="text-3xl font-bold text-gray-900 text-center mb-8">
             Exámenes que podría pedirte el médico
           </h3>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
             {examTypes.map((exam, index) => (
-              <Card key={index} className="text-center hover:shadow-lg transition-shadow">
-                <CardHeader>
+              <Card key={index} className="h-full flex flex-col text-center hover:shadow-lg transition-shadow">
+                <CardHeader className="flex-1">
                   <div className="mx-auto mb-2">
                     {exam.icon}
                   </div>

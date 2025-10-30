@@ -97,18 +97,18 @@ const AppointmentBooking = () => {
           <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
             ¿Qué tipo de especialista necesitas?
           </h3>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-6 items-stretch">
             {specialties.map((specialty) => (
               <Card 
                 key={specialty.id}
-                className={`cursor-pointer transition-all hover:shadow-lg ${
+                className={`h-full flex flex-col cursor-pointer transition-all hover:shadow-lg ${
                   selectedSpecialty === specialty.id 
                     ? 'ring-2 ring-blue-500 bg-blue-50' 
                     : 'hover:bg-gray-50'
                 }`}
                 onClick={() => setSelectedSpecialty(prev => prev === specialty.id ? '' : specialty.id)}
               >
-                <CardHeader className="text-center">
+                <CardHeader className="text-center flex-1">
                   <div className="text-4xl mb-2">{specialty.icon}</div>
                   <CardTitle className="text-lg">{specialty.name}</CardTitle>
                   <CardDescription>{specialty.description}</CardDescription>
