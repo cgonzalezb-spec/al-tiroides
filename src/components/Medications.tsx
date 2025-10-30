@@ -45,6 +45,33 @@ interface EditFormData {
   mg_per_tablet: string;
 }
 
+// Presets de dosis por medicamento (se pueden ampliar según necesidad)
+const DOSE_PRESETS: Record<string, string[]> = {
+  levotiroxina: ['50 mcg', '75 mcg', '100 mcg'],
+  // metimazol: ['5 mg', '10 mg'],
+  // propranolol: ['10 mg', '40 mg', '80 mg'],
+};
+
+const normalizeDose = (dose?: string | null) => {
+  if (!dose) return '';
+  return dose
+    .toLowerCase()
+    .replace('µg', 'mcg')
+    .replace(/\s+/g, '')
+    .trim();
+};
+
+const formatDose = (dose?: string | null) => {
+  if (!dose) return '';
+  const norm = normalizeDose(dose);
+  const match = norm.match(/^(\d+)(mcg|mg)$/);
+  if (match) {
+    return `${match[1]} ${match[2]}`; // añade espacio entre número y unidad
+  }
+  // si no coincide, devuelve tal cual
+  return dose;
+};
+
 const Medications = () => {
   const [openDetails, setOpenDetails] = useState<number | null>(null);
   const [openPrices, setOpenPrices] = useState<number | null>(null);
@@ -518,13 +545,35 @@ const Medications = () => {
                       const medicationKey = medications[selectedMed].medicationKey;
                       const links = getPharmacyLinks(medicationKey);
                       
-                      // Obtener dosis únicas disponibles
-                      const availableDoses = [...new Set(links.map(l => l.mg_per_tablet).filter(Boolean))].sort();
-                      const currentDose = selectedDose[medicationKey] || (availableDoses.length > 0 ? availableDoses[0] : '');
+                      // Presets + dosis detectadas en enlaces
+                      const presetDoses = DOSE_PRESETS[medicationKey] || [];
+                      const linkDosesRaw = (links.map(l => l.mg_per_tablet).filter(Boolean) as string[]);
+                      const merged = [...presetDoses, ...linkDosesRaw];
+                      const seen = new Set<string>();
+                      const combinedDoses: string[] = [];
+                      merged.forEach(d => {
+                        const n = normalizeDose(d);
+                        if (n && !seen.has(n)) {
+                          seen.add(n);
+                          combinedDoses.push(n);
+                        }
+                      });
+                      // Ordenar por valor numérico (convierte mcg a mg para comparar)
+                      combinedDoses.sort((a, b) => {
+                        const am = a.match(/^(\d+)(mcg|mg)$/);
+                        const bm = b.match(/^(\d+)(mcg|mg)$/);
+                        if (am && bm) {
+                          const aVal = am[2] === 'mg' ? parseFloat(am[1]) : parseFloat(am[1]) / 1000;
+                          const bVal = bm[2] === 'mg' ? parseFloat(bm[1]) : parseFloat(bm[1]) / 1000;
+                          return aVal - bVal;
+                        }
+                        return a.localeCompare(b);
+                      });
+                      const currentDose = selectedDose[medicationKey] || (combinedDoses.length > 0 ? combinedDoses[0] : '');
                       
-                      // Filtrar por dosis seleccionada
+                      // Filtrar por dosis seleccionada (normalizado)
                       const filteredByDose = currentDose 
-                        ? links.filter(l => l.mg_per_tablet === currentDose)
+                        ? links.filter(l => normalizeDose(l.mg_per_tablet || '') === currentDose)
                         : links;
                       
                       // Ordenar por precio por comprimido si está disponible, sino por precio total
@@ -542,7 +591,7 @@ const Medications = () => {
                       
                       return (
                         <>
-                          {availableDoses.length > 0 && (
+                          {combinedDoses.length > 0 && (
                             <div className="mb-4 flex items-center gap-3">
                               <Label htmlFor="dose-select" className="text-sm font-medium whitespace-nowrap">
                                 Seleccionar dosis:
@@ -558,9 +607,9 @@ const Medications = () => {
                                   <SelectValue placeholder="Selecciona una dosis" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {availableDoses.map((dose) => (
-                                    <SelectItem key={dose} value={dose}>
-                                      {dose}
+                                  {combinedDoses.map((doseNorm) => (
+                                    <SelectItem key={doseNorm} value={doseNorm}>
+                                      {formatDose(doseNorm)}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
