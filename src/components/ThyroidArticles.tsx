@@ -145,10 +145,16 @@ const ThyroidArticles = () => {
                     <Button 
                       variant="outline" 
                       className="w-full"
-                      onClick={() => window.open(article.url, '_blank')}
+                      asChild
                     >
-                      Leer artículo
-                      <ExternalLink className="w-4 h-4 ml-2" />
+                      <a 
+                        href={article.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                      >
+                        Leer artículo
+                        <ExternalLink className="w-4 h-4 ml-2" />
+                      </a>
                     </Button>
                   </CardContent>
                 </Card>
