@@ -71,6 +71,45 @@ export type Database = {
         }
         Relationships: []
       }
+      articles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string
+          id: string
+          is_active: boolean
+          language: string
+          published_date: string
+          source: string
+          title: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description: string
+          id?: string
+          is_active?: boolean
+          language: string
+          published_date: string
+          source: string
+          title: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          id?: string
+          is_active?: boolean
+          language?: string
+          published_date?: string
+          source?: string
+          title?: string
+          url?: string
+        }
+        Relationships: []
+      }
       medications: {
         Row: {
           created_at: string

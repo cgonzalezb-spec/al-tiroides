@@ -16,6 +16,7 @@ import CommunityForum from '@/components/CommunityForum';
 import Footer from '@/components/Footer';
 import ConsejosSection from '@/components/ConsejosSection';
 import ThyroidArticles from '@/components/ThyroidArticles';
+import ArticleManagement from '@/components/ArticleManagement';
 
 const Index = () => {
   const { user } = useAuth();
@@ -43,6 +44,7 @@ const Index = () => {
       <MythsAndFAQ />
       <ConsejosSection />
       <ThyroidArticles />
+      {user && <ArticleManagement />}
       <UserQuestions />
       <CommunityForum />
       <Footer />
