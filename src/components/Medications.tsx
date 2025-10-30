@@ -1,15 +1,23 @@
-import { Pill, Clock, AlertCircle, Heart, CheckCircle, ChevronDown, ExternalLink, ShoppingCart } from 'lucide-react';
+import { Pill, Clock, AlertCircle, Heart, CheckCircle, ChevronDown, ExternalLink, ShoppingCart, Pencil } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useRole } from '@/contexts/RoleContext';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface PharmacyLink {
+  id?: string;
   name: string;
   brand: string;
   price: number;
@@ -17,6 +25,18 @@ interface PharmacyLink {
   url: string;
   quantity?: number;
   pricePerUnit?: number;
+  medication_name?: string;
+  pharmacy_name?: string;
+}
+
+interface EditFormData {
+  id: string;
+  medication_name: string;
+  pharmacy_name: string;
+  presentation: string;
+  quantity: string;
+  price: string;
+  product_url: string;
 }
 
 const Medications = () => {
@@ -24,54 +44,123 @@ const Medications = () => {
   const [openPrices, setOpenPrices] = useState<number | null>(null);
   const [selectedMed, setSelectedMed] = useState<number | null>(null);
   const [pharmacyData, setPharmacyData] = useState<Record<string, PharmacyLink[]>>({});
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingLink, setEditingLink] = useState<EditFormData | null>(null);
   const { toast } = useToast();
+  const { isAdmin } = useRole();
+  const queryClient = useQueryClient();
+
+  // Mutation para actualizar enlaces
+  const updateLinkMutation = useMutation({
+    mutationFn: async (data: EditFormData) => {
+      const { error } = await supabase
+        .from('pharmacy_links')
+        .update({
+          medication_name: data.medication_name,
+          pharmacy_name: data.pharmacy_name,
+          presentation: data.presentation,
+          quantity: data.quantity ? parseInt(data.quantity) : null,
+          price: parseInt(data.price),
+          product_url: data.product_url,
+        })
+        .eq('id', data.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: 'Enlace actualizado exitosamente' });
+      setIsEditDialogOpen(false);
+      setEditingLink(null);
+      // Recargar datos
+      fetchPharmacyLinks();
+      queryClient.invalidateQueries({ queryKey: ['pharmacy-links'] });
+    },
+    onError: () => {
+      toast({ title: 'Error al actualizar enlace', variant: 'destructive' });
+    },
+  });
 
   // Cargar enlaces de farmacias desde la base de datos
+  const fetchPharmacyLinks = async () => {
+    const { data, error } = await supabase
+      .from('pharmacy_links')
+      .select('*')
+      .eq('is_active', true)
+      .order('price', { ascending: true });
+
+    if (error) {
+      console.error('Error loading pharmacy links:', error);
+      toast({
+        title: "Error al cargar precios",
+        description: "Mostrando enlaces de búsqueda por defecto",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (data) {
+      const grouped: Record<string, PharmacyLink[]> = {};
+      data.forEach((link) => {
+        if (!grouped[link.medication_name]) {
+          grouped[link.medication_name] = [];
+        }
+        // Extract brand from presentation or use pharmacy name as fallback
+        const brand = link.presentation.split(' ')[0];
+        const quantity = link.quantity || null;
+        const pricePerUnit = quantity ? link.price / quantity : null;
+        
+        grouped[link.medication_name].push({
+          id: link.id,
+          name: link.pharmacy_name,
+          brand: brand,
+          price: link.price,
+          presentation: link.presentation,
+          url: link.product_url,
+          quantity: quantity,
+          pricePerUnit: pricePerUnit,
+          medication_name: link.medication_name,
+          pharmacy_name: link.pharmacy_name
+        });
+      });
+      setPharmacyData(grouped);
+    }
+  };
+
   useEffect(() => {
-    const fetchPharmacyLinks = async () => {
-      const { data, error } = await supabase
-        .from('pharmacy_links')
-        .select('*')
-        .eq('is_active', true)
-        .order('price', { ascending: true });
-
-      if (error) {
-        console.error('Error loading pharmacy links:', error);
-        toast({
-          title: "Error al cargar precios",
-          description: "Mostrando enlaces de búsqueda por defecto",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      if (data) {
-        const grouped: Record<string, PharmacyLink[]> = {};
-        data.forEach((link) => {
-          if (!grouped[link.medication_name]) {
-            grouped[link.medication_name] = [];
-          }
-          // Extract brand from presentation or use pharmacy name as fallback
-          const brand = link.presentation.split(' ')[0];
-          const quantity = link.quantity || null;
-          const pricePerUnit = quantity ? link.price / quantity : null;
-          
-          grouped[link.medication_name].push({
-            name: link.pharmacy_name,
-            brand: brand,
-            price: link.price,
-            presentation: link.presentation,
-            url: link.product_url,
-            quantity: quantity,
-            pricePerUnit: pricePerUnit
-          });
-        });
-        setPharmacyData(grouped);
-      }
-    };
-
     fetchPharmacyLinks();
   }, [toast]);
+
+  const handleEditLink = (link: PharmacyLink) => {
+    if (!link.id) return;
+    setEditingLink({
+      id: link.id,
+      medication_name: link.medication_name || '',
+      pharmacy_name: link.pharmacy_name || '',
+      presentation: link.presentation,
+      quantity: link.quantity?.toString() || '',
+      price: link.price.toString(),
+      product_url: link.url,
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSubmitEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingLink) return;
+
+    // Validación de URL
+    try {
+      new URL(editingLink.product_url);
+    } catch {
+      toast({ 
+        title: 'URL inválida', 
+        description: 'Por favor ingresa una URL válida',
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    updateLinkMutation.mutate(editingLink);
+  };
 
   // Función para obtener enlaces de farmacias con fallback
   const getPharmacyLinks = (medicationKey: string): PharmacyLink[] => {
@@ -428,11 +517,12 @@ const Medications = () => {
                             <Table>
                               <TableHeader>
                                 <TableRow className="bg-muted/50">
-                                  <TableHead className="font-semibold">Marca</TableHead>
-                                  <TableHead className="font-semibold">Farmacia</TableHead>
-                                  <TableHead className="font-semibold">Presentación</TableHead>
-                                  <TableHead className="text-right font-semibold">Precio</TableHead>
-                                  <TableHead className="text-center font-semibold">Ver</TableHead>
+                                   <TableHead className="font-semibold">Marca</TableHead>
+                                   <TableHead className="font-semibold">Farmacia</TableHead>
+                                   <TableHead className="font-semibold">Presentación</TableHead>
+                                   <TableHead className="text-right font-semibold">Precio</TableHead>
+                                   <TableHead className="text-center font-semibold">Ver</TableHead>
+                                   {isAdmin && <TableHead className="text-center font-semibold">Editar</TableHead>}
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
@@ -464,24 +554,37 @@ const Medications = () => {
                                           )}
                                         </div>
                                       </TableCell>
-                                      <TableCell className="text-center">
-                                        <Button
-                                          variant={isBestValue ? "default" : "ghost"}
-                                          size="sm"
-                                          className="h-8 px-3"
-                                          asChild
-                                        >
-                                          <a 
-                                            href={pharmacy.url} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            className="flex items-center gap-1"
-                                          >
-                                            <ExternalLink className="h-3 w-3" />
-                                            <span className="text-xs">Ir</span>
-                                          </a>
-                                        </Button>
-                                      </TableCell>
+                                       <TableCell className="text-center">
+                                         <Button
+                                           variant={isBestValue ? "default" : "ghost"}
+                                           size="sm"
+                                           className="h-8 px-3"
+                                           asChild
+                                         >
+                                           <a 
+                                             href={pharmacy.url} 
+                                             target="_blank" 
+                                             rel="noopener noreferrer"
+                                             className="flex items-center gap-1"
+                                           >
+                                             <ExternalLink className="h-3 w-3" />
+                                             <span className="text-xs">Ir</span>
+                                           </a>
+                                         </Button>
+                                       </TableCell>
+                                       {isAdmin && (
+                                         <TableCell className="text-center">
+                                           <Button
+                                             variant="ghost"
+                                             size="sm"
+                                             className="h-8 px-3"
+                                             onClick={() => handleEditLink(pharmacy)}
+                                             disabled={!pharmacy.id}
+                                           >
+                                             <Pencil className="h-3 w-3" />
+                                           </Button>
+                                         </TableCell>
+                                       )}
                                     </TableRow>
                                   );
                                 })}
@@ -545,6 +648,122 @@ const Medications = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal de edición para administradores */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Enlace de Farmacia</DialogTitle>
+            <DialogDescription>
+              Modifica los datos del enlace del medicamento
+            </DialogDescription>
+          </DialogHeader>
+          {editingLink && (
+            <form onSubmit={handleSubmitEdit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="medication_name">Medicamento *</Label>
+                <Select
+                  value={editingLink.medication_name}
+                  onValueChange={(value) => setEditingLink({ ...editingLink, medication_name: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona un medicamento" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="levotiroxina">Levotiroxina</SelectItem>
+                    <SelectItem value="metimazol">Metimazol</SelectItem>
+                    <SelectItem value="propranolol">Propranolol</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pharmacy_name">Farmacia *</Label>
+                <Select
+                  value={editingLink.pharmacy_name}
+                  onValueChange={(value) => setEditingLink({ ...editingLink, pharmacy_name: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona una farmacia" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Farmacias Ahumada">Farmacias Ahumada</SelectItem>
+                    <SelectItem value="Cruz Verde">Cruz Verde</SelectItem>
+                    <SelectItem value="Salcobrand">Salcobrand</SelectItem>
+                    <SelectItem value="Dr. Simi">Dr. Simi</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="presentation">Presentación *</Label>
+                <Input
+                  id="presentation"
+                  placeholder="Ej: Levotiroxina 100mcg x30 comprimidos"
+                  value={editingLink.presentation}
+                  onChange={(e) => setEditingLink({ ...editingLink, presentation: e.target.value })}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="quantity">Cantidad de comprimidos</Label>
+                  <Input
+                    id="quantity"
+                    type="number"
+                    placeholder="Ej: 30"
+                    value={editingLink.quantity}
+                    onChange={(e) => setEditingLink({ ...editingLink, quantity: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="price">Precio (CLP) *</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    placeholder="Ej: 8790"
+                    value={editingLink.price}
+                    onChange={(e) => setEditingLink({ ...editingLink, price: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="product_url">URL del Producto *</Label>
+                <Textarea
+                  id="product_url"
+                  placeholder="https://www.farmacia.com/producto/..."
+                  value={editingLink.product_url}
+                  onChange={(e) => setEditingLink({ ...editingLink, product_url: e.target.value })}
+                  rows={3}
+                />
+                <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
+                  <p className="text-xs text-yellow-800">
+                    ⚠️ Debe ser un enlace DIRECTO al producto, no a una página de búsqueda
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditDialogOpen(false);
+                    setEditingLink(null);
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                  Actualizar Enlace
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
