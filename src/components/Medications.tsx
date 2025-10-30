@@ -431,8 +431,7 @@ const Medications = () => {
                                   <TableHead className="font-semibold">Marca</TableHead>
                                   <TableHead className="font-semibold">Farmacia</TableHead>
                                   <TableHead className="font-semibold">Presentación</TableHead>
-                                  <TableHead className="text-right font-semibold">Precio Total</TableHead>
-                                  <TableHead className="text-right font-semibold">Precio/Comp.</TableHead>
+                                  <TableHead className="text-right font-semibold">Precio</TableHead>
                                   <TableHead className="text-center font-semibold">Ver</TableHead>
                                 </TableRow>
                               </TableHeader>
@@ -454,25 +453,14 @@ const Medications = () => {
                                         {pharmacy.presentation}
                                       </TableCell>
                                       <TableCell className="text-right">
-                                        <span className="text-xs font-medium text-gray-700">
-                                          ${pharmacy.price.toLocaleString('es-CL')}
-                                        </span>
-                                      </TableCell>
-                                      <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-2">
-                                          {pharmacy.pricePerUnit ? (
-                                            <>
-                                              <span className={`text-xs font-bold ${isBestValue ? 'text-green-600 dark:text-green-400' : 'text-gray-700'}`}>
-                                                ${pharmacy.pricePerUnit.toFixed(0)}
-                                              </span>
-                                              {isBestValue && (
-                                                <Badge className="bg-green-600 hover:bg-green-700 text-[10px] px-1.5 py-0">
-                                                  Mejor valor
-                                                </Badge>
-                                              )}
-                                            </>
-                                          ) : (
-                                            <span className="text-xs text-gray-400">-</span>
+                                          <span className={`text-xs font-medium ${isBestValue ? 'text-green-600 dark:text-green-400' : 'text-gray-700'}`}>
+                                            ${pharmacy.price.toLocaleString('es-CL')}
+                                          </span>
+                                          {isBestValue && (
+                                            <Badge className="bg-green-600 hover:bg-green-700 text-[10px] px-1.5 py-0">
+                                              Mejor valor
+                                            </Badge>
                                           )}
                                         </div>
                                       </TableCell>
