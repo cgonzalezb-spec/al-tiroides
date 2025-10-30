@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, ExternalLink } from 'lucide-react';
+import { Calendar, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +19,7 @@ interface Article {
 }
 
 const ThyroidArticles = () => {
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const { data: articles, isLoading, error } = useQuery({
     queryKey: ['articles'],
     queryFn: async () => {
@@ -35,6 +37,23 @@ const ThyroidArticles = () => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
+  const toggleExpanded = (id: string) => {
+    setExpandedCards(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const truncateText = (text: string, maxLength: number = 150) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
   };
 
   if (error) {
@@ -87,7 +106,7 @@ const ThyroidArticles = () => {
                   <CardHeader>
                     <div className="flex items-center justify-between mb-2">
                       <Badge variant={article.language === 'es' ? 'default' : 'secondary'}>
-                        {article.language === 'es' ? 'Español' : 'English'}
+                        {article.language === 'es' ? 'Español' : 'Inglés'}
                       </Badge>
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Calendar className="w-4 h-4 mr-1" />
@@ -98,9 +117,31 @@ const ThyroidArticles = () => {
                     <CardDescription className="text-sm">{article.source}</CardDescription>
                   </CardHeader>
                   <CardContent className="flex-grow flex flex-col justify-between">
-                    <p className="text-muted-foreground mb-4">
-                      {article.description}
-                    </p>
+                    <div className="mb-4">
+                      <p className="text-muted-foreground">
+                        {expandedCards.has(article.id) 
+                          ? article.description 
+                          : truncateText(article.description)}
+                      </p>
+                      {article.description.length > 150 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="mt-2 p-0 h-auto text-primary"
+                          onClick={() => toggleExpanded(article.id)}
+                        >
+                          {expandedCards.has(article.id) ? (
+                            <>
+                              Ver menos <ChevronUp className="w-4 h-4 ml-1" />
+                            </>
+                          ) : (
+                            <>
+                              Ver más <ChevronDown className="w-4 h-4 ml-1" />
+                            </>
+                          )}
+                        </Button>
+                      )}
+                    </div>
                     <Button 
                       variant="outline" 
                       className="w-full"

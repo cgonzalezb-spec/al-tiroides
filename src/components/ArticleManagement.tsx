@@ -272,7 +272,7 @@ const ArticleManagement = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="es">Español</SelectItem>
-                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="en">Inglés</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -320,7 +320,7 @@ const ArticleManagement = () => {
                         )}
                       </div>
                       <CardDescription>
-                        {article.source} • {new Date(article.published_date).toLocaleDateString('es-ES')} • {article.language === 'es' ? 'Español' : 'English'}
+                        {article.source} • {new Date(article.published_date).toLocaleDateString('es-ES')} • {article.language === 'es' ? 'Español' : 'Inglés'}
                       </CardDescription>
                     </div>
                     <div className="flex gap-2">
