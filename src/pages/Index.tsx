@@ -35,9 +35,9 @@ const Index = () => {
           <div id="sintomas">
             <SymptomTracker />
           </div>
-          <AppointmentBooking />
         </>
       )}
+      <AppointmentBooking />
       <WhenToConsult />
       <MythsAndFAQ />
       <ConsejosSection />
