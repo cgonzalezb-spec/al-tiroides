@@ -252,7 +252,7 @@ const PharmacyLinksManagement = () => {
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="medication_name">Medicamento *</Label>
+                  <Label htmlFor="medication_name">1. Medicamento *</Label>
                   <Select
                     value={formData.medication_name}
                     onValueChange={(value) => setFormData({ ...formData, medication_name: value })}
@@ -269,7 +269,7 @@ const PharmacyLinksManagement = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="pharmacy_name">Farmacia *</Label>
+                  <Label htmlFor="pharmacy_name">2. Farmacia *</Label>
                   <Select
                     value={formData.pharmacy_name}
                     onValueChange={(value) => setFormData({ ...formData, pharmacy_name: value })}
@@ -288,7 +288,7 @@ const PharmacyLinksManagement = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="commercial_name">Nombre Comercial</Label>
+                    <Label htmlFor="commercial_name">3. Nombre Comercial</Label>
                     <Input
                       id="commercial_name"
                       placeholder="Ej: Eutirox, Levoid"
@@ -298,7 +298,7 @@ const PharmacyLinksManagement = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="laboratory">Laboratorio</Label>
+                    <Label htmlFor="laboratory">4. Laboratorio</Label>
                     <Input
                       id="laboratory"
                       placeholder="Ej: Merck, Abbott"
@@ -309,18 +309,7 @@ const PharmacyLinksManagement = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="mg_per_tablet">mg/Comprimido</Label>
-                  <Input
-                    id="mg_per_tablet"
-                    placeholder="Ej: 100mcg, 5mg"
-                    value={formData.mg_per_tablet}
-                    onChange={(e) => setFormData({ ...formData, mg_per_tablet: e.target.value })}
-                  />
-                  <p className="text-xs text-gray-500">Dosis por comprimido (ej: 100mcg, 5mg, 10mg)</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="presentation">Presentación *</Label>
+                  <Label htmlFor="presentation">5. Presentación *</Label>
                   <Input
                     id="presentation"
                     placeholder="Ej: Levotiroxina 100mcg x30 comprimidos"
@@ -332,7 +321,18 @@ const PharmacyLinksManagement = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="quantity">Cantidad de comprimidos</Label>
+                    <Label htmlFor="mg_per_tablet">6. Dosis (mcg, mg o g)</Label>
+                    <Input
+                      id="mg_per_tablet"
+                      placeholder="Ej: 100mcg, 5mg, 1g"
+                      value={formData.mg_per_tablet}
+                      onChange={(e) => setFormData({ ...formData, mg_per_tablet: e.target.value })}
+                    />
+                    <p className="text-xs text-gray-500">Dosis por comprimido</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="quantity">7. Cantidad de comprimidos</Label>
                     <Input
                       id="quantity"
                       type="number"
@@ -340,23 +340,23 @@ const PharmacyLinksManagement = () => {
                       value={formData.quantity}
                       onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
                     />
-                    <p className="text-xs text-gray-500">Usado para calcular precio por comprimido</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="price">Precio (CLP) *</Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      placeholder="Ej: 8790"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    />
+                    <p className="text-xs text-gray-500">N° de comprimidos en el envase</p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="product_url">URL del Producto *</Label>
+                  <Label htmlFor="price">8. Precio (CLP) *</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    placeholder="Ej: 8790"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="product_url">9. URL del Producto *</Label>
                   <Textarea
                     id="product_url"
                     placeholder="https://www.farmacia.com/producto/levotiroxina-..."
