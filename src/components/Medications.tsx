@@ -15,6 +15,8 @@ interface PharmacyLink {
   price: number;
   presentation: string;
   url: string;
+  quantity?: number;
+  pricePerUnit?: number;
 }
 
 const Medications = () => {
@@ -51,12 +53,17 @@ const Medications = () => {
           }
           // Extract brand from presentation or use pharmacy name as fallback
           const brand = link.presentation.split(' ')[0];
+          const quantity = link.quantity || null;
+          const pricePerUnit = quantity ? link.price / quantity : null;
+          
           grouped[link.medication_name].push({
             name: link.pharmacy_name,
             brand: brand,
             price: link.price,
             presentation: link.presentation,
-            url: link.product_url
+            url: link.product_url,
+            quantity: quantity,
+            pricePerUnit: pricePerUnit
           });
         });
         setPharmacyData(grouped);
@@ -76,26 +83,26 @@ const Medications = () => {
     // Fallback a búsquedas si no hay datos
     const fallbackLinks: Record<string, PharmacyLink[]> = {
       'levotiroxina': [
-        { name: "Cruz Verde", brand: "Eutirox", price: 8990, presentation: "Eutirox 100mcg x30", url: "https://www.cruzverde.cl/" },
-        { name: "Salcobrand", brand: "Eutirox", price: 9490, presentation: "Eutirox 100mcg x30", url: "https://www.salcobrand.cl/" },
-        { name: "Farmacias Ahumada", brand: "Levotiroxina", price: 8790, presentation: "Levotiroxina 100mcg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=levotiroxina" },
-        { name: "Farmacias del Dr. Simi", brand: "Levotiroxina", price: 7990, presentation: "Levotiroxina 100mcg x30", url: "https://www.farmaciasdesimi.cl/" },
-        { name: "Cruz Verde", brand: "Euthyrox", price: 10490, presentation: "Euthyrox 100mcg x30", url: "https://www.cruzverde.cl/" },
-        { name: "Salcobrand", brand: "Levoid", price: 8290, presentation: "Levoid 100mcg x30", url: "https://www.salcobrand.cl/" }
+        { name: "Cruz Verde", brand: "Eutirox", price: 8990, presentation: "Eutirox 100mcg x30", url: "https://www.cruzverde.cl/", quantity: 30, pricePerUnit: 8990/30 },
+        { name: "Salcobrand", brand: "Eutirox", price: 9490, presentation: "Eutirox 100mcg x30", url: "https://www.salcobrand.cl/", quantity: 30, pricePerUnit: 9490/30 },
+        { name: "Farmacias Ahumada", brand: "Levotiroxina", price: 8790, presentation: "Levotiroxina 100mcg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=levotiroxina", quantity: 30, pricePerUnit: 8790/30 },
+        { name: "Farmacias del Dr. Simi", brand: "Levotiroxina", price: 7990, presentation: "Levotiroxina 100mcg x30", url: "https://www.farmaciasdesimi.cl/", quantity: 30, pricePerUnit: 7990/30 },
+        { name: "Cruz Verde", brand: "Euthyrox", price: 10490, presentation: "Euthyrox 100mcg x30", url: "https://www.cruzverde.cl/", quantity: 30, pricePerUnit: 10490/30 },
+        { name: "Salcobrand", brand: "Levoid", price: 8290, presentation: "Levoid 100mcg x30", url: "https://www.salcobrand.cl/", quantity: 30, pricePerUnit: 8290/30 }
       ],
       'metimazol': [
-        { name: "Cruz Verde", brand: "Tapazol", price: 14990, presentation: "Tapazol 5mg x30", url: "https://www.cruzverde.cl/" },
-        { name: "Salcobrand", brand: "Tapazol", price: 15490, presentation: "Tapazol 5mg x30", url: "https://www.salcobrand.cl/" },
-        { name: "Farmacias Ahumada", brand: "Metimazol", price: 13990, presentation: "Metimazol 5mg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=metimazol" },
-        { name: "Farmacias del Dr. Simi", brand: "Metimazol", price: 12990, presentation: "Metimazol 5mg x30", url: "https://www.farmaciasdesimi.cl/" },
-        { name: "Cruz Verde", brand: "Thiamazol", price: 13490, presentation: "Thiamazol 5mg x30", url: "https://www.cruzverde.cl/" }
+        { name: "Cruz Verde", brand: "Tapazol", price: 14990, presentation: "Tapazol 5mg x30", url: "https://www.cruzverde.cl/", quantity: 30, pricePerUnit: 14990/30 },
+        { name: "Salcobrand", brand: "Tapazol", price: 15490, presentation: "Tapazol 5mg x30", url: "https://www.salcobrand.cl/", quantity: 30, pricePerUnit: 15490/30 },
+        { name: "Farmacias Ahumada", brand: "Metimazol", price: 13990, presentation: "Metimazol 5mg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=metimazol", quantity: 30, pricePerUnit: 13990/30 },
+        { name: "Farmacias del Dr. Simi", brand: "Metimazol", price: 12990, presentation: "Metimazol 5mg x30", url: "https://www.farmaciasdesimi.cl/", quantity: 30, pricePerUnit: 12990/30 },
+        { name: "Cruz Verde", brand: "Thiamazol", price: 13490, presentation: "Thiamazol 5mg x30", url: "https://www.cruzverde.cl/", quantity: 30, pricePerUnit: 13490/30 }
       ],
       'propranolol': [
-        { name: "Cruz Verde", brand: "Propranolol", price: 5990, presentation: "Propranolol 40mg x30", url: "https://www.cruzverde.cl/" },
-        { name: "Salcobrand", brand: "Propranolol", price: 6490, presentation: "Propranolol 40mg x30", url: "https://www.salcobrand.cl/" },
-        { name: "Farmacias Ahumada", brand: "Propranolol", price: 4990, presentation: "Propranolol 40mg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=propranolol" },
-        { name: "Farmacias del Dr. Simi", brand: "Propranolol", price: 3990, presentation: "Propranolol 40mg x30", url: "https://www.farmaciasdesimi.cl/" },
-        { name: "Cruz Verde", brand: "Inderalici", price: 6990, presentation: "Inderalici 40mg x30", url: "https://www.cruzverde.cl/" }
+        { name: "Cruz Verde", brand: "Propranolol", price: 5990, presentation: "Propranolol 40mg x30", url: "https://www.cruzverde.cl/", quantity: 30, pricePerUnit: 5990/30 },
+        { name: "Salcobrand", brand: "Propranolol", price: 6490, presentation: "Propranolol 40mg x30", url: "https://www.salcobrand.cl/", quantity: 30, pricePerUnit: 6490/30 },
+        { name: "Farmacias Ahumada", brand: "Propranolol", price: 4990, presentation: "Propranolol 40mg x30", url: "https://www.farmaciasahumada.cl/catalogsearch/result/?q=propranolol", quantity: 30, pricePerUnit: 4990/30 },
+        { name: "Farmacias del Dr. Simi", brand: "Propranolol", price: 3990, presentation: "Propranolol 40mg x30", url: "https://www.farmaciasdesimi.cl/", quantity: 30, pricePerUnit: 3990/30 },
+        { name: "Cruz Verde", brand: "Inderalici", price: 6990, presentation: "Inderalici 40mg x30", url: "https://www.cruzverde.cl/", quantity: 30, pricePerUnit: 6990/30 }
       ]
     };
     
@@ -404,8 +411,16 @@ const Medications = () => {
                   <CollapsibleContent className="mt-4">
                     {(() => {
                       const links = getPharmacyLinks(medications[selectedMed].medicationKey);
-                      const sortedLinks = [...links].sort((a, b) => a.price - b.price);
-                      const minPrice = sortedLinks.length > 0 ? sortedLinks[0].price : 0;
+                      // Ordenar por precio por comprimido si está disponible, sino por precio total
+                      const sortedLinks = [...links].sort((a, b) => {
+                        if (a.pricePerUnit && b.pricePerUnit) {
+                          return a.pricePerUnit - b.pricePerUnit;
+                        }
+                        return a.price - b.price;
+                      });
+                      const minPricePerUnit = sortedLinks.length > 0 && sortedLinks[0].pricePerUnit 
+                        ? sortedLinks[0].pricePerUnit 
+                        : null;
                       
                       return (
                         <>
@@ -416,17 +431,20 @@ const Medications = () => {
                                   <TableHead className="font-semibold">Marca</TableHead>
                                   <TableHead className="font-semibold">Farmacia</TableHead>
                                   <TableHead className="font-semibold">Presentación</TableHead>
-                                  <TableHead className="text-right font-semibold">Precio</TableHead>
-                                  <TableHead className="text-center font-semibold">Comprar</TableHead>
+                                  <TableHead className="text-right font-semibold">Precio Total</TableHead>
+                                  <TableHead className="text-right font-semibold">Precio/Comp.</TableHead>
+                                  <TableHead className="text-center font-semibold">Ver</TableHead>
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
                                 {sortedLinks.map((pharmacy, i) => {
-                                  const isBestPrice = pharmacy.price === minPrice;
+                                  const isBestValue = minPricePerUnit && pharmacy.pricePerUnit 
+                                    ? pharmacy.pricePerUnit === minPricePerUnit 
+                                    : false;
                                   return (
                                     <TableRow 
                                       key={i}
-                                      className={isBestPrice ? "bg-green-50 dark:bg-green-950/20" : ""}
+                                      className={isBestValue ? "bg-green-50 dark:bg-green-950/20" : ""}
                                     >
                                       <TableCell className="font-semibold text-xs">
                                         {pharmacy.brand}
@@ -436,20 +454,31 @@ const Medications = () => {
                                         {pharmacy.presentation}
                                       </TableCell>
                                       <TableCell className="text-right">
+                                        <span className="text-xs font-medium text-gray-700">
+                                          ${pharmacy.price.toLocaleString('es-CL')}
+                                        </span>
+                                      </TableCell>
+                                      <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-2">
-                                          <span className={`text-xs font-bold ${isBestPrice ? 'text-green-600 dark:text-green-400' : ''}`}>
-                                            ${pharmacy.price.toLocaleString('es-CL')}
-                                          </span>
-                                          {isBestPrice && (
-                                            <Badge className="bg-green-600 hover:bg-green-700 text-[10px] px-1.5 py-0">
-                                              Mejor precio
-                                            </Badge>
+                                          {pharmacy.pricePerUnit ? (
+                                            <>
+                                              <span className={`text-xs font-bold ${isBestValue ? 'text-green-600 dark:text-green-400' : 'text-gray-700'}`}>
+                                                ${pharmacy.pricePerUnit.toFixed(0)}
+                                              </span>
+                                              {isBestValue && (
+                                                <Badge className="bg-green-600 hover:bg-green-700 text-[10px] px-1.5 py-0">
+                                                  Mejor valor
+                                                </Badge>
+                                              )}
+                                            </>
+                                          ) : (
+                                            <span className="text-xs text-gray-400">-</span>
                                           )}
                                         </div>
                                       </TableCell>
                                       <TableCell className="text-center">
                                         <Button
-                                          variant={isBestPrice ? "default" : "ghost"}
+                                          variant={isBestValue ? "default" : "ghost"}
                                           size="sm"
                                           className="h-8 px-3"
                                           asChild
@@ -461,7 +490,7 @@ const Medications = () => {
                                             className="flex items-center gap-1"
                                           >
                                             <ExternalLink className="h-3 w-3" />
-                                            <span className="text-xs">Ver</span>
+                                            <span className="text-xs">Ir</span>
                                           </a>
                                         </Button>
                                       </TableCell>
@@ -471,15 +500,26 @@ const Medications = () => {
                               </TableBody>
                             </Table>
                           </div>
-                          <div className="mt-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-                            <p className="text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
-                              <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                              <span>
-                                Los precios son aproximados y pueden variar según disponibilidad, región y promociones vigentes. 
-                                Te recomendamos verificar el precio final en la farmacia.
-                              </span>
-                            </p>
-                          </div>
+                            <div className="mt-3 space-y-2">
+                              <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+                                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-start gap-2">
+                                  <CheckCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                                  <span>
+                                    <strong>💡 Tip:</strong> La opción con "Mejor valor" tiene el precio por comprimido más bajo, 
+                                    lo que significa mayor ahorro en tu tratamiento a largo plazo.
+                                  </span>
+                                </p>
+                              </div>
+                              <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+                                <p className="text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
+                                  <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                                  <span>
+                                    Los precios son aproximados y pueden variar según disponibilidad, región y promociones vigentes. 
+                                    Te recomendamos verificar el precio final en la farmacia. Los enlaces te llevarán directamente al sitio de cada farmacia.
+                                  </span>
+                                </p>
+                              </div>
+                            </div>
                         </>
                       );
                     })()}

@@ -147,6 +147,7 @@ export type Database = {
           presentation: string
           price: number
           product_url: string
+          quantity: number | null
           updated_at: string
         }
         Insert: {
@@ -158,6 +159,7 @@ export type Database = {
           presentation: string
           price: number
           product_url: string
+          quantity?: number | null
           updated_at?: string
         }
         Update: {
@@ -169,6 +171,7 @@ export type Database = {
           presentation?: string
           price?: number
           product_url?: string
+          quantity?: number | null
           updated_at?: string
         }
         Relationships: []
