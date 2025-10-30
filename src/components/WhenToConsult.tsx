@@ -54,13 +54,24 @@ const WhenToConsult = () => {
     const element = document.getElementById('agendar');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      console.error('Elemento #agendar no encontrado');
     }
   };
 
   const scrollToPublico = () => {
-    const element = document.getElementById('sistema-publico');
+    const element = document.getElementById('agendar');
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Opcional: hacer scroll adicional al sistema público después
+      setTimeout(() => {
+        const publicoElement = document.getElementById('sistema-publico');
+        if (publicoElement) {
+          publicoElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 500);
+    } else {
+      console.error('Elemento #agendar no encontrado');
     }
   };
 
