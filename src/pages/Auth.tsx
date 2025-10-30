@@ -9,6 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import HealthProfessionalSignup from '@/components/HealthProfessionalSignup';
 import { useNavigate } from 'react-router-dom';
 import { Separator } from '@/components/ui/separator';
+import { z } from 'zod';
 
 const AuthPage = () => {
   const [mode, setMode] = useState<'login' | 'visitor-signup' | 'professional-signup'>('login');
@@ -18,38 +19,56 @@ const AuthPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const authSchema = z.object({
+    email: z.string().trim().email({ message: 'Correo inválido' }).max(255),
+    password: z.string().min(8, { message: 'La contraseña debe tener al menos 8 caracteres' }).max(128)
+  });
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      if (mode === 'visitor-signup') {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: {
-              user_type: 'visitor'
-            }
-          },
-        });
-        
-        if (error) throw error;
-        
-        toast({
-          title: "Registro exitoso",
-          description: "Por favor, revisa tu correo para verificar tu cuenta.",
-        });
-        setMode('login');
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        toast({
-          title: "Inicio de sesión exitoso",
-          description: "¡Bienvenido de nuevo!",
-        });
-      }
+    const values = { email: email.trim(), password };
+    const parsed = authSchema.safeParse(values);
+    if (!parsed.success) {
+      toast({
+        variant: 'destructive',
+        title: 'Datos inválidos',
+        description: parsed.error.issues[0]?.message ?? 'Revisa tu correo y contraseña.'
+      });
+      setLoading(false);
+      return;
+    }
+
+    const { email: validEmail, password: validPassword } = parsed.data;
+      try {
+        if (mode === 'visitor-signup') {
+          const { data, error } = await supabase.auth.signUp({
+            email: validEmail,
+            password: validPassword,
+            options: {
+              emailRedirectTo: `${window.location.origin}/`,
+              data: {
+                user_type: 'visitor'
+              }
+            },
+          });
+          
+          if (error) throw error;
+          
+          toast({
+            title: "Registro exitoso",
+            description: "Por favor, revisa tu correo para verificar tu cuenta.",
+          });
+          setMode('login');
+        } else {
+          const { error } = await supabase.auth.signInWithPassword({ email: validEmail, password: validPassword });
+          if (error) throw error;
+          toast({
+            title: "Inicio de sesión exitoso",
+            description: "¡Bienvenido de nuevo!",
+          });
+        }
     } catch (error: any) {
       toast({
         variant: "destructive",

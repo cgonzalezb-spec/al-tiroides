@@ -37,13 +37,9 @@ export const RoleProvider = ({ children }: { children: ReactNode }) => {
         .single();
 
       if (roleError) {
-        // If no role found in database, check user_metadata for health_professional
-        const userMetadata = user.user_metadata;
-        if (userMetadata?.user_type === 'health_professional') {
-          setUserRole('health_professional');
-        } else {
-          setUserRole('visitor');
-        }
+        // No role found in user_roles; default to safe role and log for visibility
+        console.warn('Role lookup failed in user_roles, defaulting to visitor for user:', user.id);
+        setUserRole('visitor');
       } else {
         // Use the role from the database
         setUserRole(roleData.role as UserRole);

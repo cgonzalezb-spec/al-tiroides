@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { z } from 'zod';
 
 interface HealthProfessionalSignupProps {
   onBack: () => void;
@@ -38,6 +39,14 @@ const HealthProfessionalSignup = ({ onBack }: HealthProfessionalSignupProps) => 
     'Otro'
   ];
 
+  const professionalSchema = z.object({
+    email: z.string().trim().email({ message: 'Correo inválido' }).max(255),
+    password: z.string().min(8, { message: 'La contraseña debe tener al menos 8 caracteres' }).max(128),
+    area: z.string().trim().min(2, { message: 'Selecciona tu área' }).max(100),
+    institution: z.string().trim().min(2, { message: 'Institución muy corta' }).max(200),
+    experience: z.string().trim().max(1000).optional(),
+  });
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -52,16 +61,30 @@ const HealthProfessionalSignup = ({ onBack }: HealthProfessionalSignupProps) => 
 
     setLoading(true);
 
+    const values = { email: email.trim(), password, area, institution, experience };
+    const parsed = professionalSchema.safeParse(values);
+    if (!parsed.success) {
+      toast({
+        variant: 'destructive',
+        title: 'Datos inválidos',
+        description: parsed.error.issues[0]?.message ?? 'Revisa los datos ingresados.'
+      });
+      setLoading(false);
+      return;
+    }
+
+    const { email: validEmail, password: validPassword, area: validArea, institution: validInstitution, experience: validExperience } = parsed.data;
+
     try {
       const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: validEmail,
+        password: validPassword,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
-            area,
-            institution,
-            experience,
+            area: validArea,
+            institution: validInstitution,
+            experience: validExperience ?? '',
             user_type: 'health_professional'
           }
         },

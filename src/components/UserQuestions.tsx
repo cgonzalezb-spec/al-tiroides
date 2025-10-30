@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRole } from '@/contexts/RoleContext';
+import { z } from 'zod';
 
 interface Question {
   id: string;
@@ -20,6 +21,12 @@ interface Question {
   response_date?: string;
   responded_by?: string;
 }
+
+const questionSchema = z.object({
+  name: z.string().trim().min(1, { message: 'El nombre es requerido' }).max(100),
+  email: z.string().trim().email({ message: 'Correo inválido' }).max(255),
+  question: z.string().trim().min(10, { message: 'La pregunta es muy corta' }).max(2000)
+});
 
 const UserQuestions = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -127,17 +134,24 @@ const UserQuestions = () => {
   };
 
   const submitQuestion = async () => {
-    if (!newQuestion.name || !newQuestion.email || !newQuestion.question) {
+    const values = {
+      name: newQuestion.name.trim(),
+      email: newQuestion.email.trim(),
+      question: newQuestion.question.trim()
+    };
+
+    const parsed = questionSchema.safeParse(values);
+    if (!parsed.success) {
       toast({
-        title: "Campos requeridos",
-        description: "Por favor completa todos los campos",
-        variant: "destructive"
+        title: 'Datos inválidos',
+        description: parsed.error.issues[0]?.message ?? 'Revisa los campos',
+        variant: 'destructive'
       });
       return;
     }
 
     setSubmitting(true);
-    console.log('📤 Enviando nueva pregunta:', newQuestion);
+    console.log('📤 Enviando nueva pregunta...');
     
     try {
       // Verificar tabla antes de insertar
@@ -150,9 +164,9 @@ const UserQuestions = () => {
       const { data, error } = await supabase
         .from('user_questions')
         .insert({
-          name: newQuestion.name,
-          email: newQuestion.email,
-          question: newQuestion.question
+          name: parsed.data.name,
+          email: parsed.data.email,
+          question: parsed.data.question
         })
         .select();
 
