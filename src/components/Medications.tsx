@@ -20,6 +20,7 @@ interface PharmacyLink {
 const Medications = () => {
   const [openDetails, setOpenDetails] = useState<number | null>(null);
   const [openPrices, setOpenPrices] = useState<number | null>(null);
+  const [selectedMed, setSelectedMed] = useState<number | null>(null);
   const [pharmacyData, setPharmacyData] = useState<Record<string, PharmacyLink[]>>({});
   const { toast } = useToast();
 
@@ -223,9 +224,13 @@ const Medications = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8 mb-16 items-stretch">
+        <div className="grid lg:grid-cols-3 gap-8 mb-8 items-stretch">
           {medications.map((med, index) => (
-            <Card key={index} className="h-full flex flex-col hover:shadow-lg transition-shadow">
+            <Card 
+              key={index} 
+              className={`h-full flex flex-col hover:shadow-lg transition-all cursor-pointer ${selectedMed === index ? 'ring-2 ring-primary' : ''}`}
+              onClick={() => setSelectedMed(selectedMed === index ? null : index)}
+            >
               <CardHeader>
                 <div className="flex items-center space-x-3 mb-2">
                   {med.icon}
@@ -234,237 +239,265 @@ const Medications = () => {
                 <CardTitle className="text-xl">{med.name}</CardTitle>
                 <CardDescription>{med.description}</CardDescription>
               </CardHeader>
-              <CardContent className="flex-1 flex flex-col">
-                <Tabs defaultValue="how" className="w-full flex-1 flex flex-col">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="how">¿Cómo?</TabsTrigger>
-                    <TabsTrigger value="dose">Dosis</TabsTrigger>
-                    <TabsTrigger value="tips">Tips</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="how" className="mt-4">
-                    <p className="text-sm text-gray-600">{med.howItWorks}</p>
-                  </TabsContent>
-                  
-                  <TabsContent value="dose" className="mt-4">
-                    <p className="text-sm font-medium text-gray-700 mb-2">{med.dosage}</p>
-                    <div className="space-y-1">
-                      <p className="text-xs text-gray-500 font-medium">Efectos secundarios:</p>
-                      {med.sideEffects.map((effect, i) => (
-                        <p key={i} className="text-xs text-gray-600">• {effect}</p>
-                      ))}
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="tips" className="mt-4">
-                    <div className="space-y-2">
-                      {med.tips.map((tip, i) => (
-                        <div key={i} className="flex items-start space-x-2">
-                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                          <p className="text-sm text-gray-600">{tip}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </TabsContent>
-                </Tabs>
-                
-                <div className="space-y-3 mt-6 pt-4 border-t">
-                  <Collapsible 
-                    open={openDetails === index} 
-                    onOpenChange={(isOpen) => setOpenDetails(isOpen ? index : null)}
-                  >
-                    <CollapsibleTrigger asChild>
-                      <button 
-                        className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm font-medium"
-                      >
-                        <span className="flex items-center gap-2">
-                          <Pill className="h-4 w-4 text-primary" />
-                          Información farmacológica completa
-                        </span>
-                        <ChevronDown className={`h-4 w-4 transition-transform ${openDetails === index ? 'rotate-180' : ''}`} />
-                      </button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-4 space-y-4">
-                      <div>
-                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                          <Pill className="h-4 w-4 text-primary" />
-                          Farmacodinamia
-                        </h4>
-                        <p className="text-xs text-muted-foreground">{med.pharmacodynamics}</p>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-primary" />
-                          Farmacocinética
-                        </h4>
-                        <p className="text-xs text-muted-foreground">{med.pharmacokinetics}</p>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                          <Heart className="h-4 w-4 text-primary" />
-                          Indicación terapéutica
-                        </h4>
-                        <p className="text-xs text-muted-foreground">{med.therapeuticIndication}</p>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                          <AlertCircle className="h-4 w-4 text-primary" />
-                          Vías de administración
-                        </h4>
-                        <p className="text-xs text-muted-foreground">{med.administrationRoutes}</p>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                          <AlertCircle className="h-4 w-4 text-destructive" />
-                          Reacciones adversas a medicamentos
-                        </h4>
-                        <ul className="space-y-1">
-                          {med.adverseReactions.map((reaction, i) => (
-                            <li key={i} className="text-xs text-muted-foreground">
-                              • {reaction}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                          <AlertCircle className="h-4 w-4 text-amber-600" />
-                          Interacciones con otros medicamentos y/o alimentos
-                        </h4>
-                        <ul className="space-y-1">
-                          {med.drugInteractions.map((interaction, i) => (
-                            <li key={i} className="text-xs text-muted-foreground">
-                              • {interaction}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
-                          <AlertCircle className="h-4 w-4 text-red-600" />
-                          Interacciones con otras patologías
-                        </h4>
-                        <ul className="space-y-1">
-                          {med.pathologyInteractions.map((interaction, i) => (
-                            <li key={i} className="text-xs text-muted-foreground">
-                              • {interaction}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-
-                  <Collapsible 
-                    open={openPrices === index} 
-                    onOpenChange={(isOpen) => setOpenPrices(isOpen ? index : null)}
-                  >
-                    <CollapsibleTrigger asChild>
-                      <button 
-                        className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 transition-all text-sm font-medium border border-primary/20"
-                      >
-                        <span className="flex items-center gap-2">
-                          <ShoppingCart className="h-4 w-4 text-primary" />
-                          Comparar precios y marcas
-                        </span>
-                        <ChevronDown className={`h-4 w-4 transition-transform ${openPrices === index ? 'rotate-180' : ''}`} />
-                      </button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-4">
-                      {(() => {
-                        const links = getPharmacyLinks(med.medicationKey);
-                        const sortedLinks = [...links].sort((a, b) => a.price - b.price);
-                        const minPrice = sortedLinks.length > 0 ? sortedLinks[0].price : 0;
-                        
-                        return (
-                          <>
-                            <div className="rounded-lg border overflow-hidden">
-                              <Table>
-                                <TableHeader>
-                                  <TableRow className="bg-muted/50">
-                                    <TableHead className="font-semibold">Marca</TableHead>
-                                    <TableHead className="font-semibold">Farmacia</TableHead>
-                                    <TableHead className="font-semibold">Presentación</TableHead>
-                                    <TableHead className="text-right font-semibold">Precio</TableHead>
-                                    <TableHead className="text-center font-semibold">Comprar</TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {sortedLinks.map((pharmacy, i) => {
-                                    const isBestPrice = pharmacy.price === minPrice;
-                                    return (
-                                      <TableRow 
-                                        key={i}
-                                        className={isBestPrice ? "bg-green-50 dark:bg-green-950/20" : ""}
-                                      >
-                                        <TableCell className="font-semibold text-xs">
-                                          {pharmacy.brand}
-                                        </TableCell>
-                                        <TableCell className="text-xs">{pharmacy.name}</TableCell>
-                                        <TableCell className="text-xs text-muted-foreground">
-                                          {pharmacy.presentation}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                          <div className="flex items-center justify-end gap-2">
-                                            <span className={`text-xs font-bold ${isBestPrice ? 'text-green-600 dark:text-green-400' : ''}`}>
-                                              ${pharmacy.price.toLocaleString('es-CL')}
-                                            </span>
-                                            {isBestPrice && (
-                                              <Badge className="bg-green-600 hover:bg-green-700 text-[10px] px-1.5 py-0">
-                                                Mejor precio
-                                              </Badge>
-                                            )}
-                                          </div>
-                                        </TableCell>
-                                        <TableCell className="text-center">
-                                          <Button
-                                            variant={isBestPrice ? "default" : "ghost"}
-                                            size="sm"
-                                            className="h-8 px-3"
-                                            asChild
-                                          >
-                                            <a 
-                                              href={pharmacy.url} 
-                                              target="_blank" 
-                                              rel="noopener noreferrer"
-                                              className="flex items-center gap-1"
-                                            >
-                                              <ExternalLink className="h-3 w-3" />
-                                              <span className="text-xs">Ver</span>
-                                            </a>
-                                          </Button>
-                                        </TableCell>
-                                      </TableRow>
-                                    );
-                                  })}
-                                </TableBody>
-                              </Table>
-                            </div>
-                            <div className="mt-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-                              <p className="text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
-                                <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                                <span>
-                                  Los precios son aproximados y pueden variar según disponibilidad, región y promociones vigentes. 
-                                  Te recomendamos verificar el precio final en la farmacia.
-                                </span>
-                              </p>
-                            </div>
-                          </>
-                        );
-                      })()}
-                    </CollapsibleContent>
-                  </Collapsible>
-                </div>
+              <CardContent className="flex-1 flex flex-col justify-end">
+                <Button 
+                  variant={selectedMed === index ? "default" : "outline"} 
+                  className="w-full"
+                >
+                  {selectedMed === index ? 'Ocultar detalles' : 'Ver detalles'}
+                </Button>
               </CardContent>
             </Card>
           ))}
         </div>
+
+        {/* Contenido expandido que ocupa todo el ancho */}
+        {selectedMed !== null && (
+          <Card className="mb-16 animate-fade-in">
+            <CardContent className="pt-6">
+              <Tabs defaultValue="how" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto">
+                  <TabsTrigger value="how">¿Cómo funciona?</TabsTrigger>
+                  <TabsTrigger value="dose">Dosis y efectos</TabsTrigger>
+                  <TabsTrigger value="tips">Consejos</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="how" className="mt-6">
+                  <div className="max-w-3xl mx-auto">
+                    <h3 className="text-lg font-semibold mb-4 text-center">{medications[selectedMed].name}</h3>
+                    <p className="text-base text-gray-600 text-center">{medications[selectedMed].howItWorks}</p>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="dose" className="mt-6">
+                  <div className="max-w-3xl mx-auto">
+                    <h3 className="text-lg font-semibold mb-4 text-center">{medications[selectedMed].name}</h3>
+                    <p className="text-base font-medium text-gray-700 mb-4 text-center">{medications[selectedMed].dosage}</p>
+                    <div className="space-y-2 bg-muted/30 p-6 rounded-lg">
+                      <p className="text-sm text-gray-700 font-semibold mb-3">Efectos secundarios comunes:</p>
+                      <div className="grid md:grid-cols-2 gap-3">
+                        {medications[selectedMed].sideEffects.map((effect, i) => (
+                          <div key={i} className="flex items-start space-x-2">
+                            <AlertCircle className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                            <p className="text-sm text-gray-600">{effect}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="tips" className="mt-6">
+                  <div className="max-w-3xl mx-auto">
+                    <h3 className="text-lg font-semibold mb-4 text-center">{medications[selectedMed].name}</h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {medications[selectedMed].tips.map((tip, i) => (
+                        <div key={i} className="flex items-start space-x-3 bg-muted/30 p-4 rounded-lg">
+                          <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                          <p className="text-sm text-gray-600">{tip}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+              
+              <div className="space-y-3 mt-8 pt-6 border-t max-w-4xl mx-auto">
+                <Collapsible 
+                  open={openDetails === selectedMed} 
+                  onOpenChange={(isOpen) => setOpenDetails(isOpen ? selectedMed : null)}
+                >
+                  <CollapsibleTrigger asChild>
+                    <button 
+                      className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm font-medium"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Pill className="h-4 w-4 text-primary" />
+                        Información farmacológica completa
+                      </span>
+                      <ChevronDown className={`h-4 w-4 transition-transform ${openDetails === selectedMed ? 'rotate-180' : ''}`} />
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-4 space-y-4 grid md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                        <Pill className="h-4 w-4 text-primary" />
+                        Farmacodinamia
+                      </h4>
+                      <p className="text-xs text-muted-foreground">{medications[selectedMed].pharmacodynamics}</p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-primary" />
+                        Farmacocinética
+                      </h4>
+                      <p className="text-xs text-muted-foreground">{medications[selectedMed].pharmacokinetics}</p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                        <Heart className="h-4 w-4 text-primary" />
+                        Indicación terapéutica
+                      </h4>
+                      <p className="text-xs text-muted-foreground">{medications[selectedMed].therapeuticIndication}</p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-primary" />
+                        Vías de administración
+                      </h4>
+                      <p className="text-xs text-muted-foreground">{medications[selectedMed].administrationRoutes}</p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-destructive" />
+                        Reacciones adversas a medicamentos
+                      </h4>
+                      <ul className="space-y-1">
+                        {medications[selectedMed].adverseReactions.map((reaction, i) => (
+                          <li key={i} className="text-xs text-muted-foreground">
+                            • {reaction}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-amber-600" />
+                        Interacciones con otros medicamentos y/o alimentos
+                      </h4>
+                      <ul className="space-y-1">
+                        {medications[selectedMed].drugInteractions.map((interaction, i) => (
+                          <li key={i} className="text-xs text-muted-foreground">
+                            • {interaction}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-red-600" />
+                        Interacciones con otras patologías
+                      </h4>
+                      <ul className="space-y-1">
+                        {medications[selectedMed].pathologyInteractions.map((interaction, i) => (
+                          <li key={i} className="text-xs text-muted-foreground">
+                            • {interaction}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+
+                <Collapsible 
+                  open={openPrices === selectedMed} 
+                  onOpenChange={(isOpen) => setOpenPrices(isOpen ? selectedMed : null)}
+                >
+                  <CollapsibleTrigger asChild>
+                    <button 
+                      className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 hover:from-primary/10 hover:to-primary/15 transition-all text-sm font-medium border border-primary/20"
+                    >
+                      <span className="flex items-center gap-2">
+                        <ShoppingCart className="h-4 w-4 text-primary" />
+                        Comparar precios y marcas
+                      </span>
+                      <ChevronDown className={`h-4 w-4 transition-transform ${openPrices === selectedMed ? 'rotate-180' : ''}`} />
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-4">
+                    {(() => {
+                      const links = getPharmacyLinks(medications[selectedMed].medicationKey);
+                      const sortedLinks = [...links].sort((a, b) => a.price - b.price);
+                      const minPrice = sortedLinks.length > 0 ? sortedLinks[0].price : 0;
+                      
+                      return (
+                        <>
+                          <div className="rounded-lg border overflow-hidden">
+                            <Table>
+                              <TableHeader>
+                                <TableRow className="bg-muted/50">
+                                  <TableHead className="font-semibold">Marca</TableHead>
+                                  <TableHead className="font-semibold">Farmacia</TableHead>
+                                  <TableHead className="font-semibold">Presentación</TableHead>
+                                  <TableHead className="text-right font-semibold">Precio</TableHead>
+                                  <TableHead className="text-center font-semibold">Comprar</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {sortedLinks.map((pharmacy, i) => {
+                                  const isBestPrice = pharmacy.price === minPrice;
+                                  return (
+                                    <TableRow 
+                                      key={i}
+                                      className={isBestPrice ? "bg-green-50 dark:bg-green-950/20" : ""}
+                                    >
+                                      <TableCell className="font-semibold text-xs">
+                                        {pharmacy.brand}
+                                      </TableCell>
+                                      <TableCell className="text-xs">{pharmacy.name}</TableCell>
+                                      <TableCell className="text-xs text-muted-foreground">
+                                        {pharmacy.presentation}
+                                      </TableCell>
+                                      <TableCell className="text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                          <span className={`text-xs font-bold ${isBestPrice ? 'text-green-600 dark:text-green-400' : ''}`}>
+                                            ${pharmacy.price.toLocaleString('es-CL')}
+                                          </span>
+                                          {isBestPrice && (
+                                            <Badge className="bg-green-600 hover:bg-green-700 text-[10px] px-1.5 py-0">
+                                              Mejor precio
+                                            </Badge>
+                                          )}
+                                        </div>
+                                      </TableCell>
+                                      <TableCell className="text-center">
+                                        <Button
+                                          variant={isBestPrice ? "default" : "ghost"}
+                                          size="sm"
+                                          className="h-8 px-3"
+                                          asChild
+                                        >
+                                          <a 
+                                            href={pharmacy.url} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-1"
+                                          >
+                                            <ExternalLink className="h-3 w-3" />
+                                            <span className="text-xs">Ver</span>
+                                          </a>
+                                        </Button>
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
+                          </div>
+                          <div className="mt-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
+                            <p className="text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
+                              <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                              <span>
+                                Los precios son aproximados y pueden variar según disponibilidad, región y promociones vigentes. 
+                                Te recomendamos verificar el precio final en la farmacia.
+                              </span>
+                            </p>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200">
           <CardHeader className="text-center">
