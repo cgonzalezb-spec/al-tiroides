@@ -1,5 +1,5 @@
 
-import { TrendingDown, TrendingUp, Circle, Flame, AlertCircle } from 'lucide-react';
+import { TrendingDown, TrendingUp, Circle, Flame, AlertCircle, Shield } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
@@ -13,6 +13,15 @@ const DisorderTypes = () => {
       prevalence: "Más común en mujeres",
       color: "blue",
       explanation: "Es como si tu cuerpo fuera un auto sin acelerador. Todo funciona más lento de lo normal."
+    },
+    {
+      name: "Hipotiroidismo de Hashimoto",
+      icon: <Shield className="h-8 w-8 text-indigo-500" />,
+      description: "Enfermedad autoinmune que afecta la tiroides",
+      symptoms: ["Fatiga crónica", "Aumento de peso", "Bocio", "Intolerancia al frío", "Dolor muscular"],
+      prevalence: "Causa más común de hipotiroidismo",
+      color: "indigo",
+      explanation: "Tu sistema inmune ataca por error a la tiroides, causando inflamación y reducción de su función."
     },
     {
       name: "Hipertiroidismo",
@@ -57,7 +66,8 @@ const DisorderTypes = () => {
       blue: "from-blue-500 to-blue-600 border-blue-200 bg-blue-50",
       red: "from-red-500 to-red-600 border-red-200 bg-red-50",
       purple: "from-purple-500 to-purple-600 border-purple-200 bg-purple-50",
-      orange: "from-orange-500 to-orange-600 border-orange-200 bg-orange-50"
+      orange: "from-orange-500 to-orange-600 border-orange-200 bg-orange-50",
+      indigo: "from-indigo-500 to-indigo-600 border-indigo-200 bg-indigo-50"
     };
     return colorMap[color as keyof typeof colorMap] || colorMap.blue;
   };
