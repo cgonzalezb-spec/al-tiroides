@@ -724,14 +724,14 @@ const Medications = () => {
                                               {/* Info del producto */}
                                               <div className="flex-1 space-y-2">
                                                 <div>
-                                                  <h4 className="font-semibold text-sm">
-                                                    {pharmacy.commercial_name || pharmacy.brand}
-                                                    {isBestValue && (
-                                                      <Badge variant="secondary" className="ml-2 text-[10px] px-2 py-0.5">
-                                                        Mejor precio
-                                                      </Badge>
-                                                    )}
-                                                  </h4>
+                                                   <h4 className="font-semibold text-sm">
+                                                     {pharmacy.commercial_name || pharmacy.brand}
+                                                     {isBestValue && (
+                                                       <Badge className="ml-2 text-[10px] px-2 py-0.5 bg-green-600 text-white hover:bg-green-700 border-transparent">
+                                                         Mejor precio
+                                                       </Badge>
+                                                     )}
+                                                   </h4>
                                                   {pharmacy.laboratory && (
                                                     <p className="text-xs text-muted-foreground">
                                                       {pharmacy.laboratory}
