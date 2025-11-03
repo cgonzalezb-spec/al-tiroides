@@ -144,6 +144,7 @@ export type Database = {
           id: string
           is_active: boolean
           laboratory: string | null
+          last_price_update: string | null
           medication_name: string
           mg_per_tablet: string | null
           pharmacy_name: string
@@ -151,6 +152,8 @@ export type Database = {
           price: number
           product_url: string
           quantity: number | null
+          regular_price: number | null
+          sale_price: number | null
           updated_at: string
         }
         Insert: {
@@ -159,6 +162,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           laboratory?: string | null
+          last_price_update?: string | null
           medication_name: string
           mg_per_tablet?: string | null
           pharmacy_name: string
@@ -166,6 +170,8 @@ export type Database = {
           price: number
           product_url: string
           quantity?: number | null
+          regular_price?: number | null
+          sale_price?: number | null
           updated_at?: string
         }
         Update: {
@@ -174,6 +180,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           laboratory?: string | null
+          last_price_update?: string | null
           medication_name?: string
           mg_per_tablet?: string | null
           pharmacy_name?: string
@@ -181,6 +188,8 @@ export type Database = {
           price?: number
           product_url?: string
           quantity?: number | null
+          regular_price?: number | null
+          sale_price?: number | null
           updated_at?: string
         }
         Relationships: []
