@@ -50,6 +50,7 @@ const Medications = () => {
   const [openPrices, setOpenPrices] = useState<number | null>(null);
   const [selectedMed, setSelectedMed] = useState<number | null>(null);
   const [pharmacyData, setPharmacyData] = useState<Record<string, PharmacyLink[]>>({});
+  const [selectedDose, setSelectedDose] = useState<Record<number, string>>({});
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<EditFormData | null>(null);
@@ -612,8 +613,33 @@ const Medications = () => {
                     {(() => {
                       const links = getPharmacyLinks(medications[selectedMed].medicationKey);
                       
+                      // Extraer dosis únicas de los enlaces
+                      const uniqueDoses = Array.from(new Set(
+                        links
+                          .map(link => link.mg_per_tablet)
+                          .filter(dose => dose && dose.trim() !== '')
+                          .map(dose => {
+                            // Extraer solo el número de mcg
+                            const match = dose?.match(/(\d+)\s*mcg/i);
+                            return match ? match[1] : null;
+                          })
+                          .filter(Boolean)
+                      )).sort((a, b) => parseInt(a!) - parseInt(b!));
+                      
+                      // Obtener dosis seleccionada para este medicamento
+                      const currentDose = selectedDose[selectedMed] || 'all';
+                      
+                      // Filtrar por dosis si hay una seleccionada
+                      let filteredLinks = links;
+                      if (currentDose !== 'all') {
+                        filteredLinks = links.filter(link => {
+                          const match = link.mg_per_tablet?.match(/(\d+)\s*mcg/i);
+                          return match && match[1] === currentDose;
+                        });
+                      }
+                      
                       // Ordenar por precio por comprimido si está disponible, sino por precio total
-                      const sortedLinks = [...links].sort((a, b) => {
+                      const sortedLinks = [...filteredLinks].sort((a, b) => {
                         if (a.pricePerUnit && b.pricePerUnit) {
                           return a.pricePerUnit - b.pricePerUnit;
                         }
@@ -627,6 +653,32 @@ const Medications = () => {
                       
                       return (
                         <>
+                          {uniqueDoses.length > 0 && (
+                            <div className="mb-4 flex items-center gap-3">
+                              <Label htmlFor="dose-filter" className="text-sm font-medium whitespace-nowrap">
+                                Filtrar por dosis:
+                              </Label>
+                              <Select
+                                value={currentDose}
+                                onValueChange={(value) => {
+                                  setSelectedDose(prev => ({ ...prev, [selectedMed]: value }));
+                                }}
+                              >
+                                <SelectTrigger id="dose-filter" className="w-[200px]">
+                                  <SelectValue placeholder="Todas las dosis" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="all">Todas las dosis</SelectItem>
+                                  {uniqueDoses.map(dose => (
+                                    <SelectItem key={dose} value={dose!}>
+                                      {dose} mcg
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
+                          
                           <div className="rounded-lg border overflow-hidden">
                             <Table>
                               <TableHeader>
