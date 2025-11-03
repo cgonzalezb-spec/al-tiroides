@@ -654,135 +654,182 @@ const Medications = () => {
                       return (
                         <>
                           {uniqueDoses.length > 0 && (
-                            <div className="mb-4 flex items-center gap-3">
-                              <Label htmlFor="dose-filter" className="text-sm font-medium whitespace-nowrap">
-                                Filtrar por dosis:
-                              </Label>
-                              <Select
-                                value={currentDose}
-                                onValueChange={(value) => {
-                                  setSelectedDose(prev => ({ ...prev, [selectedMed]: value }));
-                                }}
-                              >
-                                <SelectTrigger id="dose-filter" className="w-[200px]">
-                                  <SelectValue placeholder="Todas las dosis" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="all">Todas las dosis</SelectItem>
-                                  {uniqueDoses.map(dose => (
-                                    <SelectItem key={dose} value={dose!}>
-                                      {dose} mcg
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
+                            <Card className="mb-4 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+                              <CardContent className="pt-4">
+                                <div className="flex items-center gap-3">
+                                  <Badge variant="outline" className="text-sm font-medium shrink-0">
+                                    Filtrar por dosis
+                                  </Badge>
+                                  <Select
+                                    value={currentDose}
+                                    onValueChange={(value) => {
+                                      setSelectedDose(prev => ({ ...prev, [selectedMed]: value }));
+                                    }}
+                                  >
+                                    <SelectTrigger className="w-full max-w-xs bg-background">
+                                      <SelectValue placeholder="Todas las dosis" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="all">📋 Todas las dosis</SelectItem>
+                                      {uniqueDoses.map(dose => (
+                                        <SelectItem key={dose} value={dose!}>
+                                          💊 {dose} mcg
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </CardContent>
+                            </Card>
                           )}
                           
-                          <div className="rounded-lg border overflow-hidden">
-                            <Table>
-                              <TableHeader>
-                                 <TableRow className="bg-muted/50">
-                                   <TableHead className="font-semibold">Nombre Comercial</TableHead>
-                                   <TableHead className="font-semibold">Laboratorio</TableHead>
-                                   <TableHead className="font-semibold text-center">Dosis</TableHead>
-                                   <TableHead className="font-semibold text-center">Comprimidos</TableHead>
-                                   <TableHead className="font-semibold">Farmacia</TableHead>
-                                   <TableHead className="font-semibold">Presentación</TableHead>
-                                    <TableHead className="text-right font-semibold">Precio</TableHead>
-                                    <TableHead className="text-center font-semibold">Ver</TableHead>
-                                    {isAdmin && <TableHead className="text-center font-semibold">Acciones</TableHead>}
-                                 </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {sortedLinks.map((pharmacy, i) => {
-                                  const isBestValue = minPricePerUnit && pharmacy.pricePerUnit 
-                                    ? pharmacy.pricePerUnit === minPricePerUnit 
-                                    : false;
-                                  return (
-                                     <TableRow 
-                                       key={i}
-                                       className={isBestValue ? "bg-green-50 dark:bg-green-950/20" : ""}
-                                     >
-                                       <TableCell className="font-semibold text-xs">
-                                         {pharmacy.commercial_name || pharmacy.brand}
-                                       </TableCell>
-                                       <TableCell className="text-xs">
-                                         {pharmacy.laboratory || '-'}
-                                       </TableCell>
-                                       <TableCell className="text-xs font-medium text-center">
-                                         {pharmacy.mg_per_tablet || '-'}
-                                       </TableCell>
-                                       <TableCell className="text-xs text-center font-medium">
-                                         {pharmacy.quantity || '-'}
-                                       </TableCell>
-                                       <TableCell className="text-xs">{pharmacy.name}</TableCell>
-                                       <TableCell className="text-xs text-muted-foreground">
-                                         {pharmacy.presentation}
-                                       </TableCell>
-                                       <TableCell className="text-right">
-                                         <div className="flex flex-col items-end gap-1">
-                                           <span className={`text-xs font-medium ${isBestValue ? 'text-green-600 dark:text-green-400' : 'text-gray-700'}`}>
-                                             ${pharmacy.price.toLocaleString('es-CL')}
-                                           </span>
-                                           {isBestValue && (
-                                             <Badge className="bg-green-600 hover:bg-green-700 text-[10px] px-1.5 py-0 whitespace-nowrap">
-                                               Mejor valor
-                                             </Badge>
-                                           )}
-                                         </div>
-                                       </TableCell>
-                                       <TableCell className="text-center">
-                                         <Button
-                                           variant={isBestValue ? "default" : "ghost"}
-                                           size="sm"
-                                           className="h-8 px-3"
-                                           asChild
-                                         >
-                                           <a 
-                                             href={pharmacy.url} 
-                                             target="_blank" 
-                                             rel="noopener noreferrer"
-                                             className="flex items-center gap-1"
-                                           >
-                                             <ExternalLink className="h-3 w-3" />
-                                             <span className="text-xs">Ir</span>
-                                           </a>
-                                         </Button>
-                                       </TableCell>
-                                        {isAdmin && (
-                                          <TableCell className="text-center">
-                                            <div className="flex gap-1 justify-center">
-                                              <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-8 px-2"
-                                                onClick={() => handleEditLink(pharmacy)}
-                                                disabled={!pharmacy.id}
-                                              >
-                                                <Pencil className="h-3 w-3" />
-                                              </Button>
-                                              <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-8 px-2 text-destructive hover:text-destructive"
-                                                onClick={() => {
-                                                  if (pharmacy.id && confirm('¿Estás seguro de eliminar este medicamento?')) {
-                                                    deleteLinkMutation.mutate(pharmacy.id);
-                                                  }
-                                                }}
-                                                disabled={!pharmacy.id}
-                                              >
-                                                <Trash2 className="h-3 w-3" />
-                                              </Button>
+                          <div className="space-y-4">
+                            {(() => {
+                              // Agrupar por farmacia
+                              const groupedByPharmacy = sortedLinks.reduce((acc, link) => {
+                                const pharmacyName = link.name;
+                                if (!acc[pharmacyName]) {
+                                  acc[pharmacyName] = [];
+                                }
+                                acc[pharmacyName].push(link);
+                                return acc;
+                              }, {} as Record<string, typeof sortedLinks>);
+                              
+                              return Object.entries(groupedByPharmacy).map(([pharmacyName, items]) => (
+                                <Card key={pharmacyName} className="overflow-hidden border-2 hover:border-primary/50 transition-colors">
+                                  <CardHeader className="bg-gradient-to-r from-muted/50 to-muted/30 pb-3">
+                                    <div className="flex items-center justify-between">
+                                      <CardTitle className="text-lg font-bold flex items-center gap-2">
+                                        <ShoppingCart className="h-5 w-5 text-primary" />
+                                        {pharmacyName}
+                                      </CardTitle>
+                                      <Badge variant="secondary" className="text-xs">
+                                        {items.length} {items.length === 1 ? 'opción' : 'opciones'}
+                                      </Badge>
+                                    </div>
+                                  </CardHeader>
+                                  <CardContent className="p-0">
+                                    <div className="divide-y">
+                                      {items.map((pharmacy, i) => {
+                                        const isBestValue = minPricePerUnit && pharmacy.pricePerUnit 
+                                          ? pharmacy.pricePerUnit === minPricePerUnit 
+                                          : false;
+                                        const pricePerPill = pharmacy.quantity 
+                                          ? Math.round(pharmacy.price / pharmacy.quantity)
+                                          : null;
+                                        
+                                        return (
+                                          <div 
+                                            key={i}
+                                            className={`p-4 ${isBestValue ? 'bg-green-50 dark:bg-green-950/20' : ''}`}
+                                          >
+                                            <div className="flex flex-col md:flex-row md:items-start gap-4">
+                                              {/* Info del producto */}
+                                              <div className="flex-1 space-y-2">
+                                                <div className="flex items-start justify-between gap-2">
+                                                  <div>
+                                                    <h4 className="font-bold text-base flex items-center gap-2">
+                                                      {pharmacy.commercial_name || pharmacy.brand}
+                                                      {isBestValue && (
+                                                        <Badge className="bg-green-600 hover:bg-green-700 text-[10px] px-2 py-0.5">
+                                                          ⭐ Mejor valor
+                                                        </Badge>
+                                                      )}
+                                                    </h4>
+                                                    {pharmacy.laboratory && (
+                                                      <p className="text-xs text-muted-foreground mt-0.5">
+                                                        {pharmacy.laboratory}
+                                                      </p>
+                                                    )}
+                                                  </div>
+                                                </div>
+                                                
+                                                <div className="flex flex-wrap gap-2">
+                                                  {pharmacy.mg_per_tablet && (
+                                                    <Badge variant="outline" className="text-xs">
+                                                      💊 {pharmacy.mg_per_tablet}
+                                                    </Badge>
+                                                  )}
+                                                  {pharmacy.quantity && (
+                                                    <Badge variant="outline" className="text-xs">
+                                                      📦 {pharmacy.quantity} comprimidos
+                                                    </Badge>
+                                                  )}
+                                                </div>
+                                                
+                                                <p className="text-xs text-muted-foreground">
+                                                  {pharmacy.presentation}
+                                                </p>
+                                              </div>
+                                              
+                                              {/* Precios y acciones */}
+                                              <div className="flex flex-col items-end gap-2 md:min-w-[180px]">
+                                                <div className="text-right">
+                                                  <div className={`text-2xl font-bold ${isBestValue ? 'text-green-600 dark:text-green-400' : 'text-foreground'}`}>
+                                                    ${pharmacy.price.toLocaleString('es-CL')}
+                                                  </div>
+                                                  {pricePerPill && (
+                                                    <div className="text-xs text-muted-foreground mt-1">
+                                                      ${pricePerPill.toLocaleString('es-CL')} por comprimido
+                                                    </div>
+                                                  )}
+                                                </div>
+                                                
+                                                <div className="flex gap-2">
+                                                  <Button
+                                                    variant={isBestValue ? "default" : "outline"}
+                                                    size="sm"
+                                                    className="h-9"
+                                                    asChild
+                                                  >
+                                                    <a 
+                                                      href={pharmacy.url} 
+                                                      target="_blank" 
+                                                      rel="noopener noreferrer"
+                                                      className="flex items-center gap-2"
+                                                    >
+                                                      <ExternalLink className="h-4 w-4" />
+                                                      Ver en tienda
+                                                    </a>
+                                                  </Button>
+                                                  
+                                                  {isAdmin && (
+                                                    <div className="flex gap-1">
+                                                      <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-9 px-2"
+                                                        onClick={() => handleEditLink(pharmacy)}
+                                                        disabled={!pharmacy.id}
+                                                      >
+                                                        <Pencil className="h-4 w-4" />
+                                                      </Button>
+                                                      <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-9 px-2 text-destructive hover:text-destructive"
+                                                        onClick={() => {
+                                                          if (pharmacy.id && confirm('¿Estás seguro de eliminar este medicamento?')) {
+                                                            deleteLinkMutation.mutate(pharmacy.id);
+                                                          }
+                                                        }}
+                                                        disabled={!pharmacy.id}
+                                                      >
+                                                        <Trash2 className="h-4 w-4" />
+                                                      </Button>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </div>
                                             </div>
-                                          </TableCell>
-                                        )}
-                                    </TableRow>
-                                  );
-                                })}
-                              </TableBody>
-                            </Table>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              ));
+                            })()}
                           </div>
                             
                             {isAdmin && (
@@ -798,25 +845,29 @@ const Medications = () => {
                               </div>
                             )}
 
-                            <div className="mt-3 space-y-2">
-                              <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
-                                <p className="text-xs text-blue-700 dark:text-blue-300 flex items-start gap-2">
-                                  <CheckCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                                  <span>
-                                    <strong>💡 Tip:</strong> La opción con "Mejor valor" tiene el precio por comprimido más bajo, 
-                                    lo que significa mayor ahorro en tu tratamiento a largo plazo.
-                                  </span>
-                                </p>
-                              </div>
-                              <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-                                <p className="text-xs text-amber-700 dark:text-amber-300 flex items-start gap-2">
-                                  <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                                  <span>
-                                    Los precios son aproximados y pueden variar según disponibilidad, región y promociones vigentes. 
-                                    Te recomendamos verificar el precio final en la farmacia. Los enlaces te llevarán directamente al sitio de cada farmacia.
-                                  </span>
-                                </p>
-                              </div>
+                            <div className="mt-4 space-y-3">
+                              <Card className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/20">
+                                <CardContent className="p-4">
+                                  <p className="text-sm text-blue-700 dark:text-blue-300 flex items-start gap-2">
+                                    <CheckCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                                    <span>
+                                      <strong>💡 Tip:</strong> La opción marcada con "⭐ Mejor valor" tiene el precio por comprimido más bajo, 
+                                      lo que significa mayor ahorro en tu tratamiento a largo plazo.
+                                    </span>
+                                  </p>
+                                </CardContent>
+                              </Card>
+                              <Card className="border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20">
+                                <CardContent className="p-4">
+                                  <p className="text-sm text-amber-700 dark:text-amber-300 flex items-start gap-2">
+                                    <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                                    <span>
+                                      Los precios son aproximados y pueden variar según disponibilidad, región y promociones vigentes. 
+                                      Te recomendamos verificar el precio final en la farmacia. Los enlaces te llevarán directamente al sitio de cada farmacia.
+                                    </span>
+                                  </p>
+                                </CardContent>
+                              </Card>
                             </div>
                         </>
                       );
