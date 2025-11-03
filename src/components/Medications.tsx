@@ -1,4 +1,4 @@
-import { Pill, Clock, AlertCircle, Heart, CheckCircle, ChevronDown, ExternalLink, ShoppingCart, Pencil, Plus } from 'lucide-react';
+import { Pill, Clock, AlertCircle, Heart, CheckCircle, ChevronDown, ExternalLink, ShoppingCart, Pencil, Plus, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -139,6 +139,25 @@ const Medications = () => {
     },
     onError: () => {
       toast({ title: 'Error al actualizar enlace', variant: 'destructive' });
+    },
+  });
+
+  // Mutation para eliminar enlaces
+  const deleteLinkMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('pharmacy_links')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: 'Medicamento eliminado exitosamente' });
+      fetchPharmacyLinks();
+      queryClient.invalidateQueries({ queryKey: ['pharmacy-links'] });
+    },
+    onError: () => {
+      toast({ title: 'Error al eliminar medicamento', variant: 'destructive' });
     },
   });
 
@@ -618,9 +637,9 @@ const Medications = () => {
                                    <TableHead className="font-semibold text-center">Comprimidos</TableHead>
                                    <TableHead className="font-semibold">Farmacia</TableHead>
                                    <TableHead className="font-semibold">Presentación</TableHead>
-                                   <TableHead className="text-right font-semibold">Precio</TableHead>
-                                   <TableHead className="text-center font-semibold">Ver</TableHead>
-                                   {isAdmin && <TableHead className="text-center font-semibold">Editar</TableHead>}
+                                    <TableHead className="text-right font-semibold">Precio</TableHead>
+                                    <TableHead className="text-center font-semibold">Ver</TableHead>
+                                    {isAdmin && <TableHead className="text-center font-semibold">Acciones</TableHead>}
                                  </TableRow>
                               </TableHeader>
                               <TableBody>
@@ -679,19 +698,34 @@ const Medications = () => {
                                            </a>
                                          </Button>
                                        </TableCell>
-                                       {isAdmin && (
-                                         <TableCell className="text-center">
-                                           <Button
-                                             variant="ghost"
-                                             size="sm"
-                                             className="h-8 px-3"
-                                             onClick={() => handleEditLink(pharmacy)}
-                                             disabled={!pharmacy.id}
-                                           >
-                                             <Pencil className="h-3 w-3" />
-                                           </Button>
-                                         </TableCell>
-                                       )}
+                                        {isAdmin && (
+                                          <TableCell className="text-center">
+                                            <div className="flex gap-1 justify-center">
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 px-2"
+                                                onClick={() => handleEditLink(pharmacy)}
+                                                disabled={!pharmacy.id}
+                                              >
+                                                <Pencil className="h-3 w-3" />
+                                              </Button>
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 px-2 text-destructive hover:text-destructive"
+                                                onClick={() => {
+                                                  if (pharmacy.id && confirm('¿Estás seguro de eliminar este medicamento?')) {
+                                                    deleteLinkMutation.mutate(pharmacy.id);
+                                                  }
+                                                }}
+                                                disabled={!pharmacy.id}
+                                              >
+                                                <Trash2 className="h-3 w-3" />
+                                              </Button>
+                                            </div>
+                                          </TableCell>
+                                        )}
                                     </TableRow>
                                   );
                                 })}
