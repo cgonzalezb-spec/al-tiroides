@@ -1,4 +1,1 @@
 project_id = "meoopbjvghzxmktmczli"
-
-[functions.update-pharmacy-prices]
-verify_jwt = false
