@@ -715,7 +715,7 @@ const Medications = () => {
                           
                           <div className="rounded-lg border overflow-hidden">
                             <Table>
-                              <TableHeader>
+                               <TableHeader>
                                  <TableRow className="bg-muted/50">
                                    <TableHead className="font-semibold">Nombre Comercial</TableHead>
                                    <TableHead className="font-semibold">Laboratorio</TableHead>
@@ -723,7 +723,8 @@ const Medications = () => {
                                    <TableHead className="font-semibold text-center">Comprimidos</TableHead>
                                    <TableHead className="font-semibold">Farmacia</TableHead>
                                    <TableHead className="font-semibold">Presentación</TableHead>
-                                    <TableHead className="text-right font-semibold">Precio</TableHead>
+                                    <TableHead className="text-right font-semibold">Precio Normal</TableHead>
+                                    <TableHead className="text-right font-semibold">Precio Oferta</TableHead>
                                     <TableHead className="text-center font-semibold">Ver</TableHead>
                                     {isAdmin && <TableHead className="text-center font-semibold">Acciones</TableHead>}
                                  </TableRow>
@@ -751,41 +752,34 @@ const Medications = () => {
                                          {pharmacy.quantity || '-'}
                                        </TableCell>
                                        <TableCell className="text-xs">{pharmacy.name}</TableCell>
-                                       <TableCell className="text-xs text-muted-foreground">
-                                         {pharmacy.presentation}
-                                       </TableCell>
+                                        <TableCell className="text-xs text-muted-foreground">
+                                          {pharmacy.presentation}
+                                        </TableCell>
                                         <TableCell className="text-right">
                                           <div className="flex flex-col items-end gap-1">
-                                            {pharmacy.sale_price && pharmacy.sale_price < (pharmacy.regular_price || pharmacy.price) ? (
-                                              <>
-                                                <div className="flex flex-col items-end">
-                                                  <span className="text-xs font-bold text-destructive">
-                                                    ${pharmacy.sale_price.toLocaleString('es-CL')}
-                                                  </span>
-                                                  <span className="text-[10px] text-muted-foreground line-through">
-                                                    ${(pharmacy.regular_price || pharmacy.price).toLocaleString('es-CL')}
-                                                  </span>
-                                                </div>
-                                                <Badge variant="destructive" className="text-[10px] px-1.5 py-0 whitespace-nowrap">
-                                                  Oferta
-                                                </Badge>
-                                              </>
-                                            ) : (
-                                              <span className={`text-xs font-medium ${isBestValue ? 'text-green-600 dark:text-green-400' : 'text-gray-700'}`}>
-                                                ${(pharmacy.regular_price || pharmacy.price).toLocaleString('es-CL')}
-                                              </span>
-                                            )}
+                                            <span className={`text-xs font-medium ${isBestValue ? 'text-green-600 dark:text-green-400' : ''}`}>
+                                              ${(pharmacy.regular_price || pharmacy.price).toLocaleString('es-CL')}
+                                            </span>
                                             {isBestValue && (
                                               <Badge className="bg-green-600 hover:bg-green-700 text-[10px] px-1.5 py-0 whitespace-nowrap">
                                                 Mejor valor
                                               </Badge>
                                             )}
-                                            {pharmacy.last_price_update && (
-                                              <span className="text-[9px] text-muted-foreground">
-                                                Act: {new Date(pharmacy.last_price_update).toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit' })}
-                                              </span>
-                                            )}
                                           </div>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                          {pharmacy.sale_price && pharmacy.sale_price < (pharmacy.regular_price || pharmacy.price) ? (
+                                            <div className="flex flex-col items-end gap-1">
+                                              <span className="text-xs font-bold text-destructive">
+                                                ${pharmacy.sale_price.toLocaleString('es-CL')}
+                                              </span>
+                                              <Badge variant="destructive" className="text-[10px] px-1.5 py-0 whitespace-nowrap">
+                                                Oferta
+                                              </Badge>
+                                            </div>
+                                          ) : (
+                                            <span className="text-xs text-muted-foreground">-</span>
+                                          )}
                                         </TableCell>
                                        <TableCell className="text-center">
                                          <Button
