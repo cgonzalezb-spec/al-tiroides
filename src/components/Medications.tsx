@@ -1,4 +1,4 @@
-import { Pill, Clock, AlertCircle, Heart, CheckCircle, ChevronDown, ExternalLink, ShoppingCart, Pencil } from 'lucide-react';
+import { Pill, Clock, AlertCircle, Heart, CheckCircle, ChevronDown, ExternalLink, ShoppingCart, Pencil, Plus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -51,10 +51,65 @@ const Medications = () => {
   const [selectedMed, setSelectedMed] = useState<number | null>(null);
   const [pharmacyData, setPharmacyData] = useState<Record<string, PharmacyLink[]>>({});
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<EditFormData | null>(null);
+  const [addFormData, setAddFormData] = useState<EditFormData>({
+    id: '',
+    medication_name: '',
+    pharmacy_name: '',
+    presentation: '',
+    quantity: '',
+    price: '',
+    product_url: '',
+    commercial_name: '',
+    laboratory: '',
+    mg_per_tablet: '',
+  });
   const { toast } = useToast();
   const { isAdmin } = useRole();
   const queryClient = useQueryClient();
+
+  // Mutation para crear enlaces
+  const createLinkMutation = useMutation({
+    mutationFn: async (data: Omit<EditFormData, 'id'>) => {
+      const { error } = await supabase
+        .from('pharmacy_links')
+        .insert({
+          medication_name: data.medication_name,
+          pharmacy_name: data.pharmacy_name,
+          presentation: data.presentation,
+          quantity: data.quantity ? parseInt(data.quantity) : null,
+          price: parseInt(data.price),
+          product_url: data.product_url,
+          commercial_name: data.commercial_name || null,
+          laboratory: data.laboratory || null,
+          mg_per_tablet: data.mg_per_tablet || null,
+          is_active: true,
+        });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: 'Medicamento creado exitosamente' });
+      setIsAddDialogOpen(false);
+      setAddFormData({
+        id: '',
+        medication_name: '',
+        pharmacy_name: '',
+        presentation: '',
+        quantity: '',
+        price: '',
+        product_url: '',
+        commercial_name: '',
+        laboratory: '',
+        mg_per_tablet: '',
+      });
+      fetchPharmacyLinks();
+      queryClient.invalidateQueries({ queryKey: ['pharmacy-links'] });
+    },
+    onError: () => {
+      toast({ title: 'Error al crear medicamento', variant: 'destructive' });
+    },
+  });
 
   // Mutation para actualizar enlaces
   const updateLinkMutation = useMutation({
@@ -79,7 +134,6 @@ const Medications = () => {
       toast({ title: 'Enlace actualizado exitosamente' });
       setIsEditDialogOpen(false);
       setEditingLink(null);
-      // Recargar datos
       fetchPharmacyLinks();
       queryClient.invalidateQueries({ queryKey: ['pharmacy-links'] });
     },
@@ -175,6 +229,29 @@ const Medications = () => {
     }
 
     updateLinkMutation.mutate(editingLink);
+  };
+
+  const handleSubmitAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validación de URL
+    try {
+      new URL(addFormData.product_url);
+    } catch {
+      toast({ 
+        title: 'URL inválida', 
+        description: 'Por favor ingresa una URL válida que comience con https://',
+        variant: 'destructive' 
+      });
+      return;
+    }
+
+    if (!addFormData.medication_name || !addFormData.pharmacy_name || !addFormData.presentation || !addFormData.price || !addFormData.product_url) {
+      toast({ title: 'Por favor completa todos los campos requeridos', variant: 'destructive' });
+      return;
+    }
+
+    createLinkMutation.mutate(addFormData);
   };
 
   // Función para obtener enlaces de farmacias con fallback
@@ -621,6 +698,20 @@ const Medications = () => {
                               </TableBody>
                             </Table>
                           </div>
+                            
+                            {isAdmin && (
+                              <div className="mt-4 flex justify-center">
+                                <Button
+                                  onClick={() => setIsAddDialogOpen(true)}
+                                  className="bg-primary hover:bg-primary/90"
+                                  size="sm"
+                                >
+                                  <Plus className="w-4 h-4 mr-2" />
+                                  Agregar Medicamento
+                                </Button>
+                              </div>
+                            )}
+
                             <div className="mt-3 space-y-2">
                               <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
                                 <p className="text-xs text-blue-700 dark:text-blue-300 flex items-start gap-2">
@@ -825,6 +916,170 @@ const Medications = () => {
               </div>
             </form>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de agregar medicamento para administradores */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Agregar Nuevo Medicamento</DialogTitle>
+            <DialogDescription>
+              Completa el formulario para agregar un nuevo enlace de farmacia
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmitAdd} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="add_medication_name">1. Medicamento *</Label>
+              <Select
+                value={addFormData.medication_name}
+                onValueChange={(value) => setAddFormData({ ...addFormData, medication_name: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un medicamento" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="levotiroxina">Levotiroxina</SelectItem>
+                  <SelectItem value="metimazol">Metimazol</SelectItem>
+                  <SelectItem value="propranolol">Propranolol</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="add_pharmacy_name">2. Farmacia *</Label>
+              <Select
+                value={addFormData.pharmacy_name}
+                onValueChange={(value) => setAddFormData({ ...addFormData, pharmacy_name: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona una farmacia" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Farmacias Ahumada">Farmacias Ahumada</SelectItem>
+                  <SelectItem value="Cruz Verde">Cruz Verde</SelectItem>
+                  <SelectItem value="Salcobrand">Salcobrand</SelectItem>
+                  <SelectItem value="Dr. Simi">Dr. Simi</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="add_commercial_name">3. Nombre Comercial</Label>
+                <Input
+                  id="add_commercial_name"
+                  placeholder="Ej: Eutirox, Levoid"
+                  value={addFormData.commercial_name}
+                  onChange={(e) => setAddFormData({ ...addFormData, commercial_name: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="add_laboratory">4. Laboratorio</Label>
+                <Input
+                  id="add_laboratory"
+                  placeholder="Ej: Merck, Abbott"
+                  value={addFormData.laboratory}
+                  onChange={(e) => setAddFormData({ ...addFormData, laboratory: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="add_presentation">5. Presentación *</Label>
+              <Input
+                id="add_presentation"
+                placeholder="Ej: Levotiroxina 100mcg x30 comprimidos"
+                value={addFormData.presentation}
+                onChange={(e) => setAddFormData({ ...addFormData, presentation: e.target.value })}
+              />
+              <p className="text-xs text-gray-500">Describe la presentación del producto completa</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="add_mg_per_tablet">6. Dosis (mcg, mg o g)</Label>
+                <Input
+                  id="add_mg_per_tablet"
+                  placeholder="Ej: 100mcg, 5mg, 1g"
+                  value={addFormData.mg_per_tablet}
+                  onChange={(e) => setAddFormData({ ...addFormData, mg_per_tablet: e.target.value })}
+                />
+                <p className="text-xs text-gray-500">Dosis por comprimido</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="add_quantity">7. Cantidad de comprimidos</Label>
+                <Input
+                  id="add_quantity"
+                  type="number"
+                  placeholder="Ej: 30"
+                  value={addFormData.quantity}
+                  onChange={(e) => setAddFormData({ ...addFormData, quantity: e.target.value })}
+                />
+                <p className="text-xs text-gray-500">N° de comprimidos en el envase</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="add_price">8. Precio (CLP) *</Label>
+              <Input
+                id="add_price"
+                type="number"
+                placeholder="Ej: 8790"
+                value={addFormData.price}
+                onChange={(e) => setAddFormData({ ...addFormData, price: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="add_product_url">9. URL del Producto *</Label>
+              <Textarea
+                id="add_product_url"
+                placeholder="https://www.farmacia.com/producto/levotiroxina-..."
+                value={addFormData.product_url}
+                onChange={(e) => setAddFormData({ ...addFormData, product_url: e.target.value })}
+                rows={3}
+              />
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+                <p className="text-xs text-yellow-800 font-medium">⚠️ Importante: URL directa</p>
+                <p className="text-xs text-yellow-700 mt-1">
+                  La URL debe ser un enlace DIRECTO a la página del producto específico, no a la página de búsqueda.
+                </p>
+                <p className="text-xs text-yellow-700 mt-1">
+                  Cómo obtenerla: Ve a la farmacia online → Busca el producto → Haz clic en el producto → Copia la URL de la barra de direcciones
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsAddDialogOpen(false);
+                  setAddFormData({
+                    id: '',
+                    medication_name: '',
+                    pharmacy_name: '',
+                    presentation: '',
+                    quantity: '',
+                    price: '',
+                    product_url: '',
+                    commercial_name: '',
+                    laboratory: '',
+                    mg_per_tablet: '',
+                  });
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                Crear Medicamento
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </section>
