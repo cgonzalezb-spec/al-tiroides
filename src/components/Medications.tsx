@@ -21,6 +21,9 @@ interface PharmacyLink {
   name: string;
   brand: string;
   price: number;
+  regular_price?: number | null;
+  sale_price?: number | null;
+  last_price_update?: string | null;
   presentation: string;
   url: string;
   quantity?: number;
@@ -54,6 +57,7 @@ const Medications = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<EditFormData | null>(null);
+  const [isUpdatingPrices, setIsUpdatingPrices] = useState(false);
   const [addFormData, setAddFormData] = useState<EditFormData>({
     id: '',
     medication_name: '',
@@ -196,6 +200,9 @@ const Medications = () => {
           name: link.pharmacy_name,
           brand: brand,
           price: link.price,
+          regular_price: link.regular_price,
+          sale_price: link.sale_price,
+          last_price_update: link.last_price_update,
           presentation: link.presentation,
           url: link.product_url,
           quantity: quantity,
@@ -272,6 +279,33 @@ const Medications = () => {
     }
 
     createLinkMutation.mutate(addFormData);
+  };
+
+  // Función para actualizar precios manualmente
+  const handleUpdatePrices = async () => {
+    setIsUpdatingPrices(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('update-pharmacy-prices');
+      
+      if (error) throw error;
+      
+      toast({ 
+        title: 'Actualización completada', 
+        description: `${data?.results?.updated || 0} precios actualizados, ${data?.results?.unchanged || 0} sin cambios, ${data?.results?.failed || 0} errores`
+      });
+      
+      // Refrescar los datos
+      await fetchPharmacyLinks();
+    } catch (error) {
+      console.error('Error updating prices:', error);
+      toast({ 
+        title: 'Error al actualizar precios', 
+        description: 'Por favor intenta de nuevo más tarde',
+        variant: 'destructive' 
+      });
+    } finally {
+      setIsUpdatingPrices(false);
+    }
   };
 
   // Función para obtener enlaces de farmacias con fallback
@@ -720,18 +754,39 @@ const Medications = () => {
                                        <TableCell className="text-xs text-muted-foreground">
                                          {pharmacy.presentation}
                                        </TableCell>
-                                       <TableCell className="text-right">
-                                         <div className="flex flex-col items-end gap-1">
-                                           <span className={`text-xs font-medium ${isBestValue ? 'text-green-600 dark:text-green-400' : 'text-gray-700'}`}>
-                                             ${pharmacy.price.toLocaleString('es-CL')}
-                                           </span>
-                                           {isBestValue && (
-                                             <Badge className="bg-green-600 hover:bg-green-700 text-[10px] px-1.5 py-0 whitespace-nowrap">
-                                               Mejor valor
-                                             </Badge>
-                                           )}
-                                         </div>
-                                       </TableCell>
+                                        <TableCell className="text-right">
+                                          <div className="flex flex-col items-end gap-1">
+                                            {pharmacy.sale_price && pharmacy.sale_price < (pharmacy.regular_price || pharmacy.price) ? (
+                                              <>
+                                                <div className="flex flex-col items-end">
+                                                  <span className="text-xs font-bold text-destructive">
+                                                    ${pharmacy.sale_price.toLocaleString('es-CL')}
+                                                  </span>
+                                                  <span className="text-[10px] text-muted-foreground line-through">
+                                                    ${(pharmacy.regular_price || pharmacy.price).toLocaleString('es-CL')}
+                                                  </span>
+                                                </div>
+                                                <Badge variant="destructive" className="text-[10px] px-1.5 py-0 whitespace-nowrap">
+                                                  Oferta
+                                                </Badge>
+                                              </>
+                                            ) : (
+                                              <span className={`text-xs font-medium ${isBestValue ? 'text-green-600 dark:text-green-400' : 'text-gray-700'}`}>
+                                                ${(pharmacy.regular_price || pharmacy.price).toLocaleString('es-CL')}
+                                              </span>
+                                            )}
+                                            {isBestValue && (
+                                              <Badge className="bg-green-600 hover:bg-green-700 text-[10px] px-1.5 py-0 whitespace-nowrap">
+                                                Mejor valor
+                                              </Badge>
+                                            )}
+                                            {pharmacy.last_price_update && (
+                                              <span className="text-[9px] text-muted-foreground">
+                                                Act: {new Date(pharmacy.last_price_update).toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit' })}
+                                              </span>
+                                            )}
+                                          </div>
+                                        </TableCell>
                                        <TableCell className="text-center">
                                          <Button
                                            variant={isBestValue ? "default" : "ghost"}
@@ -786,7 +841,7 @@ const Medications = () => {
                           </div>
                             
                             {isAdmin && (
-                              <div className="mt-4 flex justify-center">
+                              <div className="mt-4 flex justify-center gap-2">
                                 <Button
                                   onClick={() => setIsAddDialogOpen(true)}
                                   className="bg-primary hover:bg-primary/90"
@@ -794,6 +849,15 @@ const Medications = () => {
                                 >
                                   <Plus className="w-4 h-4 mr-2" />
                                   Agregar Medicamento
+                                </Button>
+                                <Button
+                                  onClick={handleUpdatePrices}
+                                  disabled={isUpdatingPrices}
+                                  variant="outline"
+                                  size="sm"
+                                >
+                                  <ShoppingCart className="w-4 h-4 mr-2" />
+                                  {isUpdatingPrices ? 'Actualizando...' : 'Actualizar Precios'}
                                 </Button>
                               </div>
                             )}
