@@ -519,45 +519,45 @@ const Medications = () => {
                   </CollapsibleTrigger>
                   <CollapsibleContent className="mt-4 space-y-4 grid md:grid-cols-2 gap-6">
                     <div>
-                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                      <h4 className="font-semibold text-base mb-2 flex items-center gap-2">
                         <Pill className="h-4 w-4 text-primary" />
                         Farmacodinamia
                       </h4>
-                      <p className="text-xs text-muted-foreground">{medications[selectedMed].pharmacodynamics}</p>
+                      <p className="text-sm text-muted-foreground">{medications[selectedMed].pharmacodynamics}</p>
                     </div>
 
                     <div>
-                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                      <h4 className="font-semibold text-base mb-2 flex items-center gap-2">
                         <Clock className="h-4 w-4 text-primary" />
                         Farmacocinética
                       </h4>
-                      <p className="text-xs text-muted-foreground">{medications[selectedMed].pharmacokinetics}</p>
+                      <p className="text-sm text-muted-foreground">{medications[selectedMed].pharmacokinetics}</p>
                     </div>
 
                     <div>
-                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                      <h4 className="font-semibold text-base mb-2 flex items-center gap-2">
                         <Heart className="h-4 w-4 text-primary" />
                         Indicación terapéutica
                       </h4>
-                      <p className="text-xs text-muted-foreground">{medications[selectedMed].therapeuticIndication}</p>
+                      <p className="text-sm text-muted-foreground">{medications[selectedMed].therapeuticIndication}</p>
                     </div>
 
                     <div>
-                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                      <h4 className="font-semibold text-base mb-2 flex items-center gap-2">
                         <AlertCircle className="h-4 w-4 text-primary" />
                         Vías de administración
                       </h4>
-                      <p className="text-xs text-muted-foreground">{medications[selectedMed].administrationRoutes}</p>
+                      <p className="text-sm text-muted-foreground">{medications[selectedMed].administrationRoutes}</p>
                     </div>
 
                     <div>
-                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                      <h4 className="font-semibold text-base mb-2 flex items-center gap-2">
                         <AlertCircle className="h-4 w-4 text-destructive" />
                         Reacciones adversas a medicamentos
                       </h4>
                       <ul className="space-y-1">
                         {medications[selectedMed].adverseReactions.map((reaction, i) => (
-                          <li key={i} className="text-xs text-muted-foreground">
+                          <li key={i} className="text-sm text-muted-foreground">
                             • {reaction}
                           </li>
                         ))}
@@ -565,13 +565,13 @@ const Medications = () => {
                     </div>
 
                     <div>
-                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                      <h4 className="font-semibold text-base mb-2 flex items-center gap-2">
                         <AlertCircle className="h-4 w-4 text-amber-600" />
                         Interacciones con otros medicamentos y/o alimentos
                       </h4>
                       <ul className="space-y-1">
                         {medications[selectedMed].drugInteractions.map((interaction, i) => (
-                          <li key={i} className="text-xs text-muted-foreground">
+                          <li key={i} className="text-sm text-muted-foreground">
                             • {interaction}
                           </li>
                         ))}
@@ -579,13 +579,13 @@ const Medications = () => {
                     </div>
 
                     <div>
-                      <h4 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                      <h4 className="font-semibold text-base mb-2 flex items-center gap-2">
                         <AlertCircle className="h-4 w-4 text-red-600" />
                         Interacciones con otras patologías
                       </h4>
                       <ul className="space-y-1">
                         {medications[selectedMed].pathologyInteractions.map((interaction, i) => (
-                          <li key={i} className="text-xs text-muted-foreground">
+                          <li key={i} className="text-sm text-muted-foreground">
                             • {interaction}
                           </li>
                         ))}
