@@ -1,82 +1,63 @@
-
 import { Clock, AlertTriangle, Stethoscope, FileText, MapPin, Calendar } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-
 const WhenToConsult = () => {
-  const urgentSigns = [
-    "Bulto nuevo en el cuello que crece rápidamente",
-    "Dificultad para respirar o tragar",
-    "Ronquera persistente sin causa aparente",
-    "Palpitaciones muy fuertes o irregulares",
-    "Pérdida de peso muy rápida (más de 5kg en un mes)"
-  ];
-
-  const consultSigns = [
-    "Fatiga que no mejora con descanso",
-    "Cambios de peso sin modificar dieta",
-    "Problemas de concentración o memoria",
-    "Cambios en el estado de ánimo",
-    "Sensibilidad extrema al frío o calor",
-    "Caída excesiva del cabello",
-    "Períodos menstruales irregulares"
-  ];
-
-  const examTypes = [
-    {
-      name: "TSH (Hormona estimulante)",
-      description: "El examen más importante para detectar problemas",
-      icon: <Stethoscope className="h-6 w-6 text-blue-500" />,
-      preparation: "En ayunas de 8-12 horas"
-    },
-    {
-      name: "T4 Libre",
-      description: "Mide la hormona tiroidea activa en sangre",
-      icon: <FileText className="h-6 w-6 text-green-500" />,
-      preparation: "En ayunas de 8-12 horas"
-    },
-    {
-      name: "T3 Libre",
-      description: "Otra hormona importante para el diagnóstico",
-      icon: <FileText className="h-6 w-6 text-purple-500" />,
-      preparation: "En ayunas de 8-12 horas"
-    },
-    {
-      name: "Ecografía tiroidea",
-      description: "Para ver la forma y detectar nódulos",
-      icon: <MapPin className="h-6 w-6 text-orange-500" />,
-      preparation: "No requiere preparación especial"
-    }
-  ];
-
+  const urgentSigns = ["Bulto nuevo en el cuello que crece rápidamente", "Dificultad para respirar o tragar", "Ronquera persistente sin causa aparente", "Palpitaciones muy fuertes o irregulares", "Pérdida de peso muy rápida (más de 5kg en un mes)"];
+  const consultSigns = ["Fatiga que no mejora con descanso", "Cambios de peso sin modificar dieta", "Problemas de concentración o memoria", "Cambios en el estado de ánimo", "Sensibilidad extrema al frío o calor", "Caída excesiva del cabello", "Períodos menstruales irregulares"];
+  const examTypes = [{
+    name: "TSH (Hormona estimulante)",
+    description: "El examen más importante para detectar problemas",
+    icon: <Stethoscope className="h-6 w-6 text-blue-500" />,
+    preparation: "En ayunas de 8-12 horas"
+  }, {
+    name: "T4 Libre",
+    description: "Mide la hormona tiroidea activa en sangre",
+    icon: <FileText className="h-6 w-6 text-green-500" />,
+    preparation: "En ayunas de 8-12 horas"
+  }, {
+    name: "T3 Libre",
+    description: "Otra hormona importante para el diagnóstico",
+    icon: <FileText className="h-6 w-6 text-purple-500" />,
+    preparation: "En ayunas de 8-12 horas"
+  }, {
+    name: "Ecografía tiroidea",
+    description: "Para ver la forma y detectar nódulos",
+    icon: <MapPin className="h-6 w-6 text-orange-500" />,
+    preparation: "No requiere preparación especial"
+  }];
   const scrollToAgenda = () => {
     const element = document.getElementById('agendar');
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({
+        behavior: 'smooth'
+      });
     } else {
       console.error('Elemento #agendar no encontrado');
     }
   };
-
   const scrollToPublico = () => {
     const element = document.getElementById('agendar');
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
       // Opcional: hacer scroll adicional al sistema público después
       setTimeout(() => {
         const publicoElement = document.getElementById('sistema-publico');
         if (publicoElement) {
-          publicoElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          publicoElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
         }
       }, 500);
     } else {
       console.error('Elemento #agendar no encontrado');
     }
   };
-
-  return (
-    <section id="consultar" className="py-20 bg-gradient-to-br from-green-50 to-blue-50">
+  return <section id="consultar" className="py-20 bg-gradient-to-br from-green-50 to-blue-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -104,12 +85,10 @@ const WhenToConsult = () => {
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
-                {urgentSigns.map((sign, index) => (
-                  <li key={index} className="flex items-start space-x-3">
+                {urgentSigns.map((sign, index) => <li key={index} className="flex items-start space-x-3">
                     <span className="text-red-500 text-lg font-bold">•</span>
                     <span className="text-gray-700">{sign}</span>
-                  </li>
-                ))}
+                  </li>)}
               </ul>
               <Button className="w-full mt-6 bg-red-600 hover:bg-red-700" onClick={scrollToPublico}>
                 <Calendar className="mr-2 h-4 w-4" />
@@ -133,12 +112,10 @@ const WhenToConsult = () => {
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
-                {consultSigns.map((sign, index) => (
-                  <li key={index} className="flex items-start space-x-3">
+                {consultSigns.map((sign, index) => <li key={index} className="flex items-start space-x-3">
                     <span className="text-blue-500 text-lg font-bold">•</span>
                     <span className="text-gray-700">{sign}</span>
-                  </li>
-                ))}
+                  </li>)}
               </ul>
               <Button className="w-full mt-6 bg-blue-600 hover:bg-blue-700" onClick={scrollToAgenda}>
                 <Calendar className="mr-2 h-4 w-4" />
@@ -154,8 +131,7 @@ const WhenToConsult = () => {
             Exámenes que podría pedirte el médico
           </h3>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
-            {examTypes.map((exam, index) => (
-              <Card key={index} className="h-full flex flex-col text-center hover:shadow-lg transition-shadow">
+            {examTypes.map((exam, index) => <Card key={index} className="h-full flex flex-col text-center hover:shadow-lg transition-shadow">
                 <CardHeader className="flex-1">
                   <div className="mx-auto mb-2">
                     {exam.icon}
@@ -170,8 +146,7 @@ const WhenToConsult = () => {
                     {exam.preparation}
                   </Badge>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
 
@@ -198,9 +173,7 @@ const WhenToConsult = () => {
                   <span className="text-white font-bold">2</span>
                 </div>
                 <h4 className="font-semibold mb-2">Examen físico</h4>
-                <p className="text-sm text-gray-600">
-                  Revisará tu cuello, palparA la tiroides y medirá tu pulso y presión
-                </p>
+                <p className="text-sm text-gray-600">Revisará tu cuello, palpará la tiroides y medirá tu pulso y presión</p>
               </div>
               <div className="text-center">
                 <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -215,8 +188,6 @@ const WhenToConsult = () => {
           </CardContent>
         </Card>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default WhenToConsult;
