@@ -127,12 +127,12 @@ const HeroSection = () => {
         return;
       }
 
-      // Validar tamaño (máximo 200MB para evitar problemas)
-      const maxSize = 200 * 1024 * 1024; // 200MB
+      // Validar tamaño (máximo 500MB)
+      const maxSize = 500 * 1024 * 1024; // 500MB
       if (file.size > maxSize) {
         toast({
           title: "Archivo demasiado grande",
-          description: "El video no puede superar los 200MB",
+          description: "El video no puede superar los 500MB",
           variant: "destructive"
         });
         return;
@@ -162,18 +162,43 @@ const HeroSection = () => {
       const filePath = `videos/${fileName}`;
       console.log('📁 Subiendo archivo:', filePath);
 
-      // Subir archivo a Supabase Storage (usando el nuevo bucket)
-      const {
-        data: uploadData,
-        error: uploadError
-      } = await supabase.storage.from('explanatory-videos').upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
+      // Crear una promesa para manejar el progreso de subida
+      const uploadPromise = new Promise((resolve, reject) => {
+        const chunkSize = 6 * 1024 * 1024; // 6MB chunks para archivos grandes
+        let uploadedBytes = 0;
+        
+        // Simular progreso mientras se sube
+        const progressInterval = setInterval(() => {
+          if (uploadedBytes < file.size * 0.9) {
+            uploadedBytes += chunkSize;
+            const progress = Math.min(Math.floor((uploadedBytes / file.size) * 100), 90);
+            setUploadProgress(progress);
+          }
+        }, 500);
+
+        // Subir archivo a Supabase Storage
+        supabase.storage
+          .from('explanatory-videos')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          })
+          .then(({ data, error }) => {
+            clearInterval(progressInterval);
+            if (error) {
+              reject(error);
+            } else {
+              setUploadProgress(100);
+              resolve(data);
+            }
+          })
+          .catch(error => {
+            clearInterval(progressInterval);
+            reject(error);
+          });
       });
-      if (uploadError) {
-        console.error('❌ Error subiendo archivo:', uploadError);
-        throw uploadError;
-      }
+
+      const uploadData = await uploadPromise;
       console.log('✅ Archivo subido exitosamente');
 
       // Usar función RPC para guardar metadatos
@@ -204,9 +229,10 @@ const HeroSection = () => {
       await loadVideosFromSupabase();
     } catch (error: any) {
       console.error('❌ Error en proceso de subida:', error);
+      const errorMessage = error?.message || 'Error desconocido';
       toast({
         title: "Error subiendo video",
-        description: "No se pudo subir el video. Asegúrate de que el archivo no supere los 200MB.",
+        description: `No se pudo subir el video: ${errorMessage}. Verifica tu conexión e intenta nuevamente.`,
         variant: "destructive"
       });
     } finally {
