@@ -14,8 +14,10 @@ const HeroSection = () => {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [showDescriptionForm, setShowDescriptionForm] = useState(false);
+  const [showUrlForm, setShowUrlForm] = useState(false);
   const [pendingVideoFile, setPendingVideoFile] = useState<File | null>(null);
   const [videoDescription, setVideoDescription] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const {
@@ -127,12 +129,12 @@ const HeroSection = () => {
         return;
       }
 
-      // Validar tamaño (máximo 500MB)
-      const maxSize = 500 * 1024 * 1024; // 500MB
+      // Validar tamaño (máximo 50MB para plan gratuito de Supabase)
+      const maxSize = 50 * 1024 * 1024; // 50MB
       if (file.size > maxSize) {
         toast({
           title: "Archivo demasiado grande",
-          description: "El video no puede superar los 500MB",
+          description: "El video no puede superar los 50MB. Para videos más grandes, usa la opción de enlace externo (YouTube/Drive).",
           variant: "destructive"
         });
         return;
@@ -267,6 +269,63 @@ const HeroSection = () => {
     setPendingVideoFile(null);
     setVideoDescription('');
   };
+
+  const handleUrlSubmit = async () => {
+    if (!videoUrl.trim()) {
+      toast({
+        title: "URL requerida",
+        description: "Por favor ingresa una URL válida",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!user) {
+      toast({
+        title: "Error de autenticación",
+        description: "Debes estar autenticado para agregar videos",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // Guardar directamente en la base de datos con URL externa
+      const { data: dbData, error: dbError } = await supabase.rpc('insert_explanatory_video', {
+        p_title: videoDescription.trim() || 'Video externo',
+        p_description: videoDescription.trim() || null,
+        p_file_path: videoUrl, // Guardar la URL como file_path
+        p_file_name: 'external_video',
+        p_file_size: 0,
+        p_uploaded_by: user.id
+      });
+
+      if (dbError) {
+        console.error('❌ Error guardando video externo:', dbError);
+        throw dbError;
+      }
+
+      toast({
+        title: "¡Video agregado exitosamente!",
+        description: "El video externo está ahora disponible"
+      });
+
+      await loadVideosFromSupabase();
+      setShowUrlForm(false);
+      setVideoUrl('');
+      setVideoDescription('');
+    } catch (error: any) {
+      console.error('❌ Error agregando video externo:', error);
+      toast({
+        title: "Error agregando video",
+        description: error.message || "No se pudo agregar el video externo",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
   const removeVideo = async (videoId: string) => {
     try {
       console.log('🗑️ Eliminando video:', videoId);
@@ -318,25 +377,114 @@ const HeroSection = () => {
       });
     }
   };
+  const getVideoEmbedUrl = (url: string) => {
+    // Convertir URLs de YouTube a formato embed
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      const videoId = url.includes('youtu.be/') 
+        ? url.split('youtu.be/')[1]?.split('?')[0]
+        : url.split('v=')[1]?.split('&')[0];
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+    }
+    // Google Drive
+    if (url.includes('drive.google.com')) {
+      const fileId = url.match(/[-\w]{25,}/)?.[0];
+      return fileId ? `https://drive.google.com/file/d/${fileId}/preview` : url;
+    }
+    return url;
+  };
+
+  const isExternalVideo = (url: string) => {
+    return url.includes('youtube.com') || url.includes('youtu.be') || url.includes('drive.google.com') || url.startsWith('http');
+  };
+
   const handleWatchVideo = (videoIndex: number) => {
     const videoToShow = videos[videoIndex];
     if (videoToShow && videoToShow.url) {
       const videoModal = document.createElement('div');
-      videoModal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
-      videoModal.innerHTML = `
-        <div class="relative max-w-4xl w-full mx-4">
-          <video controls autoplay class="w-full rounded-lg">
-            <source src="${videoToShow.url}" type="video/mp4">
-            Tu navegador no soporta el elemento video.
-          </video>
-          <button class="absolute top-4 right-4 text-white text-2xl font-bold" onclick="this.parentElement.parentElement.remove()">×</button>
-        </div>
-      `;
+      videoModal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4';
+      
+      if (isExternalVideo(videoToShow.url)) {
+        const embedUrl = getVideoEmbedUrl(videoToShow.url);
+        videoModal.innerHTML = `
+          <div class="relative max-w-4xl w-full mx-4">
+            <iframe src="${embedUrl}" class="w-full aspect-video rounded-lg" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <button class="absolute -top-10 right-0 text-white text-2xl font-bold hover:text-gray-300" onclick="this.parentElement.parentElement.remove()">✕</button>
+          </div>
+        `;
+      } else {
+        videoModal.innerHTML = `
+          <div class="relative max-w-4xl w-full mx-4">
+            <video controls autoplay class="w-full rounded-lg">
+              <source src="${videoToShow.url}" type="video/mp4">
+              Tu navegador no soporta el elemento video.
+            </video>
+            <button class="absolute -top-10 right-0 text-white text-2xl font-bold hover:text-gray-300" onclick="this.parentElement.parentElement.remove()">✕</button>
+          </div>
+        `;
+      }
       document.body.appendChild(videoModal);
     }
   };
   return <section id="inicio" className="py-20 lg:py-32">
       <div className="container mx-auto px-4">
+        {/* Formulario de URL de video externo */}
+        {showUrlForm && <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+              <h3 className="text-lg font-semibold mb-4">Agregar video desde enlace externo</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    URL del video (YouTube o Google Drive) *
+                  </label>
+                  <Input 
+                    type="url"
+                    value={videoUrl} 
+                    onChange={e => setVideoUrl(e.target.value)} 
+                    placeholder="https://youtube.com/watch?v=..." 
+                    className="w-full" 
+                    disabled={isUploading}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Pega el enlace de YouTube o Google Drive
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Descripción (opcional)
+                  </label>
+                  <Textarea 
+                    value={videoDescription} 
+                    onChange={e => setVideoDescription(e.target.value)} 
+                    placeholder="Escribe una breve descripción del video..." 
+                    className="w-full" 
+                    rows={3} 
+                    disabled={isUploading}
+                  />
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setShowUrlForm(false);
+                      setVideoUrl('');
+                      setVideoDescription('');
+                    }} 
+                    disabled={isUploading}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button 
+                    onClick={handleUrlSubmit} 
+                    className="bg-blue-600 hover:bg-blue-700" 
+                    disabled={isUploading || !videoUrl.trim()}
+                  >
+                    {isUploading ? 'Guardando...' : 'Guardar Video'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>}
+
         {/* Formulario de descripción de video */}
         {showDescriptionForm && <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
@@ -399,11 +547,17 @@ const HeroSection = () => {
                 Hacer autotest <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               
-              {isAdmin ? <div className="relative">
-                  <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-2 hover:bg-blue-50 w-full" onClick={() => document.getElementById('video-upload')?.click()} disabled={isUploading}>
-                    <Upload className="mr-2 h-5 w-5" />
-                    {isUploading ? 'Subiendo...' : 'Agregar video explicativo'}
-                  </Button>
+              {isAdmin ? <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-2 hover:bg-blue-50 flex-1" onClick={() => document.getElementById('video-upload')?.click()} disabled={isUploading}>
+                      <Upload className="mr-2 h-5 w-5" />
+                      {isUploading ? 'Subiendo...' : 'Subir archivo (máx 50MB)'}
+                    </Button>
+                    <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-2 hover:bg-green-50 flex-1" onClick={() => setShowUrlForm(true)} disabled={isUploading}>
+                      <PlayCircle className="mr-2 h-5 w-5" />
+                      Enlace externo
+                    </Button>
+                  </div>
                   <input id="video-upload" type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" disabled={isUploading} />
                 </div> : videos.length > 0 && <div className="w-full max-w-xs mx-auto sm:max-w-md sm:mx-0 flex-1">
                     <Carousel setApi={setApi} className="w-full" opts={{
@@ -413,9 +567,15 @@ const HeroSection = () => {
                         {videos.map((video, index) => <CarouselItem key={video.id}>
                             <div className="p-1">
                               <div className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer group shadow-lg" onClick={() => handleWatchVideo(index)}>
-                                <video src={video.url} className="w-full h-full object-cover bg-black" playsInline muted preload="metadata">
-                                  Tu navegador no soporta videos.
-                                </video>
+                                {isExternalVideo(video.url || '') ? (
+                                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                                    <PlayCircle className="h-16 w-16 text-white/90 drop-shadow-lg" />
+                                  </div>
+                                ) : (
+                                  <video src={video.url} className="w-full h-full object-cover bg-black" playsInline muted preload="metadata">
+                                    Tu navegador no soporta videos.
+                                  </video>
+                                )}
                                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                                   <PlayCircle className="h-12 w-12 text-white/90 drop-shadow-lg transform transition-transform group-hover:scale-110" />
                                 </div>
