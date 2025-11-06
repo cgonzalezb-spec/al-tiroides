@@ -146,7 +146,7 @@ const HeroSection = () => {
       setVideoDescription('');
     }
   };
-  const uploadToSupabase = async (file: File, description: string) => {
+  const uploadToSupabase = async (file: File, description: string, thumbnailUrlParam?: string) => {
     if (!user) {
       toast({
         title: "Error de autenticación",
@@ -227,7 +227,8 @@ const HeroSection = () => {
         p_file_path: filePath,
         p_file_name: file.name,
         p_file_size: file.size,
-        p_uploaded_by: user.id
+        p_uploaded_by: user.id,
+        p_thumbnail_url: thumbnailUrlParam?.trim() || null
       });
       if (dbError) {
         console.error('❌ Error guardando metadatos:', dbError);
@@ -258,18 +259,20 @@ const HeroSection = () => {
   };
   const handleDescriptionSubmit = async () => {
     if (pendingVideoFile) {
-      await uploadToSupabase(pendingVideoFile, videoDescription);
+      await uploadToSupabase(pendingVideoFile, videoDescription, thumbnailUrl);
 
       // Limpiar formulario
       setShowDescriptionForm(false);
       setPendingVideoFile(null);
       setVideoDescription('');
+      setThumbnailUrl('');
     }
   };
   const handleDescriptionCancel = () => {
     setShowDescriptionForm(false);
     setPendingVideoFile(null);
     setVideoDescription('');
+    setThumbnailUrl('');
   };
 
   const handleUrlSubmit = async () => {
@@ -540,6 +543,22 @@ const HeroSection = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
+                    URL de miniatura (opcional)
+                  </label>
+                  <Input 
+                    type="url"
+                    value={thumbnailUrl} 
+                    onChange={e => setThumbnailUrl(e.target.value)} 
+                    placeholder="https://..." 
+                    className="w-full" 
+                    disabled={isUploading}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Miniatura personalizada para el carrusel
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
                     Descripción (opcional)
                   </label>
                   <Textarea value={videoDescription} onChange={e => setVideoDescription(e.target.value)} placeholder="Escribe una breve descripción del video..." className="w-full" rows={3} disabled={isUploading} />
@@ -607,7 +626,7 @@ const HeroSection = () => {
                          {videos.map((video, index) => <CarouselItem key={video.id}>
                             <div className="p-1">
                               <div className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer group shadow-lg" onClick={() => handleWatchVideo(index)}>
-                                {isExternalVideo(video.url || '') && video.thumbnail_url ? (
+                                {video.thumbnail_url ? (
                                   <img 
                                     src={video.thumbnail_url} 
                                     alt={video.title || 'Video thumbnail'} 
