@@ -110,6 +110,39 @@ export type Database = {
         }
         Relationships: []
       }
+      explanatory_videos: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          title: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          title?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          title?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       medications: {
         Row: {
           created_at: string
