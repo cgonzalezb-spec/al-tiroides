@@ -143,6 +143,7 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean
+          is_bioequivalent: boolean
           laboratory: string | null
           last_price_update: string | null
           medication_name: string
@@ -161,6 +162,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          is_bioequivalent?: boolean
           laboratory?: string | null
           last_price_update?: string | null
           medication_name: string
@@ -179,6 +181,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          is_bioequivalent?: boolean
           laboratory?: string | null
           last_price_update?: string | null
           medication_name?: string

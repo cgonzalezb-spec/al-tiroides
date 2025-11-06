@@ -30,7 +30,16 @@ interface PharmacyLink {
   commercial_name?: string;
   laboratory?: string;
   mg_per_tablet?: string;
+  is_bioequivalent?: boolean;
 }
+
+// Logos de farmacias chilenas
+const pharmacyLogos: Record<string, string> = {
+  "Cruz Verde": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=100&h=100&fit=crop",
+  "Salcobrand": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=100&h=100&fit=crop",
+  "Farmacias Ahumada": "https://images.unsplash.com/photo-1585435557343-3b092031a831?w=100&h=100&fit=crop",
+  "Dr. Simi": "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=100&h=100&fit=crop"
+};
 
 interface EditFormData {
   id: string;
@@ -43,6 +52,7 @@ interface EditFormData {
   commercial_name: string;
   laboratory: string;
   mg_per_tablet: string;
+  is_bioequivalent: boolean;
 }
 
 const Medications = () => {
@@ -51,6 +61,8 @@ const Medications = () => {
   const [selectedMed, setSelectedMed] = useState<number | null>(null);
   const [pharmacyData, setPharmacyData] = useState<Record<string, PharmacyLink[]>>({});
   const [selectedDose, setSelectedDose] = useState<Record<number, string>>({});
+  const [showAllPrices, setShowAllPrices] = useState<Record<string, boolean>>({});
+  const [filterBioequivalent, setFilterBioequivalent] = useState<Record<number, boolean>>({});
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<EditFormData | null>(null);
@@ -65,6 +77,7 @@ const Medications = () => {
     commercial_name: '',
     laboratory: '',
     mg_per_tablet: '',
+    is_bioequivalent: false,
   });
   const { toast } = useToast();
   const { isAdmin } = useRole();
@@ -103,6 +116,7 @@ const Medications = () => {
         commercial_name: '',
         laboratory: '',
         mg_per_tablet: '',
+        is_bioequivalent: false,
       });
       fetchPharmacyLinks();
       queryClient.invalidateQueries({ queryKey: ['pharmacy-links'] });
@@ -204,7 +218,8 @@ const Medications = () => {
           pharmacy_name: link.pharmacy_name,
           commercial_name: link.commercial_name,
           laboratory: link.laboratory,
-          mg_per_tablet: link.mg_per_tablet
+          mg_per_tablet: link.mg_per_tablet,
+          is_bioequivalent: link.is_bioequivalent || false,
         });
       });
       setPharmacyData(grouped);
@@ -228,6 +243,7 @@ const Medications = () => {
       commercial_name: link.commercial_name || '',
       laboratory: link.laboratory || '',
       mg_per_tablet: link.mg_per_tablet || '',
+      is_bioequivalent: link.is_bioequivalent || false,
     });
     setIsEditDialogOpen(true);
   };
@@ -679,12 +695,34 @@ const Medications = () => {
                                 </Select>
                               </div>
                             </div>
-                          )}
+                           )}
+
+                           {/* Filtro de bioequivalente */}
+                           <div className="mb-4 p-4 bg-muted/30 rounded-lg border">
+                             <div className="flex items-center gap-2">
+                               <input
+                                 type="checkbox"
+                                 id={`bioequivalent-${selectedMed}`}
+                                 checked={filterBioequivalent[selectedMed] || false}
+                                 onChange={(e) => setFilterBioequivalent(prev => ({ ...prev, [selectedMed]: e.target.checked }))}
+                                 className="h-4 w-4 rounded border-gray-300"
+                               />
+                               <Label htmlFor={`bioequivalent-${selectedMed}`} className="text-sm font-medium cursor-pointer">
+                                 Mostrar solo bioequivalentes
+                               </Label>
+                             </div>
+                           </div>
                           
-                          <div className="space-y-4">
+                          <div className="space-y-6">
                             {(() => {
+                              // Filtrar por bioequivalente si está activado
+                              let linksToShow = sortedLinks;
+                              if (filterBioequivalent[selectedMed]) {
+                                linksToShow = sortedLinks.filter(link => link.is_bioequivalent);
+                              }
+
                               // Agrupar por farmacia
-                              const groupedByPharmacy = sortedLinks.reduce((acc, link) => {
+                              const groupedByPharmacy = linksToShow.reduce((acc, link) => {
                                 const pharmacyName = link.name;
                                 if (!acc[pharmacyName]) {
                                   acc[pharmacyName] = [];
@@ -693,21 +731,36 @@ const Medications = () => {
                                 return acc;
                               }, {} as Record<string, typeof sortedLinks>);
                               
-                              return Object.entries(groupedByPharmacy).map(([pharmacyName, items]) => (
-                                <Card key={pharmacyName} className="overflow-hidden">
-                                  <CardHeader className="bg-muted/30 pb-3">
-                                    <div className="flex items-center justify-between">
-                                      <CardTitle className="text-base font-semibold">
-                                        {pharmacyName}
-                                      </CardTitle>
-                                      <span className="text-xs text-muted-foreground">
-                                        {items.length} {items.length === 1 ? 'opción' : 'opciones'}
-                                      </span>
-                                    </div>
-                                  </CardHeader>
-                                  <CardContent className="p-0">
-                                    <div className="divide-y">
-                                      {items.map((pharmacy, i) => {
+                              return Object.entries(groupedByPharmacy).map(([pharmacyName, items]) => {
+                                const pharmacyKey = `${selectedMed}-${pharmacyName}`;
+                                const showAll = showAllPrices[pharmacyKey] || false;
+                                const displayItems = showAll ? items : items.slice(0, 3);
+                                const hasMore = items.length > 3;
+
+                                return (
+                                  <Card key={pharmacyName} className="overflow-hidden border-2">
+                                    <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 pb-4">
+                                      <div className="flex items-center gap-4">
+                                        <div className="w-16 h-16 rounded-full overflow-hidden bg-white shadow-md flex-shrink-0">
+                                          <img 
+                                            src={pharmacyLogos[pharmacyName] || "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=100&h=100&fit=crop"} 
+                                            alt={pharmacyName}
+                                            className="w-full h-full object-cover"
+                                          />
+                                        </div>
+                                        <div className="flex-1">
+                                          <CardTitle className="text-xl font-bold text-primary">
+                                            {pharmacyName}
+                                          </CardTitle>
+                                          <p className="text-sm text-muted-foreground mt-1">
+                                            {items.length} {items.length === 1 ? 'opción disponible' : 'opciones disponibles'}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </CardHeader>
+                                    <CardContent className="p-0">
+                                      <div className="divide-y">
+                                        {displayItems.map((pharmacy, i) => {
                                         const isBestValue = minPricePerUnit && pharmacy.pricePerUnit 
                                           ? pharmacy.pricePerUnit === minPricePerUnit 
                                           : false;
@@ -715,109 +768,129 @@ const Medications = () => {
                                           ? Math.round(pharmacy.price / pharmacy.quantity)
                                           : null;
                                         
-                                        return (
-                                          <div 
-                                            key={i}
-                                            className={`p-4 ${isBestValue ? 'bg-accent/30' : ''}`}
-                                          >
-                                            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                                              {/* Info del producto */}
-                                              <div className="flex-1 space-y-2">
-                                                <div>
-                                                   <h4 className="font-semibold text-sm">
-                                                     {pharmacy.commercial_name || pharmacy.brand}
-                                                     {isBestValue && (
-                                                       <Badge className="ml-2 text-[10px] px-2 py-0.5 bg-green-600 text-white hover:bg-green-700 border-transparent">
-                                                         Mejor precio
-                                                       </Badge>
-                                                     )}
-                                                   </h4>
-                                                  {pharmacy.laboratory && (
-                                                    <p className="text-xs text-muted-foreground">
-                                                      {pharmacy.laboratory}
-                                                    </p>
-                                                  )}
-                                                </div>
-                                                
-                                                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                                                  {pharmacy.mg_per_tablet && (
-                                                    <span>{pharmacy.mg_per_tablet}</span>
-                                                  )}
-                                                  {pharmacy.mg_per_tablet && pharmacy.quantity && (
-                                                    <span>•</span>
-                                                  )}
-                                                  {pharmacy.quantity && (
-                                                    <span>{pharmacy.quantity} comprimidos</span>
-                                                  )}
-                                                </div>
-                                              </div>
-                                              
-                                              {/* Precios y acciones */}
-                                              <div className="flex flex-col md:items-end gap-3">
-                                                <div className="space-y-1">
-                                                  <div className="text-2xl font-bold">
-                                                    ${pharmacy.price.toLocaleString('es-CL')}
+                                          return (
+                                            <div 
+                                              key={i}
+                                              className={`p-5 ${isBestValue ? 'bg-green-50 dark:bg-green-950/20 border-l-4 border-green-500' : ''} hover:bg-muted/50 transition-colors`}
+                                            >
+                                              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                                                {/* Info del producto */}
+                                                <div className="flex-1 space-y-2">
+                                                  <div>
+                                                     <div className="flex items-center gap-2 flex-wrap">
+                                                       <h4 className="font-semibold text-base">
+                                                         {pharmacy.commercial_name || pharmacy.brand}
+                                                       </h4>
+                                                       {isBestValue && (
+                                                         <Badge className="text-xs px-2 py-0.5 bg-green-600 text-white hover:bg-green-700 border-transparent">
+                                                           🏆 Mejor precio
+                                                         </Badge>
+                                                       )}
+                                                       {pharmacy.is_bioequivalent && (
+                                                         <Badge variant="outline" className="text-xs px-2 py-0.5 border-blue-500 text-blue-700 dark:text-blue-400">
+                                                           Bioequivalente
+                                                         </Badge>
+                                                       )}
+                                                     </div>
+                                                    {pharmacy.laboratory && (
+                                                      <p className="text-sm text-muted-foreground mt-1">
+                                                        {pharmacy.laboratory}
+                                                      </p>
+                                                    )}
                                                   </div>
-                                                  {pricePerPill && (
-                                                    <div className="text-xs text-muted-foreground">
-                                                      ${pricePerPill.toLocaleString('es-CL')} por comprimido
-                                                    </div>
-                                                  )}
-                                                </div>
-                                                
-                                                <div className="flex gap-2">
-                                                  <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    asChild
-                                                  >
-                                                    <a 
-                                                      href={pharmacy.url} 
-                                                      target="_blank" 
-                                                      rel="noopener noreferrer"
-                                                      className="flex items-center gap-1"
-                                                    >
-                                                      Ver tienda
-                                                      <ExternalLink className="h-3 w-3" />
-                                                    </a>
-                                                  </Button>
                                                   
-                                                  {isAdmin && (
-                                                    <div className="flex gap-1">
-                                                      <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-9 px-2"
-                                                        onClick={() => handleEditLink(pharmacy)}
-                                                        disabled={!pharmacy.id}
-                                                      >
-                                                        <Pencil className="h-4 w-4" />
-                                                      </Button>
-                                                      <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-9 px-2 text-destructive hover:text-destructive"
-                                                        onClick={() => {
-                                                          if (pharmacy.id && confirm('¿Estás seguro de eliminar este medicamento?')) {
-                                                            deleteLinkMutation.mutate(pharmacy.id);
-                                                          }
-                                                        }}
-                                                        disabled={!pharmacy.id}
-                                                      >
-                                                        <Trash2 className="h-4 w-4" />
-                                                      </Button>
+                                                  <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                                                    {pharmacy.mg_per_tablet && (
+                                                      <span className="font-medium">{pharmacy.mg_per_tablet}</span>
+                                                    )}
+                                                    {pharmacy.mg_per_tablet && pharmacy.quantity && (
+                                                      <span>•</span>
+                                                    )}
+                                                    {pharmacy.quantity && (
+                                                      <span>{pharmacy.quantity} comprimidos</span>
+                                                    )}
+                                                  </div>
+                                                </div>
+                                              
+                                                {/* Precios y acciones */}
+                                                <div className="flex flex-col md:items-end gap-3">
+                                                  <div className="space-y-1">
+                                                    <div className="text-3xl font-bold text-primary">
+                                                      ${pharmacy.price.toLocaleString('es-CL')}
                                                     </div>
-                                                  )}
+                                                    {pricePerPill && (
+                                                      <div className="text-sm text-muted-foreground">
+                                                        ${pricePerPill.toLocaleString('es-CL')} por comprimido
+                                                      </div>
+                                                    )}
+                                                  </div>
+                                                  
+                                                  <div className="flex gap-2">
+                                                    <Button
+                                                      variant="default"
+                                                      size="sm"
+                                                      asChild
+                                                      className="bg-primary hover:bg-primary/90"
+                                                    >
+                                                      <a 
+                                                        href={pharmacy.url} 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-2"
+                                                      >
+                                                        Ver en tienda
+                                                        <ExternalLink className="h-4 w-4" />
+                                                      </a>
+                                                    </Button>
+                                                    
+                                                    {isAdmin && (
+                                                      <div className="flex gap-1">
+                                                        <Button
+                                                          variant="ghost"
+                                                          size="sm"
+                                                          className="h-9 px-2"
+                                                          onClick={() => handleEditLink(pharmacy)}
+                                                          disabled={!pharmacy.id}
+                                                        >
+                                                          <Pencil className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                          variant="ghost"
+                                                          size="sm"
+                                                          className="h-9 px-2 text-destructive hover:text-destructive"
+                                                          onClick={() => {
+                                                            if (pharmacy.id && confirm('¿Estás seguro de eliminar este medicamento?')) {
+                                                              deleteLinkMutation.mutate(pharmacy.id);
+                                                            }
+                                                          }}
+                                                          disabled={!pharmacy.id}
+                                                        >
+                                                          <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                      </div>
+                                                    )}
+                                                  </div>
                                                 </div>
                                               </div>
                                             </div>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              ));
+                                          );
+                                        })}
+                                      </div>
+                                      {hasMore && (
+                                        <div className="p-4 bg-muted/20 border-t">
+                                          <Button
+                                            variant="outline"
+                                            className="w-full"
+                                            onClick={() => setShowAllPrices(prev => ({ ...prev, [pharmacyKey]: !showAll }))}
+                                          >
+                                            {showAll ? 'Ver menos opciones' : `Ver ${items.length - 3} opciones más`}
+                                          </Button>
+                                        </div>
+                                      )}
+                                    </CardContent>
+                                  </Card>
+                                );
+                              });
                             })()}
                           </div>
                             
@@ -1015,6 +1088,22 @@ const Medications = () => {
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="edit_is_bioequivalent"
+                    checked={editingLink.is_bioequivalent}
+                    onChange={(e) => setEditingLink({ ...editingLink, is_bioequivalent: e.target.checked })}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  <Label htmlFor="edit_is_bioequivalent" className="cursor-pointer">
+                    Es bioequivalente
+                  </Label>
+                </div>
+                <p className="text-xs text-gray-500">Marca si este medicamento es bioequivalente</p>
+              </div>
+
               <div className="flex justify-end gap-2 pt-4">
                 <Button
                   type="button"
@@ -1169,6 +1258,22 @@ const Medications = () => {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="add_is_bioequivalent"
+                  checked={addFormData.is_bioequivalent}
+                  onChange={(e) => setAddFormData({ ...addFormData, is_bioequivalent: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <Label htmlFor="add_is_bioequivalent" className="cursor-pointer">
+                  10. Es bioequivalente
+                </Label>
+              </div>
+              <p className="text-xs text-gray-500">Marca si este medicamento es bioequivalente</p>
+            </div>
+
             <div className="flex justify-end gap-2 pt-4">
               <Button
                 type="button"
@@ -1186,6 +1291,7 @@ const Medications = () => {
                     commercial_name: '',
                     laboratory: '',
                     mg_per_tablet: '',
+                    is_bioequivalent: false,
                   });
                 }}
               >
