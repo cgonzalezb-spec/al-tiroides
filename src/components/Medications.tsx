@@ -100,6 +100,7 @@ const Medications = () => {
           commercial_name: data.commercial_name || null,
           laboratory: data.laboratory || null,
           mg_per_tablet: data.mg_per_tablet || null,
+          is_bioequivalent: data.is_bioequivalent,
           is_active: true,
         });
       if (error) throw error;
@@ -143,6 +144,7 @@ const Medications = () => {
           commercial_name: data.commercial_name || null,
           laboratory: data.laboratory || null,
           mg_per_tablet: data.mg_per_tablet || null,
+          is_bioequivalent: data.is_bioequivalent,
         })
         .eq('id', data.id);
       if (error) throw error;
