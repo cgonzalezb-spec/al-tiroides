@@ -846,10 +846,14 @@ const Medications = () => {
 
                                 return (
                                   <Card key={pharmacyName} className="overflow-hidden border-2 shadow-lg">
-                                    <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 pb-6 pt-6">
-                                      <div className="flex flex-col items-center gap-4 text-center">
-                                        <div className="relative group">
-                                          <div className="w-24 h-24 rounded-xl overflow-hidden bg-white shadow-lg flex items-center justify-center p-3 border-2 border-primary/10">
+                                    <CardHeader className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 pb-8 pt-8 relative overflow-hidden">
+                                      {/* Background decorative pattern */}
+                                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.1),rgba(255,255,255,0))]" />
+                                      
+                                      <div className="relative flex items-center gap-6">
+                                        {/* Logo with upload functionality */}
+                                        <div className="relative group flex-shrink-0">
+                                          <div className="w-32 h-32 rounded-2xl overflow-hidden bg-white shadow-xl flex items-center justify-center p-4 border-2 border-primary/20 transition-transform group-hover:scale-105">
                                             <img 
                                               src={pharmacyLogosDb[pharmacyName] || pharmacyLogos[pharmacyName] || "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=100&h=100&fit=crop"} 
                                               alt={pharmacyName}
@@ -861,7 +865,7 @@ const Medications = () => {
                                             />
                                           </div>
                                           {isAdmin && (
-                                            <label className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-xl">
+                                            <label className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-all cursor-pointer rounded-2xl backdrop-blur-sm">
                                               <input
                                                 type="file"
                                                 accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
@@ -873,23 +877,30 @@ const Medications = () => {
                                                 disabled={uploadingLogo === pharmacyName}
                                               />
                                               {uploadingLogo === pharmacyName ? (
-                                                <div className="text-white text-xs">Subiendo...</div>
+                                                <div className="text-white text-sm font-medium">Subiendo...</div>
                                               ) : (
-                                                <div className="flex flex-col items-center gap-1">
-                                                  <Upload className="h-6 w-6 text-white" />
-                                                  <span className="text-white text-xs">Cambiar logo</span>
+                                                <div className="flex flex-col items-center gap-2">
+                                                  <Upload className="h-8 w-8 text-white" />
+                                                  <span className="text-white text-sm font-medium">Cambiar logo</span>
                                                 </div>
                                               )}
                                             </label>
                                           )}
                                         </div>
-                                        <div>
-                                          <CardTitle className="text-2xl font-bold text-primary mb-1">
+
+                                        {/* Title and info section - now taking full width */}
+                                        <div className="flex-1 min-w-0">
+                                          <CardTitle className="text-4xl md:text-5xl font-bold text-primary mb-3 tracking-tight">
                                             {pharmacyName}
                                           </CardTitle>
-                                          <p className="text-sm text-muted-foreground">
-                                            {items.length} {items.length === 1 ? 'opción disponible' : 'opciones disponibles'}
-                                          </p>
+                                          <div className="flex items-center gap-3 text-muted-foreground">
+                                            <div className="flex items-center gap-2">
+                                              <ShoppingCart className="h-5 w-5" />
+                                              <span className="text-base font-medium">
+                                                {items.length} {items.length === 1 ? 'opción disponible' : 'opciones disponibles'}
+                                              </span>
+                                            </div>
+                                          </div>
                                         </div>
                                       </div>
                                     </CardHeader>
