@@ -62,7 +62,7 @@ const Medications = () => {
   const [pharmacyData, setPharmacyData] = useState<Record<string, PharmacyLink[]>>({});
   const [selectedDose, setSelectedDose] = useState<Record<number, string>>({});
   const [showAllPrices, setShowAllPrices] = useState<Record<string, boolean>>({});
-  const [filterBioequivalent, setFilterBioequivalent] = useState<Record<number, boolean>>({});
+  const [filterBioequivalent, setFilterBioequivalent] = useState<Record<number, 'all' | 'only' | 'exclude'>>({});
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState<string | null>(null);
@@ -808,26 +808,38 @@ const Medications = () => {
 
                            {/* Filtro de bioequivalente */}
                            <div className="mb-4 p-4 bg-muted/30 rounded-lg border">
-                             <div className="flex items-center gap-2">
-                               <input
-                                 type="checkbox"
-                                 id={`bioequivalent-${selectedMed}`}
-                                 checked={filterBioequivalent[selectedMed] || false}
-                                 onChange={(e) => setFilterBioequivalent(prev => ({ ...prev, [selectedMed]: e.target.checked }))}
-                                 className="h-4 w-4 rounded border-gray-300"
-                               />
-                               <Label htmlFor={`bioequivalent-${selectedMed}`} className="text-sm font-medium cursor-pointer">
-                                 Mostrar solo bioequivalentes
+                             <div className="flex items-center gap-3">
+                               <Label className="text-sm font-medium shrink-0">
+                                 Filtrar bioequivalentes:
                                </Label>
+                               <Select
+                                 value={filterBioequivalent[selectedMed] || 'all'}
+                                 onValueChange={(value: 'all' | 'only' | 'exclude') => {
+                                   setFilterBioequivalent(prev => ({ ...prev, [selectedMed]: value }));
+                                 }}
+                               >
+                                 <SelectTrigger className="w-full max-w-xs">
+                                   <SelectValue placeholder="Todos" />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                   <SelectItem value="all">Todos los medicamentos</SelectItem>
+                                   <SelectItem value="only">Solo bioequivalentes</SelectItem>
+                                   <SelectItem value="exclude">Excluir bioequivalentes</SelectItem>
+                                 </SelectContent>
+                               </Select>
                              </div>
                            </div>
                           
                           <div className="space-y-6">
                             {(() => {
-                              // Filtrar por bioequivalente si está activado
+                              // Filtrar por bioequivalente según la opción seleccionada
                               let linksToShow = sortedLinks;
-                              if (filterBioequivalent[selectedMed]) {
+                              const bioFilter = filterBioequivalent[selectedMed] || 'all';
+                              
+                              if (bioFilter === 'only') {
                                 linksToShow = sortedLinks.filter(link => link.is_bioequivalent);
+                              } else if (bioFilter === 'exclude') {
+                                linksToShow = sortedLinks.filter(link => !link.is_bioequivalent);
                               }
 
                               // Agrupar por farmacia
