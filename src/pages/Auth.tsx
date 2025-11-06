@@ -6,13 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from "@/components/ui/use-toast";
-import HealthProfessionalSignup from '@/components/HealthProfessionalSignup';
+
 import { useNavigate } from 'react-router-dom';
 
 import { z } from 'zod';
 
 const AuthPage = () => {
-  const [mode, setMode] = useState<'login' | 'visitor-signup' | 'professional-signup'>('login');
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,15 +42,12 @@ const AuthPage = () => {
 
     const { email: validEmail, password: validPassword } = parsed.data;
       try {
-        if (mode === 'visitor-signup') {
+        if (mode === 'signup') {
           const { data, error } = await supabase.auth.signUp({
             email: validEmail,
             password: validPassword,
             options: {
               emailRedirectTo: `${window.location.origin}/`,
-              data: {
-                user_type: 'visitor'
-              }
             },
           });
           
@@ -89,25 +86,18 @@ const AuthPage = () => {
     navigate('/');
   };
 
-  if (mode === 'professional-signup') {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-        <HealthProfessionalSignup onBack={() => setMode('login')} />
-      </div>
-    );
-  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <Card className="w-full max-w-md mx-4">
         <CardHeader>
           <CardTitle>
-            {mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta de usuario general'}
+            {mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta'}
           </CardTitle>
           <CardDescription>
             {mode === 'login' 
               ? 'Bienvenido de nuevo.' 
-              : 'Regístrate como usuario general para acceder a funciones básicas.'
+              : 'Regístrate para acceder a todas las funciones.'
             }
           </CardDescription>
         </CardHeader>
@@ -150,22 +140,13 @@ const AuthPage = () => {
                 <div className="text-center text-sm text-gray-600">
                   ¿No tienes una cuenta?
                 </div>
-                <div className="space-y-2">
-                  <Button 
-                    variant="outline" 
-                    className="w-full" 
-                    onClick={() => setMode('visitor-signup')}
-                  >
-                    Registrarse como usuario general
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full border-green-500 text-green-600 hover:bg-green-50" 
-                    onClick={() => setMode('professional-signup')}
-                  >
-                    Soy profesional de salud
-                  </Button>
-                </div>
+                <Button 
+                  variant="outline" 
+                  className="w-full" 
+                  onClick={() => setMode('signup')}
+                >
+                  Registrarse
+                </Button>
                 
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <Button 
