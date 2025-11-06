@@ -35,10 +35,10 @@ interface PharmacyLink {
 
 // Logos de farmacias chilenas
 const pharmacyLogos: Record<string, string> = {
-  "Cruz Verde": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=100&h=100&fit=crop",
-  "Salcobrand": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=100&h=100&fit=crop",
-  "Farmacias Ahumada": "https://images.unsplash.com/photo-1585435557343-3b092031a831?w=100&h=100&fit=crop",
-  "Dr. Simi": "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=100&h=100&fit=crop"
+  "Cruz Verde": "https://www.cruzverde.cl/on/demandware.static/-/Sites/default/dw8c0e9e21/images/logo-cv.svg",
+  "Salcobrand": "https://www.salcobrand.cl/static/version1701357111/frontend/Cencosud/Salcobrand/es_CL/images/logo.svg",
+  "Farmacias Ahumada": "https://www.farmaciasahumada.cl/on/demandware.static/Sites-FA-Site/-/default/dw0ce7c0de/images/logo.svg",
+  "Dr. Simi": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Farmacias_del_Dr._Simi_logo.svg/200px-Farmacias_del_Dr._Simi_logo.svg.png"
 };
 
 interface EditFormData {
@@ -738,21 +738,25 @@ const Medications = () => {
                                 const hasMore = items.length > 3;
 
                                 return (
-                                  <Card key={pharmacyName} className="overflow-hidden border-2">
-                                    <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 pb-4">
-                                      <div className="flex items-center gap-4">
-                                        <div className="w-16 h-16 rounded-full overflow-hidden bg-white shadow-md flex-shrink-0">
+                                  <Card key={pharmacyName} className="overflow-hidden border-2 shadow-lg">
+                                    <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 pb-6 pt-6">
+                                      <div className="flex flex-col items-center gap-4 text-center">
+                                        <div className="w-24 h-24 rounded-xl overflow-hidden bg-white shadow-lg flex items-center justify-center p-3 border-2 border-primary/10">
                                           <img 
                                             src={pharmacyLogos[pharmacyName] || "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=100&h=100&fit=crop"} 
                                             alt={pharmacyName}
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-contain"
+                                            onError={(e) => {
+                                              const target = e.target as HTMLImageElement;
+                                              target.src = "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=100&h=100&fit=crop";
+                                            }}
                                           />
                                         </div>
-                                        <div className="flex-1">
-                                          <CardTitle className="text-xl font-bold text-primary">
+                                        <div>
+                                          <CardTitle className="text-2xl font-bold text-primary mb-1">
                                             {pharmacyName}
                                           </CardTitle>
-                                          <p className="text-sm text-muted-foreground mt-1">
+                                          <p className="text-sm text-muted-foreground">
                                             {items.length} {items.length === 1 ? 'opción disponible' : 'opciones disponibles'}
                                           </p>
                                         </div>
