@@ -1,4 +1,4 @@
-import { Pill, Clock, AlertCircle, Heart, CheckCircle, ChevronDown, ExternalLink, ShoppingCart, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Pill, Clock, AlertCircle, Heart, CheckCircle, ChevronDown, ExternalLink, ShoppingCart, Pencil, Plus, Trash2, Upload, Image as ImageIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -65,6 +65,8 @@ const Medications = () => {
   const [filterBioequivalent, setFilterBioequivalent] = useState<Record<number, boolean>>({});
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState<string | null>(null);
+  const [pharmacyLogosDb, setPharmacyLogosDb] = useState<Record<string, string>>({});
   const [editingLink, setEditingLink] = useState<EditFormData | null>(null);
   const [addFormData, setAddFormData] = useState<EditFormData>({
     id: '',
@@ -226,9 +228,114 @@ const Medications = () => {
     }
   };
 
+  // Fetch pharmacy logos from database
+  const fetchPharmacyLogos = async () => {
+    const { data, error } = await supabase
+      .from('pharmacy_logos')
+      .select('pharmacy_name, logo_path');
+
+    if (data && !error) {
+      const logosMap: Record<string, string> = {};
+      data.forEach(logo => {
+        const { data: { publicUrl } } = supabase.storage
+          .from('pharmacy-logos')
+          .getPublicUrl(logo.logo_path);
+        logosMap[logo.pharmacy_name] = publicUrl;
+      });
+      setPharmacyLogosDb(logosMap);
+    }
+  };
+
   useEffect(() => {
     fetchPharmacyLinks();
+    fetchPharmacyLogos();
   }, [toast]);
+
+  // Handle logo upload
+  const handleLogoUpload = async (pharmacyName: string, file: File) => {
+    try {
+      setUploadingLogo(pharmacyName);
+      
+      // Validate file type
+      const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        toast({
+          title: 'Tipo de archivo no válido',
+          description: 'Solo se permiten imágenes PNG, JPG, SVG o WEBP',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Validate file size (2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        toast({
+          title: 'Archivo muy grande',
+          description: 'El logo debe ser menor a 2MB',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Create unique file name
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${pharmacyName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.${fileExt}`;
+
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from('pharmacy-logos')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true,
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Check if pharmacy logo already exists in database
+      const { data: existing } = await supabase
+        .from('pharmacy_logos')
+        .select('id')
+        .eq('pharmacy_name', pharmacyName)
+        .maybeSingle();
+
+      if (existing) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from('pharmacy_logos')
+          .update({ logo_path: fileName })
+          .eq('pharmacy_name', pharmacyName);
+
+        if (updateError) throw updateError;
+      } else {
+        // Insert new record
+        const { error: insertError } = await supabase
+          .from('pharmacy_logos')
+          .insert({
+            pharmacy_name: pharmacyName,
+            logo_path: fileName,
+          });
+
+        if (insertError) throw insertError;
+      }
+
+      toast({
+        title: 'Logo actualizado',
+        description: `El logo de ${pharmacyName} se ha actualizado correctamente`,
+      });
+
+      // Refresh logos
+      await fetchPharmacyLogos();
+    } catch (error: any) {
+      console.error('Error uploading logo:', error);
+      toast({
+        title: 'Error al subir logo',
+        description: error.message || 'Ocurrió un error al subir el logo',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingLogo(null);
+    }
+  };
 
   const handleEditLink = (link: PharmacyLink) => {
     if (!link.id) return;
@@ -741,16 +848,40 @@ const Medications = () => {
                                   <Card key={pharmacyName} className="overflow-hidden border-2 shadow-lg">
                                     <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 pb-6 pt-6">
                                       <div className="flex flex-col items-center gap-4 text-center">
-                                        <div className="w-24 h-24 rounded-xl overflow-hidden bg-white shadow-lg flex items-center justify-center p-3 border-2 border-primary/10">
-                                          <img 
-                                            src={pharmacyLogos[pharmacyName] || "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=100&h=100&fit=crop"} 
-                                            alt={pharmacyName}
-                                            className="w-full h-full object-contain"
-                                            onError={(e) => {
-                                              const target = e.target as HTMLImageElement;
-                                              target.src = "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=100&h=100&fit=crop";
-                                            }}
-                                          />
+                                        <div className="relative group">
+                                          <div className="w-24 h-24 rounded-xl overflow-hidden bg-white shadow-lg flex items-center justify-center p-3 border-2 border-primary/10">
+                                            <img 
+                                              src={pharmacyLogosDb[pharmacyName] || pharmacyLogos[pharmacyName] || "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=100&h=100&fit=crop"} 
+                                              alt={pharmacyName}
+                                              className="w-full h-full object-contain"
+                                              onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.src = "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=100&h=100&fit=crop";
+                                              }}
+                                            />
+                                          </div>
+                                          {isAdmin && (
+                                            <label className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer rounded-xl">
+                                              <input
+                                                type="file"
+                                                accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                  const file = e.target.files?.[0];
+                                                  if (file) handleLogoUpload(pharmacyName, file);
+                                                }}
+                                                disabled={uploadingLogo === pharmacyName}
+                                              />
+                                              {uploadingLogo === pharmacyName ? (
+                                                <div className="text-white text-xs">Subiendo...</div>
+                                              ) : (
+                                                <div className="flex flex-col items-center gap-1">
+                                                  <Upload className="h-6 w-6 text-white" />
+                                                  <span className="text-white text-xs">Cambiar logo</span>
+                                                </div>
+                                              )}
+                                            </label>
+                                          )}
                                         </div>
                                         <div>
                                           <CardTitle className="text-2xl font-bold text-primary mb-1">
