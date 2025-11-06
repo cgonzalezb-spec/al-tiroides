@@ -15,6 +15,8 @@ const HeroSection = () => {
   const [current, setCurrent] = useState(0);
   const [showDescriptionForm, setShowDescriptionForm] = useState(false);
   const [showUrlForm, setShowUrlForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editingVideo, setEditingVideo] = useState<ExplanatoryVideo | null>(null);
   const [pendingVideoFile, setPendingVideoFile] = useState<File | null>(null);
   const [videoDescription, setVideoDescription] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
@@ -339,6 +341,55 @@ const HeroSection = () => {
       setIsUploading(false);
     }
   };
+  const handleEditVideo = (video: ExplanatoryVideo) => {
+    setEditingVideo(video);
+    setVideoDescription(video.description || '');
+    setVideoUrl(isExternalVideo(video.url || '') ? (video.file_path || '') : '');
+    setThumbnailUrl(video.thumbnail_url || '');
+    setShowEditForm(true);
+  };
+
+  const handleUpdateVideo = async () => {
+    if (!editingVideo) return;
+
+    setIsUploading(true);
+    try {
+      const { error } = await supabase.rpc('update_explanatory_video', {
+        p_video_id: editingVideo.id,
+        p_title: videoDescription.trim() || null,
+        p_description: videoDescription.trim() || null,
+        p_file_path: videoUrl.trim() || null,
+        p_thumbnail_url: thumbnailUrl.trim() || null
+      });
+
+      if (error) {
+        console.error('❌ Error actualizando video:', error);
+        throw error;
+      }
+
+      toast({
+        title: "¡Video actualizado!",
+        description: "Los cambios se han guardado exitosamente"
+      });
+
+      await loadVideosFromSupabase();
+      setShowEditForm(false);
+      setEditingVideo(null);
+      setVideoDescription('');
+      setVideoUrl('');
+      setThumbnailUrl('');
+    } catch (error: any) {
+      console.error('❌ Error actualizando video:', error);
+      toast({
+        title: "Error actualizando video",
+        description: error.message || "No se pudo actualizar el video",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const removeVideo = async (videoId: string) => {
     try {
       console.log('🗑️ Eliminando video:', videoId);
@@ -451,8 +502,83 @@ const HeroSection = () => {
       document.body.appendChild(videoModal);
     }
   };
-  return <section id="inicio" className="py-20 lg:py-32">
+    return <section id="inicio" className="py-20 lg:py-32">
       <div className="container mx-auto px-4">
+        {/* Formulario de edición de video */}
+        {showEditForm && editingVideo && <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <h3 className="text-lg font-semibold mb-4">Editar video</h3>
+              <div className="space-y-4">
+                {isExternalVideo(editingVideo.url || '') && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      URL del video
+                    </label>
+                    <Input 
+                      type="url"
+                      value={videoUrl} 
+                      onChange={e => setVideoUrl(e.target.value)} 
+                      placeholder="https://youtube.com/watch?v=..." 
+                      className="w-full" 
+                      disabled={isUploading}
+                    />
+                  </div>
+                )}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    URL de miniatura
+                  </label>
+                  <Input 
+                    type="url"
+                    value={thumbnailUrl} 
+                    onChange={e => setThumbnailUrl(e.target.value)} 
+                    placeholder="https://..." 
+                    className="w-full" 
+                    disabled={isUploading}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Miniatura personalizada para el carrusel
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Descripción
+                  </label>
+                  <Textarea 
+                    value={videoDescription} 
+                    onChange={e => setVideoDescription(e.target.value)} 
+                    placeholder="Escribe una breve descripción del video..." 
+                    className="w-full" 
+                    rows={3} 
+                    disabled={isUploading}
+                  />
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setShowEditForm(false);
+                      setEditingVideo(null);
+                      setVideoUrl('');
+                      setVideoDescription('');
+                      setThumbnailUrl('');
+                    }} 
+                    disabled={isUploading}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button 
+                    onClick={handleUpdateVideo} 
+                    className="bg-blue-600 hover:bg-blue-700" 
+                    disabled={isUploading}
+                  >
+                    {isUploading ? 'Guardando...' : 'Guardar Cambios'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>}
+
         {/* Formulario de URL de video externo */}
         {showUrlForm && <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
@@ -678,6 +804,9 @@ const HeroSection = () => {
                       <div className="flex gap-2 ml-4">
                         <Button size="sm" variant="outline" onClick={() => handleWatchVideo(index)}>
                           Ver
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => handleEditVideo(video)} className="bg-green-50 hover:bg-green-100">
+                          Editar
                         </Button>
                         <Button size="sm" variant="destructive" onClick={() => removeVideo(video.id)}>
                           Eliminar

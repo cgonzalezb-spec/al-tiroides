@@ -416,6 +416,16 @@ export type Database = {
         }
         Returns: string
       }
+      update_explanatory_video: {
+        Args: {
+          p_description?: string
+          p_file_path?: string
+          p_thumbnail_url?: string
+          p_title?: string
+          p_video_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "health_professional" | "visitor"
