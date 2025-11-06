@@ -18,6 +18,7 @@ const HeroSection = () => {
   const [pendingVideoFile, setPendingVideoFile] = useState<File | null>(null);
   const [videoDescription, setVideoDescription] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
+  const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const {
@@ -93,6 +94,7 @@ const HeroSection = () => {
             file_size: video.file_size,
             created_at: video.created_at,
             uploaded_by: video.uploaded_by,
+            thumbnail_url: video.thumbnail_url,
             url: urlData.publicUrl
           });
         } catch (error) {
@@ -291,14 +293,21 @@ const HeroSection = () => {
 
     setIsUploading(true);
     try {
+      // Auto-extraer miniatura de YouTube si no se proporciona una personalizada
+      let finalThumbnailUrl = thumbnailUrl.trim();
+      if (!finalThumbnailUrl && (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'))) {
+        finalThumbnailUrl = getYouTubeThumbnail(videoUrl) || '';
+      }
+
       // Guardar directamente en la base de datos con URL externa
       const { data: dbData, error: dbError } = await supabase.rpc('insert_explanatory_video', {
         p_title: videoDescription.trim() || 'Video externo',
         p_description: videoDescription.trim() || null,
-        p_file_path: videoUrl, // Guardar la URL como file_path
+        p_file_path: videoUrl,
         p_file_name: 'external_video',
         p_file_size: 0,
-        p_uploaded_by: user.id
+        p_uploaded_by: user.id,
+        p_thumbnail_url: finalThumbnailUrl || null
       });
 
       if (dbError) {
@@ -315,6 +324,7 @@ const HeroSection = () => {
       setShowUrlForm(false);
       setVideoUrl('');
       setVideoDescription('');
+      setThumbnailUrl('');
     } catch (error: any) {
       console.error('❌ Error agregando video externo:', error);
       toast({
@@ -377,12 +387,25 @@ const HeroSection = () => {
       });
     }
   };
+  const extractYouTubeVideoId = (url: string) => {
+    if (url.includes('youtu.be/')) {
+      return url.split('youtu.be/')[1]?.split('?')[0];
+    }
+    if (url.includes('youtube.com')) {
+      return url.split('v=')[1]?.split('&')[0];
+    }
+    return null;
+  };
+
+  const getYouTubeThumbnail = (url: string) => {
+    const videoId = extractYouTubeVideoId(url);
+    return videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null;
+  };
+
   const getVideoEmbedUrl = (url: string) => {
     // Convertir URLs de YouTube a formato embed
     if (url.includes('youtube.com') || url.includes('youtu.be')) {
-      const videoId = url.includes('youtu.be/') 
-        ? url.split('youtu.be/')[1]?.split('?')[0]
-        : url.split('v=')[1]?.split('&')[0];
+      const videoId = extractYouTubeVideoId(url);
       return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
     }
     // Google Drive
@@ -450,6 +473,22 @@ const HeroSection = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
+                    URL de miniatura (opcional)
+                  </label>
+                  <Input 
+                    type="url"
+                    value={thumbnailUrl} 
+                    onChange={e => setThumbnailUrl(e.target.value)} 
+                    placeholder="https://..." 
+                    className="w-full" 
+                    disabled={isUploading}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    YouTube extrae miniatura automáticamente. Opcional para Drive.
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
                     Descripción (opcional)
                   </label>
                   <Textarea 
@@ -468,7 +507,8 @@ const HeroSection = () => {
                       setShowUrlForm(false);
                       setVideoUrl('');
                       setVideoDescription('');
-                    }} 
+                      setThumbnailUrl('');
+                    }}
                     disabled={isUploading}
                   >
                     Cancelar
@@ -564,10 +604,16 @@ const HeroSection = () => {
                 loop: videos.length > 1
               }}>
                       <CarouselContent>
-                        {videos.map((video, index) => <CarouselItem key={video.id}>
+                         {videos.map((video, index) => <CarouselItem key={video.id}>
                             <div className="p-1">
                               <div className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer group shadow-lg" onClick={() => handleWatchVideo(index)}>
-                                {isExternalVideo(video.url || '') ? (
+                                {isExternalVideo(video.url || '') && video.thumbnail_url ? (
+                                  <img 
+                                    src={video.thumbnail_url} 
+                                    alt={video.title || 'Video thumbnail'} 
+                                    className="w-full h-full object-cover bg-black"
+                                  />
+                                ) : isExternalVideo(video.url || '') ? (
                                   <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                                     <PlayCircle className="h-16 w-16 text-white/90 drop-shadow-lg" />
                                   </div>

@@ -8,5 +8,6 @@ export interface ExplanatoryVideo {
   file_size?: number;
   created_at: string;
   uploaded_by?: string;
+  thumbnail_url?: string;
   url?: string; // URL pública del video
 }

@@ -392,6 +392,7 @@ export type Database = {
           file_path: string
           file_size: number
           id: string
+          thumbnail_url: string
           title: string
           uploaded_by: string
         }[]
@@ -409,6 +410,7 @@ export type Database = {
           p_file_name: string
           p_file_path: string
           p_file_size: number
+          p_thumbnail_url?: string
           p_title: string
           p_uploaded_by: string
         }
