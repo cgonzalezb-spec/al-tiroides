@@ -156,10 +156,22 @@ const HeroSection = () => {
     try {
       console.log('📤 Iniciando subida de video...');
 
-      // Generar nombre único para el archivo
+      // Generar nombre único y seguro para el archivo
       const timestamp = Date.now();
-      const fileName = `${timestamp}-${file.name}`;
-      const filePath = `videos/${fileName}`;
+      const originalName = file.name;
+      const lastDot = originalName.lastIndexOf('.');
+      const ext = lastDot !== -1 ? originalName.slice(lastDot + 1) : '';
+      const base = lastDot !== -1 ? originalName.slice(0, lastDot) : originalName;
+      // Normalizar y limpiar caracteres problemáticos (acentos, símbolos, espacios)
+      const safeBase = base
+        .normalize('NFD').replace(/\p{Diacritic}+/gu, '') // quitar acentos
+        .replace(/[^a-zA-Z0-9-_\.]+/g, '-')               // reemplazar todo lo no permitido por '-'
+        .replace(/-+/g, '-')                               // colapsar guiones
+        .replace(/^[-_.]+|[-_.]+$/g, '')                   // quitar guiones/puntos al inicio/fin
+        .toLowerCase();
+      const safeExt = ext.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      const safeFileName = `${timestamp}-${safeBase}.${safeExt || 'mp4'}`;
+      const filePath = `videos/${safeFileName}`;
       console.log('📁 Subiendo archivo:', filePath);
 
       // Crear una promesa para manejar el progreso de subida
