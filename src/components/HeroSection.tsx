@@ -18,6 +18,7 @@ const HeroSection = () => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [editingVideo, setEditingVideo] = useState<ExplanatoryVideo | null>(null);
   const [pendingVideoFile, setPendingVideoFile] = useState<File | null>(null);
+  const [pendingThumbnailFile, setPendingThumbnailFile] = useState<File | null>(null);
   const [videoDescription, setVideoDescription] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [thumbnailUrl, setThumbnailUrl] = useState('');
@@ -261,11 +262,22 @@ const HeroSection = () => {
   };
   const handleDescriptionSubmit = async () => {
     if (pendingVideoFile) {
-      await uploadToSupabase(pendingVideoFile, videoDescription, thumbnailUrl);
+      let finalThumbnailUrl = thumbnailUrl;
+
+      // Si hay un archivo de miniatura, subirlo primero
+      if (pendingThumbnailFile) {
+        const uploadedThumbnailUrl = await uploadThumbnailToSupabase(pendingThumbnailFile);
+        if (uploadedThumbnailUrl) {
+          finalThumbnailUrl = uploadedThumbnailUrl;
+        }
+      }
+
+      await uploadToSupabase(pendingVideoFile, videoDescription, finalThumbnailUrl);
 
       // Limpiar formulario
       setShowDescriptionForm(false);
       setPendingVideoFile(null);
+      setPendingThumbnailFile(null);
       setVideoDescription('');
       setThumbnailUrl('');
     }
@@ -273,8 +285,54 @@ const HeroSection = () => {
   const handleDescriptionCancel = () => {
     setShowDescriptionForm(false);
     setPendingVideoFile(null);
+    setPendingThumbnailFile(null);
     setVideoDescription('');
     setThumbnailUrl('');
+  };
+
+  const handleThumbnailUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Archivo no válido",
+          description: "Por favor selecciona una imagen (JPG, PNG, etc.)",
+          variant: "destructive"
+        });
+        return;
+      }
+      setPendingThumbnailFile(file);
+    }
+  };
+
+  const uploadThumbnailToSupabase = async (file: File): Promise<string | null> => {
+    try {
+      const timestamp = Date.now();
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `thumbnail-${timestamp}.${ext}`;
+      const filePath = `thumbnails/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('explanatory-videos')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Error subiendo miniatura:', uploadError);
+        return null;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('explanatory-videos')
+        .getPublicUrl(filePath);
+
+      return urlData.publicUrl;
+    } catch (error) {
+      console.error('Error en uploadThumbnailToSupabase:', error);
+      return null;
+    }
   };
 
   const handleUrlSubmit = async () => {
@@ -298,8 +356,16 @@ const HeroSection = () => {
 
     setIsUploading(true);
     try {
-      // Auto-extraer miniatura de YouTube si no se proporciona una personalizada
+      // Subir miniatura primero si hay un archivo
       let finalThumbnailUrl = thumbnailUrl.trim();
+      if (pendingThumbnailFile) {
+        const uploadedThumbnailUrl = await uploadThumbnailToSupabase(pendingThumbnailFile);
+        if (uploadedThumbnailUrl) {
+          finalThumbnailUrl = uploadedThumbnailUrl;
+        }
+      }
+
+      // Auto-extraer miniatura de YouTube si no se proporciona una personalizada
       if (!finalThumbnailUrl && (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'))) {
         finalThumbnailUrl = getYouTubeThumbnail(videoUrl) || '';
       }
@@ -330,6 +396,7 @@ const HeroSection = () => {
       setVideoUrl('');
       setVideoDescription('');
       setThumbnailUrl('');
+      setPendingThumbnailFile(null);
     } catch (error: any) {
       console.error('❌ Error agregando video externo:', error);
       toast({
@@ -354,12 +421,21 @@ const HeroSection = () => {
 
     setIsUploading(true);
     try {
+      // Subir miniatura primero si hay un archivo
+      let finalThumbnailUrl = thumbnailUrl.trim();
+      if (pendingThumbnailFile) {
+        const uploadedThumbnailUrl = await uploadThumbnailToSupabase(pendingThumbnailFile);
+        if (uploadedThumbnailUrl) {
+          finalThumbnailUrl = uploadedThumbnailUrl;
+        }
+      }
+
       const { error } = await supabase.rpc('update_explanatory_video', {
         p_video_id: editingVideo.id,
         p_title: videoDescription.trim() || null,
         p_description: videoDescription.trim() || null,
         p_file_path: videoUrl.trim() || null,
-        p_thumbnail_url: thumbnailUrl.trim() || null
+        p_thumbnail_url: finalThumbnailUrl || null
       });
 
       if (error) {
@@ -378,6 +454,7 @@ const HeroSection = () => {
       setVideoDescription('');
       setVideoUrl('');
       setThumbnailUrl('');
+      setPendingThumbnailFile(null);
     } catch (error: any) {
       console.error('❌ Error actualizando video:', error);
       toast({
@@ -526,19 +603,40 @@ const HeroSection = () => {
                 )}
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    URL de miniatura
+                    Miniatura (opcional)
                   </label>
-                  <Input 
-                    type="url"
-                    value={thumbnailUrl} 
-                    onChange={e => setThumbnailUrl(e.target.value)} 
-                    placeholder="https://..." 
-                    className="w-full" 
-                    disabled={isUploading}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Miniatura personalizada para el carrusel
-                  </p>
+                  <div className="space-y-2">
+                    <div>
+                      <Input 
+                        type="file"
+                        accept="image/*"
+                        onChange={handleThumbnailUpload}
+                        className="w-full" 
+                        disabled={isUploading}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Sube una imagen JPG, PNG, etc.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-px bg-gray-300"></div>
+                      <span className="text-xs text-gray-500">o</span>
+                      <div className="flex-1 h-px bg-gray-300"></div>
+                    </div>
+                    <div>
+                      <Input 
+                        type="url"
+                        value={thumbnailUrl} 
+                        onChange={e => setThumbnailUrl(e.target.value)} 
+                        placeholder="https://..." 
+                        className="w-full" 
+                        disabled={isUploading || !!pendingThumbnailFile}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        O pega una URL de imagen
+                      </p>
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
@@ -602,19 +700,40 @@ const HeroSection = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    URL de miniatura (opcional)
+                    Miniatura (opcional)
                   </label>
-                  <Input 
-                    type="url"
-                    value={thumbnailUrl} 
-                    onChange={e => setThumbnailUrl(e.target.value)} 
-                    placeholder="https://..." 
-                    className="w-full" 
-                    disabled={isUploading}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    YouTube extrae miniatura automáticamente. Opcional para Drive.
-                  </p>
+                  <div className="space-y-2">
+                    <div>
+                      <Input 
+                        type="file"
+                        accept="image/*"
+                        onChange={handleThumbnailUpload}
+                        className="w-full" 
+                        disabled={isUploading}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Sube una imagen JPG, PNG, etc.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-px bg-gray-300"></div>
+                      <span className="text-xs text-gray-500">o</span>
+                      <div className="flex-1 h-px bg-gray-300"></div>
+                    </div>
+                    <div>
+                      <Input 
+                        type="url"
+                        value={thumbnailUrl} 
+                        onChange={e => setThumbnailUrl(e.target.value)} 
+                        placeholder="https://..." 
+                        className="w-full" 
+                        disabled={isUploading || !!pendingThumbnailFile}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        YouTube extrae miniatura automáticamente. Opcional para otros.
+                      </p>
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
@@ -669,19 +788,40 @@ const HeroSection = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    URL de miniatura (opcional)
+                    Miniatura (opcional)
                   </label>
-                  <Input 
-                    type="url"
-                    value={thumbnailUrl} 
-                    onChange={e => setThumbnailUrl(e.target.value)} 
-                    placeholder="https://..." 
-                    className="w-full" 
-                    disabled={isUploading}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Miniatura personalizada para el carrusel
-                  </p>
+                  <div className="space-y-2">
+                    <div>
+                      <Input 
+                        type="file"
+                        accept="image/*"
+                        onChange={handleThumbnailUpload}
+                        className="w-full" 
+                        disabled={isUploading}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Sube una imagen JPG, PNG, etc.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-px bg-gray-300"></div>
+                      <span className="text-xs text-gray-500">o</span>
+                      <div className="flex-1 h-px bg-gray-300"></div>
+                    </div>
+                    <div>
+                      <Input 
+                        type="url"
+                        value={thumbnailUrl} 
+                        onChange={e => setThumbnailUrl(e.target.value)} 
+                        placeholder="https://..." 
+                        className="w-full" 
+                        disabled={isUploading || !!pendingThumbnailFile}
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        O pega una URL de imagen
+                      </p>
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
