@@ -852,125 +852,131 @@ const HeroSection = () => {
             </div>
           </div>}
 
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                Tu tiroides{' '}
-                <span className="bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent">
-                  al tiro
-                </span>
-              </h1>
-              <p className="text-xl text-gray-600 max-w-lg">
-                Información clara, confiable y en chileno sobre problemas de tiroides. 
-                Aprende, evalúa tus síntomas y toma decisiones informadas sobre tu salud.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" onClick={scrollToTest} className="bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600 text-lg px-8 py-4">
-                Hacer autotest <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              
-              {isAdmin ? <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-2 hover:bg-blue-50 flex-1" onClick={() => document.getElementById('video-upload')?.click()} disabled={isUploading}>
-                      <Upload className="mr-2 h-5 w-5" />
-                      {isUploading ? 'Subiendo...' : 'Subir archivo (máx 50MB)'}
-                    </Button>
-                    <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-2 hover:bg-green-50 flex-1" onClick={() => setShowUrlForm(true)} disabled={isUploading}>
-                      <PlayCircle className="mr-2 h-5 w-5" />
-                      Enlace externo
-                    </Button>
-                  </div>
-                  <input id="video-upload" type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" disabled={isUploading} />
-                </div> : videos.length > 0 && <div className="w-full max-w-xs mx-auto sm:max-w-md sm:mx-0 flex-1">
-                    <Carousel setApi={setApi} className="w-full" opts={{
-                loop: videos.length > 1
-              }}>
-                      <CarouselContent>
-                         {videos.map((video, index) => <CarouselItem key={video.id}>
-                            <div className="p-1">
-                              <div className="relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer group shadow-lg" onClick={() => handleWatchVideo(index)}>
-                                {video.thumbnail_url ? (
-                                  <img 
-                                    src={video.thumbnail_url} 
-                                    alt={video.title || 'Video thumbnail'} 
-                                    className="w-full h-full object-cover bg-black"
-                                  />
-                                ) : isExternalVideo(video.url || '') ? (
-                                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                                    <PlayCircle className="h-16 w-16 text-white/90 drop-shadow-lg" />
-                                  </div>
-                                ) : (
-                                  <video src={video.url} className="w-full h-full object-cover bg-black" playsInline muted preload="metadata">
-                                    Tu navegador no soporta videos.
-                                  </video>
-                                )}
-                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                                  <PlayCircle className="h-12 w-12 text-white/90 drop-shadow-lg transform transition-transform group-hover:scale-110" />
-                                </div>
-                                {video.description && <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md max-w-[80%]">
-                                    {video.description}
-                                  </div>}
-                              </div>
-                            </div>
-                          </CarouselItem>)}
-                      </CarouselContent>
-                      {videos.length > 1 && <>
-                          <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10" />
-                          <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10" />
-                        </>}
-                    </Carousel>
-                  </div>}
-            </div>
-
-            {/* Administración de videos para admin */}
-            {isAdmin && videos.length > 0 && <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h4 className="font-semibold mb-2">Videos almacenados ({videos.length})</h4>
-                <div className="space-y-2">
-                  {videos.map((video, index) => <div key={video.id} className="flex justify-between items-start bg-white p-3 rounded">
-                      <div className="flex-1">
-                        <div className="text-sm font-medium text-gray-600 mb-1">
-                          Video {index + 1}: {video.file_name}
-                        </div>
-                        {video.description && <div className="text-sm text-gray-700">{video.description}</div>}
-                        {!video.description && <div className="text-sm text-gray-400 italic">Sin descripción</div>}
-                        <div className="text-xs text-gray-500 mt-1">
-                          Subido: {new Date(video.created_at).toLocaleDateString('es-CL')}
-                          {video.file_size && ` • ${(video.file_size / (1024 * 1024)).toFixed(2)} MB`}
-                        </div>
-                      </div>
-                      <div className="flex gap-2 ml-4">
-                        <Button size="sm" variant="outline" onClick={() => handleWatchVideo(index)}>
-                          Ver
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => handleEditVideo(video)} className="bg-green-50 hover:bg-green-100">
-                          Editar
-                        </Button>
-                        <Button size="sm" variant="destructive" onClick={() => removeVideo(video.id)}>
-                          Eliminar
-                        </Button>
-                      </div>
-                    </div>)}
-                </div>
-              </div>}
-
-            {/* Indicador de video actual para visitantes */}
-            {!isAdmin && videos.length > 1 && <div className="flex justify-center gap-2">
-                {videos.map((_, index) => <button key={index} onClick={() => api?.scrollTo(index)} className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${current === index ? 'w-4 bg-blue-600' : 'bg-gray-300'}`} aria-label={`Ir al video ${index + 1}`} />)}
-              </div>}
-
-            {!isAdmin && videos.length === 0 && <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <p className="text-blue-800 text-sm">
-                  📹 Próximamente disponible video explicativo sobre tiroides
-                </p>
-              </div>}
-
-            
+        <div className="max-w-4xl mx-auto space-y-12">
+          {/* Título y descripción */}
+          <div className="text-center space-y-4">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+              Todo sobre la{' '}
+              <span className="bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent">
+                tiroides
+              </span>{' '}
+              <span className="bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent">
+                al tiro
+              </span>
+            </h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Información clara, confiable y en chileno sobre problemas de tiroides. 
+              Aprende, evalúa tus síntomas y toma decisiones informadas sobre tu salud.
+            </p>
           </div>
 
-          <div className="relative">
+          {/* Botón de autotest */}
+          <div className="flex justify-center">
+            <Button size="lg" onClick={scrollToTest} className="bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600 text-lg px-8 py-4">
+              Hacer autotest <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
+
+          {/* Videos */}
+          <div className="space-y-6">
+            {isAdmin ? <div className="space-y-2">
+                <div className="flex gap-2 justify-center">
+                  <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-2 hover:bg-blue-50" onClick={() => document.getElementById('video-upload')?.click()} disabled={isUploading}>
+                    <Upload className="mr-2 h-5 w-5" />
+                    {isUploading ? 'Subiendo...' : 'Subir archivo (máx 50MB)'}
+                  </Button>
+                  <Button variant="outline" size="lg" className="text-lg px-8 py-4 border-2 hover:bg-green-50" onClick={() => setShowUrlForm(true)} disabled={isUploading}>
+                    <PlayCircle className="mr-2 h-5 w-5" />
+                    Enlace externo
+                  </Button>
+                </div>
+                <input id="video-upload" type="file" accept="video/*" onChange={handleVideoUpload} className="hidden" disabled={isUploading} />
+              </div> : videos.length > 0 && <div className="w-full max-w-2xl mx-auto">
+                  <Carousel setApi={setApi} className="w-full" opts={{
+              loop: videos.length > 1
+            }}>
+                    <CarouselContent>
+                       {videos.map((video, index) => <CarouselItem key={video.id}>
+                          <div className="p-1">
+                            <div className="relative aspect-[16/9] rounded-lg overflow-hidden cursor-pointer group shadow-lg" onClick={() => handleWatchVideo(index)}>
+                              {video.thumbnail_url ? (
+                                <img 
+                                  src={video.thumbnail_url} 
+                                  alt={video.title || 'Video thumbnail'} 
+                                  className="w-full h-full object-contain bg-black"
+                                  style={{ objectPosition: 'center' }}
+                                />
+                              ) : isExternalVideo(video.url || '') ? (
+                                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                                  <PlayCircle className="h-16 w-16 text-white/90 drop-shadow-lg" />
+                                </div>
+                              ) : (
+                                <video src={video.url} className="w-full h-full object-contain bg-black" playsInline muted preload="metadata">
+                                  Tu navegador no soporta videos.
+                                </video>
+                              )}
+                              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                                <PlayCircle className="h-12 w-12 text-white/90 drop-shadow-lg transform transition-transform group-hover:scale-110" />
+                              </div>
+                              {video.description && <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md max-w-[80%]">
+                                  {video.description}
+                                </div>}
+                            </div>
+                          </div>
+                        </CarouselItem>)}
+                    </CarouselContent>
+                    {videos.length > 1 && <>
+                        <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10" />
+                        <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10" />
+                      </>}
+                  </Carousel>
+                </div>}
+          </div>
+
+          {/* Administración de videos para admin */}
+          {isAdmin && videos.length > 0 && <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <h4 className="font-semibold mb-2">Videos almacenados ({videos.length})</h4>
+              <div className="space-y-2">
+                {videos.map((video, index) => <div key={video.id} className="flex justify-between items-start bg-white p-3 rounded">
+                    <div className="flex-1">
+                      <div className="text-sm font-medium text-gray-600 mb-1">
+                        Video {index + 1}: {video.file_name}
+                      </div>
+                      {video.description && <div className="text-sm text-gray-700">{video.description}</div>}
+                      {!video.description && <div className="text-sm text-gray-400 italic">Sin descripción</div>}
+                      <div className="text-xs text-gray-500 mt-1">
+                        Subido: {new Date(video.created_at).toLocaleDateString('es-CL')}
+                        {video.file_size && ` • ${(video.file_size / (1024 * 1024)).toFixed(2)} MB`}
+                      </div>
+                    </div>
+                    <div className="flex gap-2 ml-4">
+                      <Button size="sm" variant="outline" onClick={() => handleWatchVideo(index)}>
+                        Ver
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => handleEditVideo(video)} className="bg-green-50 hover:bg-green-100">
+                        Editar
+                      </Button>
+                      <Button size="sm" variant="destructive" onClick={() => removeVideo(video.id)}>
+                        Eliminar
+                      </Button>
+                    </div>
+                  </div>)}
+              </div>
+            </div>}
+
+          {/* Indicador de video actual para visitantes */}
+          {!isAdmin && videos.length > 1 && <div className="flex justify-center gap-2">
+              {videos.map((_, index) => <button key={index} onClick={() => api?.scrollTo(index)} className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${current === index ? 'w-4 bg-blue-600' : 'bg-gray-300'}`} aria-label={`Ir al video ${index + 1}`} />)}
+            </div>}
+
+          {!isAdmin && videos.length === 0 && <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 text-center">
+              <p className="text-blue-800 text-sm">
+                📹 Próximamente disponible video explicativo sobre tiroides
+              </p>
+            </div>}
+
+          {/* Síntomas comunes */}
+          <div className="relative max-w-xl mx-auto mt-12">
             <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-8">
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
