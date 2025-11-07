@@ -893,20 +893,19 @@ const HeroSection = () => {
                       <CarouselContent>
                          {videos.map((video, index) => <CarouselItem key={video.id}>
                             <div className="p-1">
-                              <div className="relative aspect-[16/9] rounded-lg overflow-hidden cursor-pointer group shadow-lg" onClick={() => handleWatchVideo(index)}>
+                              <div className="relative rounded-lg overflow-hidden cursor-pointer group shadow-lg" onClick={() => handleWatchVideo(index)}>
                                 {video.thumbnail_url ? (
                                   <img 
                                     src={video.thumbnail_url} 
                                     alt={video.title || 'Video thumbnail'} 
-                                    className="w-full h-full object-contain bg-black"
-                                    style={{ objectPosition: 'center' }}
+                                    className="w-full h-auto object-contain bg-black"
                                   />
                                 ) : isExternalVideo(video.url || '') ? (
-                                  <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                                  <div className="w-full aspect-[16/9] bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                                     <PlayCircle className="h-16 w-16 text-white/90 drop-shadow-lg" />
                                   </div>
                                 ) : (
-                                  <video src={video.url} className="w-full h-full object-contain bg-black" playsInline muted preload="metadata">
+                                  <video src={video.url} className="w-full h-auto object-contain bg-black" playsInline muted preload="metadata">
                                     Tu navegador no soporta videos.
                                   </video>
                                 )}
@@ -971,8 +970,8 @@ const HeroSection = () => {
             </div>
 
             {/* Síntomas comunes */}
-            <div className="relative">
-              <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-8 h-full flex flex-col justify-between">
+            <div className="relative h-full min-h-[400px]">
+              <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-8 h-full flex flex-col justify-center">
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <h3 className="text-2xl font-bold text-gray-900">¿Cómo te sientes?</h3>
