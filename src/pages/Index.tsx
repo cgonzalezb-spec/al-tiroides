@@ -5,6 +5,7 @@ import HeroSection from '@/components/HeroSection';
 import ThyroidInfo from '@/components/ThyroidInfo';
 import SymptomsTest from '@/components/SymptomsTest';
 import DisorderTypes from '@/components/DisorderTypes';
+import ThyroidSurgery from '@/components/ThyroidSurgery';
 import Medications from '@/components/Medications';
 import MedicationManager from '@/components/MedicationManager';
 import SymptomTracker from '@/components/SymptomTracker';
@@ -29,6 +30,7 @@ const Index = () => {
       <ThyroidInfo />
       <SymptomsTest />
       <DisorderTypes />
+      <ThyroidSurgery />
       <Medications />
       {user && (
         <>
