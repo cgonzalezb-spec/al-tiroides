@@ -3,6 +3,7 @@ import { CheckCircle, AlertTriangle, FileText, Download, UserCheck } from 'lucid
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { jsPDF } from 'jspdf';
 
 const symptomsList = [
   { id: 'fatigue', label: 'Cansancio o fatiga constante' },
@@ -91,33 +92,88 @@ const SymptomsTest = () => {
   const handleDownloadChecklist = () => {
     const selectedSymptomsDetails = selectedSymptoms.map(id => {
       const symptom = symptomsList.find(s => s.id === id);
-      return symptom ? `- ${symptom.label}` : '';
+      return symptom ? symptom.label : '';
     }).filter(Boolean);
 
-    const checklistContent = `
-Checklist de Síntomas de Tiroides
-==================================
-
-Fecha: ${new Date().toLocaleDateString('es-CL')}
-
-He experimentado los siguientes síntomas recientemente:
-${selectedSymptomsDetails.join('\n')}
-
-Próximos pasos recomendados:
-- Hablar con un médico sobre estos síntomas.
-- Solicitar exámenes de TSH, T3 y T4.
-- Considerar consultar con un endocrinólogo.
-
-Nota: Este documento es una guía y no reemplaza el diagnóstico médico profesional.
-    `;
-
-    const blob = new Blob([checklistContent.trim()], { type: 'text/plain;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute('download', 'checklist-sintomas-tiroides.txt');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Crear el documento PDF
+    const doc = new jsPDF();
+    
+    // Título principal
+    doc.setFontSize(20);
+    doc.setTextColor(59, 130, 246);
+    doc.text('Checklist de Síntomas de Tiroides', 20, 20);
+    
+    // Línea separadora
+    doc.setDrawColor(59, 130, 246);
+    doc.setLineWidth(0.5);
+    doc.line(20, 25, 190, 25);
+    
+    // Fecha
+    doc.setFontSize(11);
+    doc.setTextColor(31, 41, 55);
+    doc.text(`Fecha: ${new Date().toLocaleDateString('es-CL')}`, 20, 35);
+    
+    // Sección de síntomas
+    doc.setFontSize(14);
+    doc.setTextColor(59, 130, 246);
+    doc.text('Síntomas experimentados:', 20, 50);
+    
+    doc.setFontSize(11);
+    doc.setTextColor(31, 41, 55);
+    let yPosition = 60;
+    selectedSymptomsDetails.forEach((symptom, index) => {
+      // Verificar si necesitamos una nueva página
+      if (yPosition > 270) {
+        doc.addPage();
+        yPosition = 20;
+      }
+      doc.text(`${index + 1}. ${symptom}`, 25, yPosition);
+      yPosition += 8;
+    });
+    
+    // Agregar espacio antes de próximos pasos
+    yPosition += 10;
+    
+    // Verificar si necesitamos una nueva página para los próximos pasos
+    if (yPosition > 240) {
+      doc.addPage();
+      yPosition = 20;
+    }
+    
+    // Próximos pasos recomendados
+    doc.setFontSize(14);
+    doc.setTextColor(59, 130, 246);
+    doc.text('Próximos pasos recomendados:', 20, yPosition);
+    yPosition += 10;
+    
+    doc.setFontSize(11);
+    doc.setTextColor(31, 41, 55);
+    const steps = [
+      'Hablar con un médico sobre estos síntomas',
+      'Solicitar exámenes de TSH, T3 y T4',
+      'Considerar consultar con un endocrinólogo'
+    ];
+    
+    steps.forEach((step, index) => {
+      doc.text(`${index + 1}. ${step}`, 25, yPosition);
+      yPosition += 8;
+    });
+    
+    // Nota al pie
+    yPosition += 15;
+    if (yPosition > 260) {
+      doc.addPage();
+      yPosition = 20;
+    }
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    const noteText = 'Nota: Este documento es una guía y no reemplaza el diagnóstico médico profesional.';
+    const splitNote = doc.splitTextToSize(noteText, 170);
+    doc.text(splitNote, 20, yPosition);
+    
+    // Guardar el PDF
+    doc.save('checklist-sintomas-tiroides.pdf');
   };
 
   const scrollToAgenda = () => {
