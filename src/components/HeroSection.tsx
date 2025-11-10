@@ -994,13 +994,6 @@ const HeroSection = () => {
               <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-gradient-to-r from-purple-400 to-pink-300 rounded-full opacity-20"></div>
             </div>
           </div>
-
-          {/* Botón de autotest centrado debajo */}
-          <div className="flex justify-center">
-            <Button size="lg" onClick={scrollToTest} className="bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600 text-lg px-8 py-4">
-              Hacer autotest <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
         </div>
       </div>
     </section>;
