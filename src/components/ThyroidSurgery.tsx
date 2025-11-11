@@ -96,10 +96,17 @@ const ThyroidSurgery = () => {
           })}
         </div>
 
-        <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-          <CardContent className="p-8">
-            <h3 className="text-2xl font-bold mb-4 text-center">Mensaje Importante</h3>
-            <p className="text-center text-lg leading-relaxed max-w-3xl mx-auto">
+        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200">
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <Heart className="h-12 w-12 text-blue-600" />
+            </div>
+            <CardTitle className="text-2xl text-blue-800">
+              💙 Mensaje Importante
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-center text-base leading-relaxed max-w-3xl mx-auto text-blue-800">
               La ausencia total o parcial de la glándula tiroides no te impide vivir una vida plena y activa. 
               Con el tratamiento hormonal adecuado y controles regulares, tu cuerpo funcionará con normalidad. 
               Millones de personas en todo el mundo viven exitosamente con esta condición, trabajando, haciendo 
