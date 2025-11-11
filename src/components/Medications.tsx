@@ -59,6 +59,7 @@ const Medications = () => {
   const [openDetails, setOpenDetails] = useState<number | null>(null);
   const [openPrices, setOpenPrices] = useState<number | null>(null);
   const [selectedMed, setSelectedMed] = useState<number | null>(null);
+  const [scrollPosition, setScrollPosition] = useState<number | null>(null);
   const [pharmacyData, setPharmacyData] = useState<Record<string, PharmacyLink[]>>({});
   const [selectedDose, setSelectedDose] = useState<Record<number, string>>({});
   const [showAllPrices, setShowAllPrices] = useState<Record<string, boolean>>({});
@@ -608,9 +609,24 @@ const Medications = () => {
                 <Button 
                   variant={selectedMed === index ? "default" : "outline"} 
                   className="w-full mt-4"
-                  onClick={() => setSelectedMed(selectedMed === index ? null : index)}
+                  onClick={() => {
+                    if (selectedMed === index) {
+                      // Si está cerrando, volver a la posición guardada
+                      if (scrollPosition !== null) {
+                        setTimeout(() => {
+                          window.scrollTo({ top: scrollPosition, behavior: 'smooth' });
+                          setScrollPosition(null);
+                        }, 100);
+                      }
+                      setSelectedMed(null);
+                    } else {
+                      // Si está abriendo, guardar la posición actual
+                      setScrollPosition(window.scrollY);
+                      setSelectedMed(index);
+                    }
+                  }}
                 >
-                  {selectedMed === index ? 'Ocultar detalles' : 'Ver detalles'}
+                  {selectedMed === index ? 'Ver menos' : 'Más detalles'}
                 </Button>
               </CardContent>
             </Card>

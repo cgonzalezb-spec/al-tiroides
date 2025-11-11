@@ -910,12 +910,18 @@ const HeroSection = () => {
                                   </video>
                                 )}
                                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                                  <PlayCircle className="h-12 w-12 text-white/90 drop-shadow-lg transform transition-transform group-hover:scale-110" />
-                                </div>
-                                {video.description && <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md max-w-[80%]">
-                                    {video.description}
-                                  </div>}
-                              </div>
+                                   <PlayCircle className="h-12 w-12 text-white/90 drop-shadow-lg transform transition-transform group-hover:scale-110" />
+                                 </div>
+                               </div>
+                               
+                               {/* Descripción debajo del video */}
+                               {video.description && (
+                                 <div className="mt-3 px-2">
+                                   <p className="text-muted-foreground text-sm">
+                                     {video.description}
+                                   </p>
+                                 </div>
+                               )}
                             </div>
                           </CarouselItem>)}
                       </CarouselContent>
