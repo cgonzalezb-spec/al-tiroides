@@ -24,6 +24,7 @@ const HeroSection = () => {
   const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [watchingVideoUrl, setWatchingVideoUrl] = useState<string | null>(null);
   const {
     toast
   } = useToast();
@@ -554,33 +555,39 @@ const HeroSection = () => {
   const handleWatchVideo = (videoIndex: number) => {
     const videoToShow = videos[videoIndex];
     if (videoToShow && videoToShow.url) {
-      const videoModal = document.createElement('div');
-      videoModal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4';
-      
-      if (isExternalVideo(videoToShow.url)) {
-        const embedUrl = getVideoEmbedUrl(videoToShow.url);
-        videoModal.innerHTML = `
-          <div class="relative max-w-4xl w-full mx-4">
-            <iframe src="${embedUrl}" class="w-full aspect-video rounded-lg" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-            <button class="absolute -top-10 right-0 text-white text-2xl font-bold hover:text-gray-300" onclick="this.parentElement.parentElement.remove()">✕</button>
-          </div>
-        `;
-      } else {
-        videoModal.innerHTML = `
-          <div class="relative max-w-4xl w-full mx-4">
-            <video controls autoplay class="w-full rounded-lg">
-              <source src="${videoToShow.url}" type="video/mp4">
-              Tu navegador no soporta el elemento video.
-            </video>
-            <button class="absolute -top-10 right-0 text-white text-2xl font-bold hover:text-gray-300" onclick="this.parentElement.parentElement.remove()">✕</button>
-          </div>
-        `;
-      }
-      document.body.appendChild(videoModal);
+      setWatchingVideoUrl(videoToShow.url);
     }
   };
     return <section id="inicio" className="py-20 lg:py-32">
       <div className="container mx-auto px-4">
+        {/* Video modal */}
+        {watchingVideoUrl && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={() => setWatchingVideoUrl(null)}>
+            <div className="relative max-w-4xl w-full mx-4" onClick={(e) => e.stopPropagation()}>
+              {isExternalVideo(watchingVideoUrl) ? (
+                <iframe 
+                  src={getVideoEmbedUrl(watchingVideoUrl)} 
+                  className="w-full aspect-video rounded-lg" 
+                  frameBorder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+                />
+              ) : (
+                <video controls autoPlay className="w-full rounded-lg">
+                  <source src={watchingVideoUrl} type="video/mp4" />
+                  Tu navegador no soporta el elemento video.
+                </video>
+              )}
+              <button 
+                className="absolute -top-10 right-0 text-white text-2xl font-bold hover:text-gray-300" 
+                onClick={() => setWatchingVideoUrl(null)}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Formulario de edición de video */}
         {showEditForm && editingVideo && <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
