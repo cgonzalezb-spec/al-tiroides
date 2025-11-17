@@ -19,6 +19,7 @@ import ConsejosSection from '@/components/ConsejosSection';
 import ThyroidArticles from '@/components/ThyroidArticles';
 import ArticleManagement from '@/components/ArticleManagement';
 import PharmacyLinksManagement from '@/components/PharmacyLinksManagement';
+import ThyroidSymptomExplorer from '@/components/ThyroidSymptomExplorer';
 
 const Index = () => {
   const { user } = useAuth();
@@ -43,6 +44,7 @@ const Index = () => {
         </>
       )}
       <AppointmentBooking />
+      <ThyroidSymptomExplorer />
       <WhenToConsult />
       <MythsAndFAQ />
       <ConsejosSection />
