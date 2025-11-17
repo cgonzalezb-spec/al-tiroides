@@ -174,7 +174,7 @@ const ThyroidSymptomExplorer = () => {
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(146, 64, 14); // Dark yellow text
-    doc.text('⚠ ADVERTENCIA IMPORTANTE:', margin + 5, yPosition);
+    doc.text('ADVERTENCIA IMPORTANTE:', margin + 5, yPosition);
     yPosition += 7;
     
     doc.setFontSize(9);
@@ -192,7 +192,7 @@ const ThyroidSymptomExplorer = () => {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(29, 78, 216); // Blue text
-    doc.text('💙 Mensaje de Tranquilidad:', margin + 5, yPosition);
+    doc.text('Mensaje de Tranquilidad:', margin + 5, yPosition);
     yPosition += 6;
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(0, 0, 0);
@@ -266,7 +266,7 @@ const ThyroidSymptomExplorer = () => {
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(0, 0, 0);
-    doc.text('📋 Próximos Pasos Recomendados:', margin, yPosition);
+    doc.text('Proximos Pasos Recomendados:', margin, yPosition);
     yPosition += 10;
 
     doc.setFontSize(10);
@@ -300,7 +300,7 @@ const ThyroidSymptomExplorer = () => {
     yPosition += 5;
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('ℹ️ Información Adicional:', margin, yPosition);
+    doc.text('Informacion Adicional:', margin, yPosition);
     yPosition += 8;
 
     doc.setFontSize(9);
