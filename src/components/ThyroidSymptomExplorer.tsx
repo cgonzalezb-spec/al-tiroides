@@ -68,28 +68,74 @@ const ThyroidSymptomExplorer = () => {
 
     if (total < 3) {
       return {
-        text: 'Has marcado una mezcla de síntomas (o muy pocos). Esto es muy común y demuestra por qué un autotest no puede dar un diagnóstico. El paso correcto es hablar con tu médico sobre tus inquietudes.',
+        title: 'Síntomas Mixtos o Insuficientes',
+        content: (
+          <p className="text-lg leading-relaxed">
+            Has marcado una mezcla de síntomas (o muy pocos). Esto es muy común y demuestra por qué un autotest no puede dar un diagnóstico. 
+            El paso correcto es <span className="font-semibold text-primary">hablar con tu médico</span> sobre tus inquietudes.
+          </p>
+        ),
         type: 'mixed',
+        bgColor: 'from-gray-50 to-gray-100',
+        borderColor: 'border-gray-300',
       };
     }
 
     if (totalA > totalB && totalA >= 3) {
       return {
-        text: 'Has marcado síntomas que *podrían* estar asociados con el **hipotiroidismo** (tiroides hipoactiva). El siguiente paso recomendado es discutir estos síntomas con un médico.',
+        title: 'Posible Hipotiroidismo',
+        content: (
+          <div className="space-y-3">
+            <p className="text-lg leading-relaxed">
+              Has marcado síntomas que podrían estar asociados con el{' '}
+              <span className="font-bold text-blue-700">hipotiroidismo</span>{' '}
+              <span className="text-muted-foreground">(tiroides hipoactiva)</span>.
+            </p>
+            <p className="text-base leading-relaxed">
+              El siguiente paso recomendado es{' '}
+              <span className="font-semibold text-primary">discutir estos síntomas con un médico</span>.
+            </p>
+          </div>
+        ),
         type: 'hypo',
+        bgColor: 'from-blue-50 to-blue-100',
+        borderColor: 'border-blue-300',
       };
     }
 
     if (totalB > totalA && totalB >= 3) {
       return {
-        text: 'Has marcado síntomas que *podrían* estar asociados con el **hipertiroidismo** (tiroides hiperactiva). Estos síntomas deben ser evaluados por un profesional.',
+        title: 'Posible Hipertiroidismo',
+        content: (
+          <div className="space-y-3">
+            <p className="text-lg leading-relaxed">
+              Has marcado síntomas que podrían estar asociados con el{' '}
+              <span className="font-bold text-green-700">hipertiroidismo</span>{' '}
+              <span className="text-muted-foreground">(tiroides hiperactiva)</span>.
+            </p>
+            <p className="text-base leading-relaxed">
+              Estos síntomas deben ser{' '}
+              <span className="font-semibold text-primary">evaluados por un profesional</span>.
+            </p>
+          </div>
+        ),
         type: 'hyper',
+        bgColor: 'from-green-50 to-green-100',
+        borderColor: 'border-green-300',
       };
     }
 
     return {
-      text: 'Has marcado una mezcla de síntomas (o muy pocos). Esto es muy común y demuestra por qué un autotest no puede dar un diagnóstico. El paso correcto es hablar con tu médico sobre tus inquietudes.',
+      title: 'Síntomas Mixtos',
+      content: (
+        <p className="text-lg leading-relaxed">
+          Has marcado una mezcla de síntomas. Esto es muy común y demuestra por qué un autotest no puede dar un diagnóstico. 
+          El paso correcto es <span className="font-semibold text-primary">hablar con tu médico</span> sobre tus inquietudes.
+        </p>
+      ),
       type: 'mixed',
+      bgColor: 'from-gray-50 to-gray-100',
+      borderColor: 'border-gray-300',
     };
   };
 
@@ -261,12 +307,15 @@ const ThyroidSymptomExplorer = () => {
 
           {/* Section 4: Results (Hidden until button click) */}
           {showResults && (
-            <div id="symptom-results" className="mt-12 space-y-6">
-              <Card className="p-6 bg-gradient-to-br from-blue-50 to-green-50 border-2 border-primary">
-                <div className="mb-6">
-                  <p className="text-lg leading-relaxed">
-                    {getConclusionText().text}
-                  </p>
+            <div id="symptom-results" className="mt-12 space-y-6 animate-fade-in">
+              <Card className={`p-8 bg-gradient-to-br ${getConclusionText().bgColor} border-2 ${getConclusionText().borderColor} shadow-xl`}>
+                <div className="mb-8">
+                  <h3 className="text-2xl font-bold mb-4 text-foreground">
+                    {getConclusionText().title}
+                  </h3>
+                  <div className="text-foreground">
+                    {getConclusionText().content}
+                  </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -274,7 +323,7 @@ const ThyroidSymptomExplorer = () => {
                     onClick={generatePDF}
                     variant="default"
                     size="lg"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 hover-scale"
                   >
                     <Download className="h-5 w-5" />
                     Descargar mis Síntomas en PDF
@@ -284,7 +333,7 @@ const ThyroidSymptomExplorer = () => {
                     onClick={scrollToSpecialist}
                     variant="secondary"
                     size="lg"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 hover-scale"
                   >
                     <Search className="h-5 w-5" />
                     Encontrar un Especialista
