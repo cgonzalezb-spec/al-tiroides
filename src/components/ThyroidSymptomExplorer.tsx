@@ -142,61 +142,188 @@ const ThyroidSymptomExplorer = () => {
   const generatePDF = () => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
     let yPosition = 20;
+    const margin = 15;
+    const conclusionData = getConclusionText();
 
     // Title
-    doc.setFontSize(18);
+    doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
     doc.text('Resumen de Síntomas para Revisión Médica', pageWidth / 2, yPosition, { align: 'center' });
+    yPosition += 10;
+
+    // Date
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const currentDate = new Date().toLocaleDateString('es-ES', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    doc.text(`Fecha: ${currentDate}`, pageWidth / 2, yPosition, { align: 'center' });
     yPosition += 15;
 
-    // Disclaimer
-    doc.setFontSize(10);
+    // Disclaimer box
+    doc.setFillColor(255, 252, 231); // Light yellow background
+    doc.rect(margin, yPosition, pageWidth - (margin * 2), 45, 'F');
+    doc.setDrawColor(245, 158, 11); // Yellow border
+    doc.rect(margin, yPosition, pageWidth - (margin * 2), 45, 'S');
+    
+    yPosition += 7;
+    doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text('ADVERTENCIA IMPORTANTE:', 15, yPosition);
+    doc.setTextColor(146, 64, 14); // Dark yellow text
+    doc.text('⚠ ADVERTENCIA IMPORTANTE:', margin + 5, yPosition);
     yPosition += 7;
     
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    const disclaimerText = 'ESTO NO ES UNA HERRAMIENTA DE DIAGNÓSTICO. Esta herramienta es solo para fines informativos y te ayuda a organizar tus síntomas para discutirlos con un profesional. No reemplaza una evaluación médica. La única forma de obtener un diagnóstico preciso es a través de un análisis de sangre (perfil tiroideo) solicitado por un médico.';
-    const disclaimerLines = doc.splitTextToSize(disclaimerText, pageWidth - 30);
-    doc.text(disclaimerLines, 15, yPosition);
-    yPosition += disclaimerLines.length * 5 + 10;
+    doc.setTextColor(0, 0, 0);
+    const disclaimerText = 'ESTO NO ES UN DIAGNÓSTICO. Esta herramienta es solo informativa y te ayuda a organizar tus síntomas para discutirlos con un profesional. No reemplaza una evaluación médica. La única forma de obtener un diagnóstico preciso es a través de un análisis de sangre (perfil tiroideo) solicitado por un médico.';
+    const disclaimerLines = doc.splitTextToSize(disclaimerText, pageWidth - (margin * 2) - 10);
+    doc.text(disclaimerLines, margin + 5, yPosition);
+    yPosition += 50;
 
-    // Selected symptoms
+    // Reassurance message
+    doc.setFillColor(239, 246, 255); // Light blue background
+    doc.rect(margin, yPosition, pageWidth - (margin * 2), 25, 'F');
+    yPosition += 7;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(29, 78, 216); // Blue text
+    doc.text('💙 Mensaje de Tranquilidad:', margin + 5, yPosition);
+    yPosition += 6;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 0);
+    const reassuranceText = 'Los trastornos tiroideos son muy comunes y tratables. Con el tratamiento adecuado, la mayoría de las personas llevan una vida completamente normal. Estás tomando el paso correcto al documentar tus síntomas.';
+    const reassuranceLines = doc.splitTextToSize(reassuranceText, pageWidth - (margin * 2) - 10);
+    doc.text(reassuranceLines, margin + 5, yPosition);
+    yPosition += 20;
+
+    // Selected symptoms section
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('Síntomas seleccionados:', 15, yPosition);
-    yPosition += 10;
+    doc.setTextColor(0, 0, 0);
+    doc.text('Síntomas Seleccionados:', margin, yPosition);
+    yPosition += 8;
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
 
     if (groupASymptoms.length > 0) {
       doc.setFont('helvetica', 'bold');
-      doc.text('Grupo A (Posible Hipotiroidismo):', 15, yPosition);
-      yPosition += 7;
+      doc.setTextColor(29, 78, 216); // Blue
+      doc.text('Grupo A - Síntomas de "Lentitud" (Posible Hipotiroidismo):', margin, yPosition);
+      yPosition += 6;
       doc.setFont('helvetica', 'normal');
+      doc.setTextColor(0, 0, 0);
 
       groupASymptoms.forEach(symptom => {
-        const lines = doc.splitTextToSize(`• ${symptom}`, pageWidth - 30);
-        doc.text(lines, 20, yPosition);
+        if (yPosition > pageHeight - 30) {
+          doc.addPage();
+          yPosition = 20;
+        }
+        const lines = doc.splitTextToSize(`• ${symptom}`, pageWidth - (margin * 2) - 5);
+        doc.text(lines, margin + 5, yPosition);
         yPosition += lines.length * 5 + 2;
       });
       yPosition += 5;
     }
 
     if (groupBSymptoms.length > 0) {
+      if (yPosition > pageHeight - 40) {
+        doc.addPage();
+        yPosition = 20;
+      }
       doc.setFont('helvetica', 'bold');
-      doc.text('Grupo B (Posible Hipertiroidismo):', 15, yPosition);
-      yPosition += 7;
+      doc.setTextColor(22, 163, 74); // Green
+      doc.text('Grupo B - Síntomas de "Aceleración" (Posible Hipertiroidismo):', margin, yPosition);
+      yPosition += 6;
       doc.setFont('helvetica', 'normal');
+      doc.setTextColor(0, 0, 0);
 
       groupBSymptoms.forEach(symptom => {
-        const lines = doc.splitTextToSize(`• ${symptom}`, pageWidth - 30);
-        doc.text(lines, 20, yPosition);
+        if (yPosition > pageHeight - 30) {
+          doc.addPage();
+          yPosition = 20;
+        }
+        const lines = doc.splitTextToSize(`• ${symptom}`, pageWidth - (margin * 2) - 5);
+        doc.text(lines, margin + 5, yPosition);
         yPosition += lines.length * 5 + 2;
       });
+      yPosition += 5;
     }
+
+    // Add new page for recommendations if needed
+    if (yPosition > pageHeight - 80) {
+      doc.addPage();
+      yPosition = 20;
+    }
+
+    // Next steps section
+    yPosition += 5;
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text('📋 Próximos Pasos Recomendados:', margin, yPosition);
+    yPosition += 10;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+
+    const nextSteps = [
+      '1. Agenda una cita con tu médico de cabecera o un endocrinólogo.',
+      '2. Lleva este documento a tu consulta médica.',
+      '3. Solicita un perfil tiroideo completo (TSH, T3, T4).',
+      '4. Menciona cuánto tiempo has experimentado estos síntomas.',
+      '5. Comenta si tienes antecedentes familiares de problemas tiroideos.',
+      '6. No te automediques. Espera los resultados de laboratorio.',
+    ];
+
+    nextSteps.forEach(step => {
+      if (yPosition > pageHeight - 20) {
+        doc.addPage();
+        yPosition = 20;
+      }
+      const stepLines = doc.splitTextToSize(step, pageWidth - (margin * 2));
+      doc.text(stepLines, margin, yPosition);
+      yPosition += stepLines.length * 5 + 3;
+    });
+
+    // Additional information based on symptoms
+    if (yPosition > pageHeight - 60) {
+      doc.addPage();
+      yPosition = 20;
+    }
+
+    yPosition += 5;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ℹ️ Información Adicional:', margin, yPosition);
+    yPosition += 8;
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    
+    let additionalInfo = '';
+    if (conclusionData.type === 'hypo') {
+      additionalInfo = 'El hipotiroidismo se trata efectivamente con hormona tiroidea sintética (levotiroxina). Con el tratamiento adecuado y seguimiento regular, la mayoría de los síntomas mejoran significativamente en pocas semanas.';
+    } else if (conclusionData.type === 'hyper') {
+      additionalInfo = 'El hipertiroidismo tiene varias opciones de tratamiento efectivas, incluyendo medicamentos antitiroideos, yodo radiactivo o cirugía. Tu médico determinará cuál es la mejor opción para tu caso específico.';
+    } else {
+      additionalInfo = 'Los síntomas mixtos o inespecíficos pueden tener múltiples causas. Un análisis de sangre completo ayudará a determinar si existe un problema tiroideo o si los síntomas se deben a otra condición.';
+    }
+
+    const additionalLines = doc.splitTextToSize(additionalInfo, pageWidth - (margin * 2));
+    doc.text(additionalLines, margin, yPosition);
+    yPosition += additionalLines.length * 4 + 10;
+
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(128, 128, 128);
+    const footerText = 'Este documento fue generado como ayuda para tu consulta médica. No reemplaza el diagnóstico profesional.';
+    doc.text(footerText, pageWidth / 2, pageHeight - 10, { align: 'center' });
 
     // Save PDF
     doc.save('resumen-sintomas-tiroideos.pdf');
