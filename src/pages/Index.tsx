@@ -3,7 +3,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import ThyroidInfo from '@/components/ThyroidInfo';
-import SymptomsTest from '@/components/SymptomsTest';
 import DisorderTypes from '@/components/DisorderTypes';
 import ThyroidSurgery from '@/components/ThyroidSurgery';
 import Medications from '@/components/Medications';
@@ -29,7 +28,7 @@ const Index = () => {
       <Header />
       <HeroSection />
       <ThyroidInfo />
-      <SymptomsTest />
+      <ThyroidSymptomExplorer />
       <DisorderTypes />
       <ThyroidSurgery />
       <Medications />
@@ -44,7 +43,6 @@ const Index = () => {
         </>
       )}
       <AppointmentBooking />
-      <ThyroidSymptomExplorer />
       <WhenToConsult />
       <MythsAndFAQ />
       <ConsejosSection />
