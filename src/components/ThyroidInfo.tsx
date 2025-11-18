@@ -157,21 +157,6 @@ const ThyroidInfo = () => {
           </div>
         </div>
 
-        {/* Botón de autotest */}
-        <div className="flex justify-center mt-12">
-          <Button 
-            size="lg" 
-            onClick={() => {
-              const element = document.querySelector('#autotest');
-              if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
-              }
-            }} 
-            className="bg-gradient-to-r from-blue-600 to-green-500 hover:from-blue-700 hover:to-green-600 text-lg px-8 py-4"
-          >
-            Hacer autotest
-          </Button>
-        </div>
       </div>
     </section>
   );
