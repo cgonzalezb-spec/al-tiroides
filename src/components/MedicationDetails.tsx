@@ -114,7 +114,7 @@ export const MedicationDetails = ({
                 Reacciones adversas a medicamentos
               </h4>
               <ul className="space-y-1">
-                {medication.adverseReactions.map((reaction: string, i: number) => (
+                {(medication.adverseReactions || []).map((reaction: string, i: number) => (
                   <li key={i} className="text-sm text-muted-foreground">
                     • {reaction}
                   </li>
@@ -128,7 +128,7 @@ export const MedicationDetails = ({
                 Contraindicaciones
               </h4>
               <ul className="space-y-1">
-                {medication.contraindications.map((contraindication: string, i: number) => (
+                {(medication.contraindications || []).map((contraindication: string, i: number) => (
                   <li key={i} className="text-sm text-muted-foreground">
                     • {contraindication}
                   </li>
@@ -142,7 +142,7 @@ export const MedicationDetails = ({
                 Interacciones medicamentosas
               </h4>
               <ul className="space-y-1">
-                {medication.interactions.map((interaction: string, i: number) => (
+                {(medication.interactions || []).map((interaction: string, i: number) => (
                   <li key={i} className="text-sm text-muted-foreground">
                     • {interaction}
                   </li>
