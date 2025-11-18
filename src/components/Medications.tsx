@@ -11,10 +11,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useState, useEffect } from 'react';
+import React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useRole } from '@/contexts/RoleContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { MedicationDetails } from './MedicationDetails';
 
 interface PharmacyLink {
   id?: string;
@@ -559,8 +561,8 @@ const Medications = () => {
 
         <div className="grid lg:grid-cols-3 gap-8 mb-8">
           {medications.map((med, index) => (
-            <>
-            <Card 
+            <React.Fragment key={index}>
+            <Card
               key={index} 
               className={`h-full flex flex-col hover:shadow-lg transition-shadow ${selectedMed === index ? 'ring-2 ring-primary' : ''}`}
             >
@@ -616,482 +618,67 @@ const Medications = () => {
               </CardContent>
             </Card>
 
-            {/* Contenido expandido debajo del medicamento */}
+            {/* Contenido expandido debajo del medicamento - Mobile: debajo de cada card, Desktop: se muestra después del grid */}
             {selectedMed === index && (
-              <Card className="lg:col-span-3 mb-8 animate-fade-in">
-                <CardContent className="pt-6">
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">{medications[selectedMed].name}</h3>
-                <p className="text-gray-600 mt-2">Información farmacológica detallada</p>
-              </div>
-              
-              <div className="space-y-3 max-w-4xl mx-auto">
-                <Collapsible 
-                  open={openDetails === selectedMed} 
-                  onOpenChange={(isOpen) => setOpenDetails(isOpen ? selectedMed : null)}
-                >
-                  <CollapsibleTrigger asChild>
-                    <button 
-                      className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm font-medium"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Pill className="h-4 w-4 text-primary" />
-                        Información farmacológica completa
-                      </span>
-                      <ChevronDown className={`h-4 w-4 transition-transform ${openDetails === selectedMed ? 'rotate-180' : ''}`} />
-                    </button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-4 space-y-4 grid md:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="font-semibold text-base mb-2 flex items-center gap-2">
-                        <Pill className="h-4 w-4 text-primary" />
-                        Farmacodinamia
-                      </h4>
-                      <p className="text-sm text-muted-foreground">{medications[selectedMed].pharmacodynamics}</p>
-                    </div>
-
-                    <div>
-                      <h4 className="font-semibold text-base mb-2 flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-primary" />
-                        Farmacocinética
-                      </h4>
-                      <p className="text-sm text-muted-foreground">{medications[selectedMed].pharmacokinetics}</p>
-                    </div>
-
-                    <div>
-                      <h4 className="font-semibold text-base mb-2 flex items-center gap-2">
-                        <Heart className="h-4 w-4 text-primary" />
-                        Indicación terapéutica
-                      </h4>
-                      <p className="text-sm text-muted-foreground">{medications[selectedMed].therapeuticIndication}</p>
-                    </div>
-
-                    <div>
-                      <h4 className="font-semibold text-base mb-2 flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4 text-primary" />
-                        Vías de administración
-                      </h4>
-                      <p className="text-sm text-muted-foreground">{medications[selectedMed].administrationRoutes}</p>
-                    </div>
-
-                    <div>
-                      <h4 className="font-semibold text-base mb-2 flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4 text-destructive" />
-                        Reacciones adversas a medicamentos
-                      </h4>
-                      <ul className="space-y-1">
-                        {medications[selectedMed].adverseReactions.map((reaction, i) => (
-                          <li key={i} className="text-sm text-muted-foreground">
-                            • {reaction}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h4 className="font-semibold text-base mb-2 flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4 text-amber-600" />
-                        Interacciones con otros medicamentos y/o alimentos
-                      </h4>
-                      <ul className="space-y-1">
-                        {medications[selectedMed].drugInteractions.map((interaction, i) => (
-                          <li key={i} className="text-sm text-muted-foreground">
-                            • {interaction}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h4 className="font-semibold text-base mb-2 flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4 text-red-600" />
-                        Interacciones con otras patologías
-                      </h4>
-                      <ul className="space-y-1">
-                        {medications[selectedMed].pathologyInteractions.map((interaction, i) => (
-                          <li key={i} className="text-sm text-muted-foreground">
-                            • {interaction}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-
-                <Collapsible 
-                  open={openPrices === selectedMed} 
-                  onOpenChange={(isOpen) => setOpenPrices(isOpen ? selectedMed : null)}
-                >
-                  <CollapsibleTrigger asChild>
-                    <button 
-                      className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm font-medium border"
-                    >
-                      <span className="flex items-center gap-2">
-                        <ShoppingCart className="h-4 w-4" />
-                        Comparar precios
-                      </span>
-                      <ChevronDown className={`h-4 w-4 transition-transform ${openPrices === selectedMed ? 'rotate-180' : ''}`} />
-                    </button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-4">
-                    {(() => {
-                      const links = getPharmacyLinks(medications[selectedMed].medicationKey);
-                      
-                      // Extraer dosis únicas de los enlaces
-                      const uniqueDoses = Array.from(new Set(
-                        links
-                          .map(link => link.mg_per_tablet)
-                          .filter(dose => dose && dose.trim() !== '')
-                          .map(dose => {
-                            // Extraer solo el número de mcg
-                            const match = dose?.match(/(\d+)\s*mcg/i);
-                            return match ? match[1] : null;
-                          })
-                          .filter(Boolean)
-                      )).sort((a, b) => parseInt(a!) - parseInt(b!));
-                      
-                      // Obtener dosis seleccionada para este medicamento
-                      const currentDose = selectedDose[selectedMed] || 'all';
-                      
-                      // Filtrar por dosis si hay una seleccionada
-                      let filteredLinks = links;
-                      if (currentDose !== 'all') {
-                        filteredLinks = links.filter(link => {
-                          const match = link.mg_per_tablet?.match(/(\d+)\s*mcg/i);
-                          return match && match[1] === currentDose;
-                        });
-                      }
-                      
-                      // Ordenar por precio por comprimido si está disponible, sino por precio total
-                      const sortedLinks = [...filteredLinks].sort((a, b) => {
-                        if (a.pricePerUnit && b.pricePerUnit) {
-                          return a.pricePerUnit - b.pricePerUnit;
-                        }
-                        return a.price - b.price;
-                      });
-                      
-                      // Calcular el mejor valor solo dentro de la dosis seleccionada
-                      const minPricePerUnit = sortedLinks.length > 0 && sortedLinks[0].pricePerUnit 
-                        ? sortedLinks[0].pricePerUnit 
-                        : null;
-                      
-                      return (
-                        <>
-                          {uniqueDoses.length > 0 && (
-                            <div className="mb-4 p-4 bg-muted/30 rounded-lg border">
-                              <div className="flex items-center gap-3">
-                                <Label className="text-sm font-medium shrink-0">
-                                  Filtrar por dosis:
-                                </Label>
-                                <Select
-                                  value={currentDose}
-                                  onValueChange={(value) => {
-                                    setSelectedDose(prev => ({ ...prev, [selectedMed]: value }));
-                                  }}
-                                >
-                                  <SelectTrigger className="w-full max-w-xs">
-                                    <SelectValue placeholder="Todas las dosis" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="all">Todas las dosis</SelectItem>
-                                    {uniqueDoses.map(dose => (
-                                      <SelectItem key={dose} value={dose!}>
-                                        {dose} mcg
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            </div>
-                           )}
-
-                           {/* Filtro de bioequivalente */}
-                           <div className="mb-4 p-4 bg-muted/30 rounded-lg border">
-                             <div className="flex items-center gap-3">
-                               <Label className="text-sm font-medium shrink-0">
-                                 Filtrar bioequivalentes:
-                               </Label>
-                               <Select
-                                 value={filterBioequivalent[selectedMed] || 'all'}
-                                 onValueChange={(value: 'all' | 'only' | 'exclude') => {
-                                   setFilterBioequivalent(prev => ({ ...prev, [selectedMed]: value }));
-                                 }}
-                               >
-                                 <SelectTrigger className="w-full max-w-xs">
-                                   <SelectValue placeholder="Todos" />
-                                 </SelectTrigger>
-                                 <SelectContent>
-                                   <SelectItem value="all">Todos los medicamentos</SelectItem>
-                                   <SelectItem value="only">Solo bioequivalentes</SelectItem>
-                                   <SelectItem value="exclude">Excluir bioequivalentes</SelectItem>
-                                 </SelectContent>
-                               </Select>
-                             </div>
-                           </div>
-                          
-                          <div className="space-y-6">
-                            {(() => {
-                              // Filtrar por bioequivalente según la opción seleccionada
-                              let linksToShow = sortedLinks;
-                              const bioFilter = filterBioequivalent[selectedMed] || 'all';
-                              
-                              if (bioFilter === 'only') {
-                                linksToShow = sortedLinks.filter(link => link.is_bioequivalent);
-                              } else if (bioFilter === 'exclude') {
-                                linksToShow = sortedLinks.filter(link => !link.is_bioequivalent);
-                              }
-
-                              // Agrupar por farmacia
-                              const groupedByPharmacy = linksToShow.reduce((acc, link) => {
-                                const pharmacyName = link.name;
-                                if (!acc[pharmacyName]) {
-                                  acc[pharmacyName] = [];
-                                }
-                                acc[pharmacyName].push(link);
-                                return acc;
-                              }, {} as Record<string, typeof sortedLinks>);
-                              
-                              return Object.entries(groupedByPharmacy).map(([pharmacyName, items]) => {
-                                const pharmacyKey = `${selectedMed}-${pharmacyName}`;
-                                const showAll = showAllPrices[pharmacyKey] || false;
-                                const displayItems = showAll ? items : items.slice(0, 3);
-                                const hasMore = items.length > 3;
-
-                                return (
-                                  <Card key={pharmacyName} className="overflow-hidden border-2 shadow-lg">
-                                    <CardHeader className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 pb-8 pt-8 relative overflow-hidden">
-                                      {/* Background decorative pattern */}
-                                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.1),rgba(255,255,255,0))]" />
-                                      
-                                      <div className="relative flex items-center gap-6">
-                                        {/* Logo with upload functionality */}
-                                        <div className="relative group flex-shrink-0">
-                                          <div className="w-32 h-32 rounded-2xl overflow-hidden bg-white shadow-xl flex items-center justify-center p-4 border-2 border-primary/20 transition-transform group-hover:scale-105">
-                                            <img 
-                                              src={pharmacyLogosDb[pharmacyName] || pharmacyLogos[pharmacyName] || "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=100&h=100&fit=crop"} 
-                                              alt={pharmacyName}
-                                              className="w-full h-full object-contain"
-                                              onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.src = "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=100&h=100&fit=crop";
-                                              }}
-                                            />
-                                          </div>
-                                          {isAdmin && (
-                                            <label className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-all cursor-pointer rounded-2xl backdrop-blur-sm">
-                                              <input
-                                                type="file"
-                                                accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
-                                                className="hidden"
-                                                onChange={(e) => {
-                                                  const file = e.target.files?.[0];
-                                                  if (file) handleLogoUpload(pharmacyName, file);
-                                                }}
-                                                disabled={uploadingLogo === pharmacyName}
-                                              />
-                                              {uploadingLogo === pharmacyName ? (
-                                                <div className="text-white text-sm font-medium">Subiendo...</div>
-                                              ) : (
-                                                <div className="flex flex-col items-center gap-2">
-                                                  <Upload className="h-8 w-8 text-white" />
-                                                  <span className="text-white text-sm font-medium">Cambiar logo</span>
-                                                </div>
-                                              )}
-                                            </label>
-                                          )}
-                                        </div>
-
-                                        {/* Title and info section - now taking full width */}
-                                        <div className="flex-1 min-w-0">
-                                          <CardTitle className="text-4xl md:text-5xl font-bold text-primary mb-3 tracking-tight">
-                                            {pharmacyName}
-                                          </CardTitle>
-                                          <div className="flex items-center gap-3 text-muted-foreground">
-                                            <div className="flex items-center gap-2">
-                                              <ShoppingCart className="h-5 w-5" />
-                                              <span className="text-base font-medium">
-                                                {items.length} {items.length === 1 ? 'opción disponible' : 'opciones disponibles'}
-                                              </span>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </CardHeader>
-                                    <CardContent className="p-0">
-                                      <div className="divide-y">
-                                        {displayItems.map((pharmacy, i) => {
-                                        const isBestValue = minPricePerUnit && pharmacy.pricePerUnit 
-                                          ? pharmacy.pricePerUnit === minPricePerUnit 
-                                          : false;
-                                        const pricePerPill = pharmacy.quantity 
-                                          ? Math.round(pharmacy.price / pharmacy.quantity)
-                                          : null;
-                                        
-                                          return (
-                                            <div 
-                                              key={i}
-                                              className={`p-5 ${isBestValue ? 'bg-green-50 dark:bg-green-950/20 border-l-4 border-green-500' : ''} hover:bg-muted/50 transition-colors`}
-                                            >
-                                              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                                                {/* Info del producto */}
-                                                <div className="flex-1 space-y-2">
-                                                  <div>
-                                                     <div className="flex items-center gap-2 flex-wrap">
-                                                       <h4 className="font-semibold text-base">
-                                                         {pharmacy.commercial_name || pharmacy.brand}
-                                                       </h4>
-                                                       {isBestValue && (
-                                                         <Badge className="text-xs px-2 py-0.5 bg-green-600 text-white hover:bg-green-700 border-transparent">
-                                                           🏆 Mejor precio
-                                                         </Badge>
-                                                       )}
-                                                       {pharmacy.is_bioequivalent && (
-                                                         <Badge variant="outline" className="text-xs px-2 py-0.5 border-blue-500 text-blue-700 dark:text-blue-400">
-                                                           Bioequivalente
-                                                         </Badge>
-                                                       )}
-                                                     </div>
-                                                    {pharmacy.laboratory && (
-                                                      <p className="text-sm text-muted-foreground mt-1">
-                                                        {pharmacy.laboratory}
-                                                      </p>
-                                                    )}
-                                                  </div>
-                                                  
-                                                  <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                                                    {pharmacy.mg_per_tablet && (
-                                                      <span className="font-medium">{pharmacy.mg_per_tablet}</span>
-                                                    )}
-                                                    {pharmacy.mg_per_tablet && pharmacy.quantity && (
-                                                      <span>•</span>
-                                                    )}
-                                                    {pharmacy.quantity && (
-                                                      <span>{pharmacy.quantity} comprimidos</span>
-                                                    )}
-                                                  </div>
-                                                </div>
-                                              
-                                                {/* Precios y acciones */}
-                                                <div className="flex flex-col md:items-end gap-3">
-                                                  <div className="space-y-1">
-                                                    <div className="text-3xl font-bold text-primary">
-                                                      ${pharmacy.price.toLocaleString('es-CL')}
-                                                    </div>
-                                                    {pricePerPill && (
-                                                      <div className="text-sm text-muted-foreground">
-                                                        ${pricePerPill.toLocaleString('es-CL')} por comprimido
-                                                      </div>
-                                                    )}
-                                                  </div>
-                                                  
-                                                  <div className="flex gap-2">
-                                                    <Button
-                                                      variant="default"
-                                                      size="sm"
-                                                      asChild
-                                                      className="bg-primary hover:bg-primary/90"
-                                                    >
-                                                      <a 
-                                                        href={pharmacy.url} 
-                                                        target="_blank" 
-                                                        rel="noopener noreferrer"
-                                                        className="flex items-center gap-2"
-                                                      >
-                                                        Ver en tienda
-                                                        <ExternalLink className="h-4 w-4" />
-                                                      </a>
-                                                    </Button>
-                                                    
-                                                    {isAdmin && (
-                                                      <div className="flex gap-1">
-                                                        <Button
-                                                          variant="ghost"
-                                                          size="sm"
-                                                          className="h-9 px-2"
-                                                          onClick={() => handleEditLink(pharmacy)}
-                                                          disabled={!pharmacy.id}
-                                                        >
-                                                          <Pencil className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                          variant="ghost"
-                                                          size="sm"
-                                                          className="h-9 px-2 text-destructive hover:text-destructive"
-                                                          onClick={() => {
-                                                            if (pharmacy.id && confirm('¿Estás seguro de eliminar este medicamento?')) {
-                                                              deleteLinkMutation.mutate(pharmacy.id);
-                                                            }
-                                                          }}
-                                                          disabled={!pharmacy.id}
-                                                        >
-                                                          <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                      </div>
-                                                    )}
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                      {hasMore && (
-                                        <div className="p-4 bg-muted/20 border-t">
-                                          <Button
-                                            variant="outline"
-                                            className="w-full"
-                                            onClick={() => setShowAllPrices(prev => ({ ...prev, [pharmacyKey]: !showAll }))}
-                                          >
-                                            {showAll ? 'Ver menos opciones' : `Ver ${items.length - 3} opciones más`}
-                                          </Button>
-                                        </div>
-                                      )}
-                                    </CardContent>
-                                  </Card>
-                                );
-                              });
-                            })()}
-                          </div>
-                            
-                            {isAdmin && (
-                              <div className="mt-4 flex justify-center">
-                                <Button
-                                  onClick={() => setIsAddDialogOpen(true)}
-                                  className="bg-primary hover:bg-primary/90"
-                                  size="sm"
-                                >
-                                  <Plus className="w-4 h-4 mr-2" />
-                                  Agregar Medicamento
-                                </Button>
-                              </div>
-                            )}
-
-                            <div className="mt-6 space-y-3 text-sm text-muted-foreground">
-                              <p className="flex items-start gap-2">
-                                <CheckCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                                <span>
-                                  La opción marcada como "Mejor precio" tiene el costo por comprimido más bajo.
-                                </span>
-                              </p>
-                              <p className="flex items-start gap-2">
-                                <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                                <span>
-                                  Los precios son referenciales y pueden variar. Verifica el precio final en cada farmacia.
-                                </span>
-                              </p>
-                            </div>
-                        </>
-                      );
-                    })()}
-                  </CollapsibleContent>
-                </Collapsible>
-              </div>
-            </CardContent>
-          </Card>
+              <>
+                {/* Versión Mobile/Tablet - muestra debajo de cada card */}
+                <Card className="lg:hidden mb-8 animate-fade-in">
+                  <MedicationDetails
+                    medication={med}
+                    medIndex={index}
+                    openDetails={openDetails}
+                    setOpenDetails={setOpenDetails}
+                    openPrices={openPrices}
+                    setOpenPrices={setOpenPrices}
+                    getPharmacyLinks={getPharmacyLinks}
+                    selectedDose={selectedDose}
+                    setSelectedDose={setSelectedDose}
+                    showAllPrices={showAllPrices}
+                    setShowAllPrices={setShowAllPrices}
+                    pharmacyLogos={pharmacyLogos}
+                    pharmacyLogosDb={pharmacyLogosDb}
+                    isAdmin={isAdmin}
+                    uploadingLogo={uploadingLogo}
+                    handleLogoUpload={handleLogoUpload}
+                    setEditingLink={setEditingLink}
+                    setIsEditDialogOpen={setIsEditDialogOpen}
+                    setIsAddDialogOpen={setIsAddDialogOpen}
+                    deleteLinkMutation={deleteLinkMutation}
+                  />
+                </Card>
+              </>
             )}
-          </>
+          </React.Fragment>
           ))}
         </div>
+
+        {/* Versión Desktop - muestra debajo de las 3 cajas */}
+        {selectedMed !== null && (
+          <Card className="hidden lg:block mb-8 animate-fade-in">
+            <MedicationDetails
+              medication={medications[selectedMed]}
+              medIndex={selectedMed}
+              openDetails={openDetails}
+              setOpenDetails={setOpenDetails}
+              openPrices={openPrices}
+              setOpenPrices={setOpenPrices}
+              getPharmacyLinks={getPharmacyLinks}
+              selectedDose={selectedDose}
+              setSelectedDose={setSelectedDose}
+              showAllPrices={showAllPrices}
+              setShowAllPrices={setShowAllPrices}
+              pharmacyLogos={pharmacyLogos}
+              pharmacyLogosDb={pharmacyLogosDb}
+              isAdmin={isAdmin}
+              uploadingLogo={uploadingLogo}
+              handleLogoUpload={handleLogoUpload}
+              setEditingLink={setEditingLink}
+              setIsEditDialogOpen={setIsEditDialogOpen}
+              setIsAddDialogOpen={setIsAddDialogOpen}
+              deleteLinkMutation={deleteLinkMutation}
+            />
+          </Card>
+        )}
 
         <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200">
           <CardHeader className="text-center">
