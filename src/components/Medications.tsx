@@ -59,7 +59,6 @@ const Medications = () => {
   const [openDetails, setOpenDetails] = useState<number | null>(null);
   const [openPrices, setOpenPrices] = useState<number | null>(null);
   const [selectedMed, setSelectedMed] = useState<number | null>(null);
-  const [scrollPosition, setScrollPosition] = useState<number | null>(null);
   const [pharmacyData, setPharmacyData] = useState<Record<string, PharmacyLink[]>>({});
   const [selectedDose, setSelectedDose] = useState<Record<number, string>>({});
   const [showAllPrices, setShowAllPrices] = useState<Record<string, boolean>>({});
@@ -550,7 +549,7 @@ const Medications = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Medicamentos para la tiroides
+            Medicamentos para patologías tiroideas
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Conoce los tratamientos más comunes, cómo funcionan y qué esperar. 
@@ -558,8 +557,9 @@ const Medications = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8 mb-8 items-stretch">
+        <div className="grid lg:grid-cols-3 gap-8 mb-8">
           {medications.map((med, index) => (
+            <>
             <Card 
               key={index} 
               className={`h-full flex flex-col hover:shadow-lg transition-shadow ${selectedMed === index ? 'ring-2 ring-primary' : ''}`}
@@ -609,34 +609,17 @@ const Medications = () => {
                 <Button 
                   variant={selectedMed === index ? "default" : "outline"} 
                   className="w-full mt-4"
-                  onClick={() => {
-                    if (selectedMed === index) {
-                      // Si está cerrando, volver a la posición guardada
-                      if (scrollPosition !== null) {
-                        setTimeout(() => {
-                          window.scrollTo({ top: scrollPosition, behavior: 'smooth' });
-                          setScrollPosition(null);
-                        }, 100);
-                      }
-                      setSelectedMed(null);
-                    } else {
-                      // Si está abriendo, guardar la posición actual
-                      setScrollPosition(window.scrollY);
-                      setSelectedMed(index);
-                    }
-                  }}
+                  onClick={() => setSelectedMed(selectedMed === index ? null : index)}
                 >
                   {selectedMed === index ? 'Ver menos' : 'Más detalles'}
                 </Button>
               </CardContent>
             </Card>
-          ))}
-        </div>
 
-        {/* Contenido expandido que ocupa todo el ancho */}
-        {selectedMed !== null && (
-          <Card className="mb-16 animate-fade-in">
-            <CardContent className="pt-6">
+            {/* Contenido expandido debajo del medicamento */}
+            {selectedMed === index && (
+              <Card className="lg:col-span-3 mb-8 animate-fade-in">
+                <CardContent className="pt-6">
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold text-gray-900">{medications[selectedMed].name}</h3>
                 <p className="text-gray-600 mt-2">Información farmacológica detallada</p>
@@ -1105,7 +1088,10 @@ const Medications = () => {
               </div>
             </CardContent>
           </Card>
-        )}
+            )}
+          </>
+          ))}
+        </div>
 
         <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200">
           <CardHeader className="text-center">
