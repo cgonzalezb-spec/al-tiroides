@@ -25,6 +25,8 @@ const HeroSection = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [watchingVideoUrl, setWatchingVideoUrl] = useState<string | null>(null);
+  const [buttonText, setButtonText] = useState('');
+  const [buttonSection, setButtonSection] = useState('');
   const {
     toast
   } = useToast();
@@ -32,6 +34,26 @@ const HeroSection = () => {
     user
   } = useAuth();
   const { isAdmin } = useRole();
+
+  // Secciones disponibles en la página
+  const availableSections = [
+    { id: 'inicio', name: 'Inicio' },
+    { id: 'que-es-tiroides', name: 'Qué es la tiroides' },
+    { id: 'fisiologia', name: 'Fisiología de la tiroides' },
+    { id: 'sintomas', name: 'Explorador de síntomas' },
+    { id: 'tipos-trastornos', name: 'Tipos de trastornos' },
+    { id: 'cirugia', name: 'Cirugía tiroidea' },
+    { id: 'medicamentos', name: 'Medicamentos' },
+    { id: 'mis-medicamentos', name: 'Mis medicamentos' },
+    { id: 'agenda', name: 'Agendar hora' },
+    { id: 'cuando-consultar', name: 'Cuándo consultar' },
+    { id: 'mitos-faq', name: 'Mitos y preguntas frecuentes' },
+    { id: 'consejos-salud', name: 'Consejos de salud tiroidea' },
+    { id: 'consejos', name: 'Consejos generales' },
+    { id: 'articulos', name: 'Artículos científicos' },
+    { id: 'preguntas', name: 'Consultas de usuarios' },
+    { id: 'foro', name: 'Foro comunitario' },
+  ];
   useEffect(() => {
     // Intentar cargar videos, pero no mostrar errores al usuario
     loadVideosFromSupabase();
@@ -99,7 +121,9 @@ const HeroSection = () => {
             created_at: video.created_at,
             uploaded_by: video.uploaded_by,
             thumbnail_url: video.thumbnail_url,
-            url: urlData.publicUrl
+            url: urlData.publicUrl,
+            button_text: video.button_text,
+            button_section: video.button_section
           });
         } catch (error) {
           console.log('⚠️ Error generando URL para video:', video.file_name, error);
@@ -150,7 +174,7 @@ const HeroSection = () => {
       setVideoDescription('');
     }
   };
-  const uploadToSupabase = async (file: File, description: string, thumbnailUrlParam?: string) => {
+  const uploadToSupabase = async (file: File, description: string, thumbnailUrlParam?: string, btnText?: string, btnSection?: string) => {
     if (!user) {
       toast({
         title: "Error de autenticación",
@@ -232,7 +256,9 @@ const HeroSection = () => {
         p_file_name: file.name,
         p_file_size: file.size,
         p_uploaded_by: user.id,
-        p_thumbnail_url: thumbnailUrlParam?.trim() || null
+        p_thumbnail_url: thumbnailUrlParam?.trim() || null,
+        p_button_text: btnText?.trim() || null,
+        p_button_section: btnSection?.trim() || null
       });
       if (dbError) {
         console.error('❌ Error guardando metadatos:', dbError);
@@ -273,7 +299,7 @@ const HeroSection = () => {
         }
       }
 
-      await uploadToSupabase(pendingVideoFile, videoDescription, finalThumbnailUrl);
+      await uploadToSupabase(pendingVideoFile, videoDescription, finalThumbnailUrl, buttonText, buttonSection);
 
       // Limpiar formulario
       setShowDescriptionForm(false);
@@ -281,6 +307,8 @@ const HeroSection = () => {
       setPendingThumbnailFile(null);
       setVideoDescription('');
       setThumbnailUrl('');
+      setButtonText('');
+      setButtonSection('');
     }
   };
   const handleDescriptionCancel = () => {
@@ -289,6 +317,8 @@ const HeroSection = () => {
     setPendingThumbnailFile(null);
     setVideoDescription('');
     setThumbnailUrl('');
+    setButtonText('');
+    setButtonSection('');
   };
 
   const handleThumbnailUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -379,7 +409,9 @@ const HeroSection = () => {
         p_file_name: 'external_video',
         p_file_size: 0,
         p_uploaded_by: user.id,
-        p_thumbnail_url: finalThumbnailUrl || null
+        p_thumbnail_url: finalThumbnailUrl || null,
+        p_button_text: buttonText?.trim() || null,
+        p_button_section: buttonSection?.trim() || null
       });
 
       if (dbError) {
@@ -398,6 +430,8 @@ const HeroSection = () => {
       setVideoDescription('');
       setThumbnailUrl('');
       setPendingThumbnailFile(null);
+      setButtonText('');
+      setButtonSection('');
     } catch (error: any) {
       console.error('❌ Error agregando video externo:', error);
       toast({
@@ -414,6 +448,8 @@ const HeroSection = () => {
     setVideoDescription(video.description || '');
     setVideoUrl(isExternalVideo(video.url || '') ? (video.file_path || '') : '');
     setThumbnailUrl(video.thumbnail_url || '');
+    setButtonText(video.button_text || '');
+    setButtonSection(video.button_section || '');
     setShowEditForm(true);
   };
 
@@ -436,7 +472,9 @@ const HeroSection = () => {
         p_title: videoDescription.trim() || null,
         p_description: videoDescription.trim() || null,
         p_file_path: videoUrl.trim() || null,
-        p_thumbnail_url: finalThumbnailUrl || null
+        p_thumbnail_url: finalThumbnailUrl || null,
+        p_button_text: buttonText?.trim() || null,
+        p_button_section: buttonSection?.trim() || null
       });
 
       if (error) {
@@ -456,6 +494,8 @@ const HeroSection = () => {
       setVideoUrl('');
       setThumbnailUrl('');
       setPendingThumbnailFile(null);
+      setButtonText('');
+      setButtonSection('');
     } catch (error: any) {
       console.error('❌ Error actualizando video:', error);
       toast({
@@ -558,6 +598,13 @@ const HeroSection = () => {
       setWatchingVideoUrl(videoToShow.url);
     }
   };
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.querySelector(`#${sectionId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
     return <section id="inicio" className="py-20 lg:py-32">
       <div className="container mx-auto px-4">
         {/* Video modal */}
@@ -658,6 +705,36 @@ const HeroSection = () => {
                     disabled={isUploading}
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Botón de navegación (opcional)
+                  </label>
+                  <div className="space-y-2">
+                    <Input 
+                      value={buttonText} 
+                      onChange={e => setButtonText(e.target.value)} 
+                      placeholder='Ej: "Ir a más detalles de fisiología"' 
+                      className="w-full" 
+                      disabled={isUploading}
+                    />
+                    <select 
+                      value={buttonSection} 
+                      onChange={e => setButtonSection(e.target.value)} 
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background"
+                      disabled={isUploading}
+                    >
+                      <option value="">Selecciona una sección</option>
+                      {availableSections.map(section => (
+                        <option key={section.id} value={section.id}>
+                          {section.name}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500">
+                      Agrega un botón que lleve a una sección específica de la página
+                    </p>
+                  </div>
+                </div>
                 <div className="flex gap-2 justify-end">
                   <Button 
                     variant="outline" 
@@ -667,6 +744,8 @@ const HeroSection = () => {
                       setVideoUrl('');
                       setVideoDescription('');
                       setThumbnailUrl('');
+                      setButtonText('');
+                      setButtonSection('');
                     }} 
                     disabled={isUploading}
                   >
@@ -755,6 +834,36 @@ const HeroSection = () => {
                     disabled={isUploading}
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Botón de navegación (opcional)
+                  </label>
+                  <div className="space-y-2">
+                    <Input 
+                      value={buttonText} 
+                      onChange={e => setButtonText(e.target.value)} 
+                      placeholder='Ej: "Ir a más detalles de fisiología"' 
+                      className="w-full" 
+                      disabled={isUploading}
+                    />
+                    <select 
+                      value={buttonSection} 
+                      onChange={e => setButtonSection(e.target.value)} 
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background"
+                      disabled={isUploading}
+                    >
+                      <option value="">Selecciona una sección</option>
+                      {availableSections.map(section => (
+                        <option key={section.id} value={section.id}>
+                          {section.name}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500">
+                      Agrega un botón que lleve a una sección específica de la página
+                    </p>
+                  </div>
+                </div>
                 <div className="flex gap-2 justify-end">
                   <Button 
                     variant="outline" 
@@ -763,6 +872,8 @@ const HeroSection = () => {
                       setVideoUrl('');
                       setVideoDescription('');
                       setThumbnailUrl('');
+                      setButtonText('');
+                      setButtonSection('');
                     }}
                     disabled={isUploading}
                   >
@@ -835,6 +946,36 @@ const HeroSection = () => {
                     Descripción (opcional)
                   </label>
                   <Textarea value={videoDescription} onChange={e => setVideoDescription(e.target.value)} placeholder="Escribe una breve descripción del video..." className="w-full" rows={3} disabled={isUploading} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Botón de navegación (opcional)
+                  </label>
+                  <div className="space-y-2">
+                    <Input 
+                      value={buttonText} 
+                      onChange={e => setButtonText(e.target.value)} 
+                      placeholder='Ej: "Ir a más detalles de fisiología"' 
+                      className="w-full" 
+                      disabled={isUploading}
+                    />
+                    <select 
+                      value={buttonSection} 
+                      onChange={e => setButtonSection(e.target.value)} 
+                      className="w-full px-3 py-2 border border-input rounded-md bg-background"
+                      disabled={isUploading}
+                    >
+                      <option value="">Selecciona una sección</option>
+                      {availableSections.map(section => (
+                        <option key={section.id} value={section.id}>
+                          {section.name}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500">
+                      Agrega un botón que lleve a una sección específica de la página
+                    </p>
+                  </div>
                 </div>
                 {isUploading && <div className="space-y-2">
                     <div className="flex justify-between text-sm text-gray-600">
@@ -921,14 +1062,28 @@ const HeroSection = () => {
                                  </div>
                                </div>
                                
-                               {/* Descripción debajo del video */}
-                               {video.description && (
-                                 <div className="mt-3 px-2">
+                               {/* Descripción y botón debajo del video */}
+                               <div className="mt-3 px-2 space-y-2">
+                                 {video.description && (
                                    <p className="text-muted-foreground text-sm">
                                      {video.description}
                                    </p>
-                                 </div>
-                               )}
+                                 )}
+                                 {video.button_text && video.button_section && (
+                                   <Button 
+                                     variant="outline" 
+                                     size="sm"
+                                     onClick={(e) => {
+                                       e.stopPropagation();
+                                       scrollToSection(video.button_section!);
+                                     }}
+                                     className="w-full"
+                                   >
+                                     <ArrowRight className="mr-2 h-4 w-4" />
+                                     {video.button_text}
+                                   </Button>
+                                 )}
+                               </div>
                             </div>
                           </CarouselItem>)}
                       </CarouselContent>

@@ -10,4 +10,6 @@ export interface ExplanatoryVideo {
   uploaded_by?: string;
   thumbnail_url?: string;
   url?: string; // URL pública del video
+  button_text?: string; // Texto del botón (ej: "Ir a más detalles de fisiología")
+  button_section?: string; // ID de la sección (ej: "fisiologia")
 }

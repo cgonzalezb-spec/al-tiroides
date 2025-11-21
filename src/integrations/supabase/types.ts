@@ -112,6 +112,8 @@ export type Database = {
       }
       explanatory_videos: {
         Row: {
+          button_section: string | null
+          button_text: string | null
           created_at: string
           description: string | null
           file_name: string
@@ -123,6 +125,8 @@ export type Database = {
           uploaded_by: string | null
         }
         Insert: {
+          button_section?: string | null
+          button_text?: string | null
           created_at?: string
           description?: string | null
           file_name: string
@@ -134,6 +138,8 @@ export type Database = {
           uploaded_by?: string | null
         }
         Update: {
+          button_section?: string | null
+          button_text?: string | null
           created_at?: string
           description?: string | null
           file_name?: string
@@ -404,28 +410,56 @@ export type Database = {
         }
         Returns: boolean
       }
-      insert_explanatory_video: {
-        Args: {
-          p_description: string
-          p_file_name: string
-          p_file_path: string
-          p_file_size: number
-          p_thumbnail_url?: string
-          p_title: string
-          p_uploaded_by: string
-        }
-        Returns: string
-      }
-      update_explanatory_video: {
-        Args: {
-          p_description?: string
-          p_file_path?: string
-          p_thumbnail_url?: string
-          p_title?: string
-          p_video_id: string
-        }
-        Returns: boolean
-      }
+      insert_explanatory_video:
+        | {
+            Args: {
+              p_button_section?: string
+              p_button_text?: string
+              p_description: string
+              p_file_name: string
+              p_file_path: string
+              p_file_size: number
+              p_thumbnail_url?: string
+              p_title: string
+              p_uploaded_by: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_description: string
+              p_file_name: string
+              p_file_path: string
+              p_file_size: number
+              p_thumbnail_url?: string
+              p_title: string
+              p_uploaded_by: string
+            }
+            Returns: string
+          }
+      update_explanatory_video:
+        | {
+            Args: {
+              p_description?: string
+              p_file_path?: string
+              p_thumbnail_url?: string
+              p_title?: string
+              p_video_id: string
+            }
+            Returns: boolean
+          }
+        | {
+            Args: {
+              p_button_section?: string
+              p_button_text?: string
+              p_description?: string
+              p_file_path?: string
+              p_thumbnail_url?: string
+              p_title?: string
+              p_video_id: string
+            }
+            Returns: boolean
+          }
     }
     Enums: {
       app_role: "admin" | "health_professional" | "visitor"
