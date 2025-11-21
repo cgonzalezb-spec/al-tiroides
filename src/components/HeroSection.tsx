@@ -106,7 +106,7 @@ const HeroSection = () => {
 
       // Generar URLs públicas para cada video
       const videosWithUrls: ExplanatoryVideo[] = [];
-      for (const video of videoData) {
+      for (const video of videoData as any[]) {
         try {
           const {
             data: urlData
