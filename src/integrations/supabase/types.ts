@@ -392,6 +392,8 @@ export type Database = {
       get_explanatory_videos: {
         Args: never
         Returns: {
+          button_section: string
+          button_text: string
           created_at: string
           description: string
           file_name: string

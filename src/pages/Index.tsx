@@ -29,32 +29,60 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
       <Header />
       <HeroSection />
-      <ThyroidInfo />
-      <ThyroidPhysiology />
-      <ThyroidSymptomExplorer />
-      <DisorderTypes />
-      <ThyroidSurgery />
-      <Medications />
+      <div id="que-es-tiroides">
+        <ThyroidInfo />
+      </div>
+      <div id="fisiologia">
+        <ThyroidPhysiology />
+      </div>
+      <div id="sintomas">
+        <ThyroidSymptomExplorer />
+      </div>
+      <div id="tipos-trastornos">
+        <DisorderTypes />
+      </div>
+      <div id="cirugia">
+        <ThyroidSurgery />
+      </div>
+      <div id="medicamentos">
+        <Medications />
+      </div>
       {user && (
         <>
           <div id="mis-medicamentos">
             <MedicationManager />
           </div>
-          <div id="sintomas">
+          <div id="sintomas-tracker">
             <SymptomTracker />
           </div>
         </>
       )}
-      <AppointmentBooking />
-      <WhenToConsult />
-      <MythsAndFAQ />
-      <ThyroidHealthTips />
-      <ConsejosSection />
-      <ThyroidArticles />
+      <div id="agenda">
+        <AppointmentBooking />
+      </div>
+      <div id="cuando-consultar">
+        <WhenToConsult />
+      </div>
+      <div id="mitos-faq">
+        <MythsAndFAQ />
+      </div>
+      <div id="consejos-salud">
+        <ThyroidHealthTips />
+      </div>
+      <div id="consejos">
+        <ConsejosSection />
+      </div>
+      <div id="articulos">
+        <ThyroidArticles />
+      </div>
       {user && <ArticleManagement />}
       {user && <PharmacyLinksManagement />}
-      <UserQuestions />
-      <CommunityForum />
+      <div id="preguntas">
+        <UserQuestions />
+      </div>
+      <div id="foro">
+        <CommunityForum />
+      </div>
       <Footer />
     </div>
   );
