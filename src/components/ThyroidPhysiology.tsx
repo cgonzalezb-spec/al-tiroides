@@ -1,9 +1,7 @@
-import { Brain, Droplets, Activity, GitBranch, Zap, ArrowRight } from 'lucide-react';
+import { Brain, Droplets, Activity, Zap, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
 const ThyroidPhysiology = () => {
-  return (
-    <section id="fisiologia" className="py-20 bg-muted/30">
+  return <section id="fisiologia" className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-foreground mb-4">
@@ -124,9 +122,7 @@ const ThyroidPhysiology = () => {
               <Card>
                 <CardHeader>
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Brain className="h-6 w-6 text-primary" />
-                    </div>
+                    
                     <div className="flex-1">
                       <CardTitle className="text-lg">1. Hipotálamo</CardTitle>
                       <p className="text-xs text-muted-foreground">Centro de control</p>
@@ -145,7 +141,7 @@ const ThyroidPhysiology = () => {
                 <CardHeader>
                   <div className="flex items-center gap-3 mb-2">
                     <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center">
-                      <GitBranch className="h-6 w-6 text-secondary" />
+                      
                     </div>
                     <div className="flex-1">
                       <CardTitle className="text-lg">2. Hipófisis</CardTitle>
@@ -164,9 +160,7 @@ const ThyroidPhysiology = () => {
               <Card>
                 <CardHeader>
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center">
-                      <Droplets className="h-6 w-6 text-accent" />
-                    </div>
+                    
                     <div className="flex-1">
                       <CardTitle className="text-lg">3. Tiroides</CardTitle>
                       <p className="text-xs text-muted-foreground">Órgano efector</p>
@@ -323,8 +317,6 @@ const ThyroidPhysiology = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default ThyroidPhysiology;
